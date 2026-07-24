@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Build After Task",
+  "description": "Runs npm run build after every agent task completes to ensure the frontend compiles without errors.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "npm run build",
+    "timeout": 120
+  }
+}

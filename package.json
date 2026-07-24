@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@lucide/vue": "^1.24.0",
+    "@purdia/auth": "file:packages/auth",
+    "@purdia/charts": "file:packages/charts",
+    "@purdia/composables": "file:packages/composables",
+    "@purdia/crypto": "file:packages/crypto",
+    "@purdia/http": "file:packages/http",
+    "@purdia/tailwind": "file:packages/tailwind",
+    "@purdia/theme": "file:packages/theme",
+    "@purdia/ui": "file:packages/ui",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.38",
+    "vue-router": "^5.1.0"
+  },
+  "devDependencies": {
+    "@purdia/tsconfig": "file:packages/tsconfig",
+    "@tailwindcss/vite": "^4.0.0",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "concurrently": "^9.0.1",
+    "laravel-vite-plugin": "^3.1",
+    "tailwindcss": "^4.0.0",
+    "typescript": "~6.0.0",
+    "vite": "^8.0.0"
+  }
+}

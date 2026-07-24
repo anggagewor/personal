@@ -1,0 +1,4 @@
+@import 'tailwindcss';
+@import '@purdia/tailwind/theme';
+@import '@purdia/tailwind/colors';
+@import '@purdia/tailwind/dark';

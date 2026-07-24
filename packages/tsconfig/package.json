@@ -1,0 +1,10 @@
+{
+  "name": "@purdia/tsconfig",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./lib": "./lib.json",
+    "./vue-lib": "./vue-lib.json"
+  },
+  "files": ["lib.json", "vue-lib.json"]
+}

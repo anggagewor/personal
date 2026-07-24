@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Update Tests Reminder",
+  "description": "Reminds to update corresponding tests when domain source files are modified",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/Domain/**/*.php"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A domain file was modified. Check if the corresponding test in tests/Feature/{Domain}/ needs to be updated to cover the changes. If the behavior changed, update or add test cases accordingly. Run `php artisan test` to verify all tests still pass."
+  }
+}
