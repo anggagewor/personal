@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { get, post, put, del } from '@purdia/http'
+import { useToast } from '@purdia/toast'
 import BaseEditor from '@purdia/ui/src/components/BaseEditor.vue'
 import { Plus, Pin, Search, Trash2, FileText } from '@lucide/vue'
+
+const toast = useToast()
 
 interface Note {
   id: number
@@ -27,33 +30,49 @@ async function fetchNotes() {
     const params = search.value ? { search: search.value } : {}
     const response = await get<Note[]>('/notes', { params })
     notes.value = response.data
-  } catch { /* */ }
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
   loading.value = false
 }
 
 async function saveNote() {
   if (!form.value.title.trim()) return
 
-  if (editingNote.value) {
-    const response = await put<Note>(`/notes/${editingNote.value.id}`, form.value)
-    const idx = notes.value.findIndex((n) => n.id === editingNote.value!.id)
-    if (idx >= 0) notes.value[idx] = response.data
-  } else {
-    const response = await post<Note>('/notes', form.value)
-    notes.value.unshift(response.data)
+  try {
+    if (editingNote.value) {
+      const response = await put<Note>(`/notes/${editingNote.value.id}`, form.value)
+      const idx = notes.value.findIndex((n) => n.id === editingNote.value!.id)
+      if (idx >= 0) notes.value[idx] = response.data
+      toast.success('Catatan berhasil diperbarui.')
+    } else {
+      const response = await post<Note>('/notes', form.value)
+      notes.value.unshift(response.data)
+      toast.success('Catatan berhasil dibuat.')
+    }
+    closeEditor()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
   }
-
-  closeEditor()
 }
 
 async function togglePin(note: Note) {
-  await post<Note>(`/notes/${note.id}/toggle-pin`)
-  note.is_pinned = !note.is_pinned
+  try {
+    await post<Note>(`/notes/${note.id}/toggle-pin`)
+    note.is_pinned = !note.is_pinned
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function deleteNote(note: Note) {
-  await del(`/notes/${note.id}`)
-  notes.value = notes.value.filter((n) => n.id !== note.id)
+  try {
+    await del(`/notes/${note.id}`)
+    notes.value = notes.value.filter((n) => n.id !== note.id)
+    toast.success('Catatan berhasil dihapus.')
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 function openNew() {
@@ -169,7 +188,7 @@ fetchNotes()
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showEditor" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" @click.self="closeEditor">
-          <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+          <div class="w-full max-w-lg rounded-xl bg-white px-5 py-4 shadow-xl dark:bg-gray-800">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
               {{ editingNote ? 'Edit Catatan' : 'Catatan Baru' }}
             </h2>

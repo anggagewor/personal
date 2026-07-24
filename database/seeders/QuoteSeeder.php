@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Domain\Quote\Models\Quote;
+use Modules\Quote\Infrastructure\Models\QuoteModel as Quote;
 use Illuminate\Database\Seeder;
 
 class QuoteSeeder extends Seeder

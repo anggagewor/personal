@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { get, post, put, del } from '@purdia/http'
+import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Trash2, Flame, Check } from '@lucide/vue'
+
+const toast = useToast()
 
 interface Habit {
   id: number
@@ -24,15 +27,22 @@ async function fetchHabits() {
   try {
     const res = await get<Habit[]>('/habits')
     habits.value = res.data
-  } catch { /* */ }
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function addHabit() {
   if (!form.value.name.trim()) return
-  await post('/habits', { name: form.value.name, color: form.value.color || null })
-  form.value = { name: '', color: '' }
-  showForm.value = false
-  fetchHabits()
+  try {
+    await post('/habits', { name: form.value.name, color: form.value.color || null })
+    toast.success('Habit berhasil ditambahkan.')
+    form.value = { name: '', color: '' }
+    showForm.value = false
+    fetchHabits()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function toggleHabit(habit: Habit) {
@@ -40,12 +50,19 @@ async function toggleHabit(habit: Habit) {
     const res = await post<{ completed: boolean; streak: number }>(`/habits/${habit.id}/toggle`)
     habit.completed_today = res.data.completed
     habit.streak = res.data.streak
-  } catch { /* */ }
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function deleteHabit(habit: Habit) {
-  await del(`/habits/${habit.id}`)
-  habits.value = habits.value.filter((h) => h.id !== habit.id)
+  try {
+    await del(`/habits/${habit.id}`)
+    habits.value = habits.value.filter((h) => h.id !== habit.id)
+    toast.success('Habit berhasil dihapus.')
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 fetchHabits()
@@ -103,16 +120,14 @@ fetchHabits()
 
     <BaseModal v-model="showForm" size="sm">
       <template #default>
-        <div class="p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Habit Baru</h2>
-          <form class="mt-4 space-y-4" @submit.prevent="addHabit">
-            <BaseInput v-model="form.name" label="Nama Habit" placeholder="Contoh: Olahraga 30 menit" required />
-            <div class="flex justify-end gap-2">
-              <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
-              <BaseButton variant="primary" size="sm" type="submit">Simpan</BaseButton>
-            </div>
-          </form>
-        </div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Habit Baru</h2>
+        <form class="mt-4 space-y-4" @submit.prevent="addHabit">
+          <BaseInput v-model="form.name" label="Nama Habit" placeholder="Contoh: Olahraga 30 menit" required />
+          <div class="flex justify-end gap-2">
+            <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
+            <BaseButton variant="primary" size="sm" type="submit">Simpan</BaseButton>
+          </div>
+        </form>
       </template>
     </BaseModal>
   </div>

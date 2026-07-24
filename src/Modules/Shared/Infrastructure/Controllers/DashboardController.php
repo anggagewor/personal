@@ -19,7 +19,7 @@ class DashboardController extends Controller
         // Tasks completed this week
         $tasksCompleted = DB::table('tasks')
             ->where('user_id', $userId)
-            ->where('status', 'done')
+            ->where('status', 'completed')
             ->whereBetween('updated_at', [$startOfWeek, $endOfWeek])
             ->count();
 
@@ -64,7 +64,7 @@ class DashboardController extends Controller
         // Current max streak across habits
         $maxStreak = DB::table('habits')
             ->where('user_id', $userId)
-            ->max('streak') ?? 0;
+            ->max('current_streak') ?? 0;
 
         return response()->json([
             'data' => [

@@ -14,9 +14,12 @@ use Modules\Note\Domain\Contracts\NoteRepositoryInterface;
 use Modules\Note\Infrastructure\Requests\StoreNoteRequest;
 use Modules\Note\Infrastructure\Requests\UpdateNoteRequest;
 use Modules\Note\Infrastructure\Resources\NoteResource;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class NoteController extends Controller
 {
+    use AuthorizesOwnership;
+
     public function __construct(
         private NoteRepositoryInterface $repository,
     ) {}
@@ -50,11 +53,7 @@ class NoteController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $note = $this->repository->findById($id);
-
-        if (!$note || $note->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $note = $this->findOwnedOrFail($this->repository, $id, $request);
 
         return response()->json([
             'data' => NoteResource::toArray($note),
@@ -63,11 +62,7 @@ class NoteController extends Controller
 
     public function update(UpdateNoteRequest $request, int $id, UpdateNoteAction $action): JsonResponse
     {
-        $note = $this->repository->findById($id);
-
-        if (!$note || $note->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $note = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $note = $action->execute(
             noteId: $id,
@@ -85,11 +80,7 @@ class NoteController extends Controller
 
     public function destroy(Request $request, int $id, DeleteNoteAction $action): JsonResponse
     {
-        $note = $this->repository->findById($id);
-
-        if (!$note || $note->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 
@@ -100,11 +91,7 @@ class NoteController extends Controller
 
     public function togglePin(Request $request, int $id, TogglePinNoteAction $action): JsonResponse
     {
-        $note = $this->repository->findById($id);
-
-        if (!$note || $note->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $note = $action->execute($id);
 

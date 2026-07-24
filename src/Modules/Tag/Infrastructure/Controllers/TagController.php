@@ -14,9 +14,11 @@ use Modules\Tag\Application\DTO\TagData;
 use Modules\Tag\Domain\Contracts\TagRepositoryInterface;
 use Modules\Tag\Infrastructure\Requests\StoreTagRequest;
 use Modules\Tag\Infrastructure\Requests\UpdateTagRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class TagController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private TagRepositoryInterface $repository,
     ) {}
@@ -45,11 +47,7 @@ class TagController extends Controller
 
     public function update(UpdateTagRequest $request, int $id, UpdateTagAction $action): JsonResponse
     {
-        $tag = $this->repository->findById($id);
-
-        if (!$tag || $tag->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $tag = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $tag = $action->execute(
             tagId: $id,
@@ -67,11 +65,7 @@ class TagController extends Controller
 
     public function destroy(Request $request, int $id, DeleteTagAction $action): JsonResponse
     {
-        $tag = $this->repository->findById($id);
-
-        if (!$tag || $tag->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 
@@ -82,11 +76,7 @@ class TagController extends Controller
 
     public function attach(Request $request, int $id, AttachTagAction $action): JsonResponse
     {
-        $tag = $this->repository->findById($id);
-
-        if (!$tag || $tag->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $request->validate([
             'taggable_type' => ['required', 'string', 'in:note,task'],
@@ -107,11 +97,7 @@ class TagController extends Controller
 
     public function detach(Request $request, int $id, DetachTagAction $action): JsonResponse
     {
-        $tag = $this->repository->findById($id);
-
-        if (!$tag || $tag->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $request->validate([
             'taggable_type' => ['required', 'string', 'in:note,task'],

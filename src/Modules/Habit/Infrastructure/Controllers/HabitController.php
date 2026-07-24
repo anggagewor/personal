@@ -13,9 +13,11 @@ use Modules\Habit\Application\DTO\HabitData;
 use Modules\Habit\Domain\Contracts\HabitRepositoryInterface;
 use Modules\Habit\Infrastructure\Requests\StoreHabitRequest;
 use Modules\Habit\Infrastructure\Requests\UpdateHabitRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class HabitController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private HabitRepositoryInterface $repository,
     ) {}
@@ -44,11 +46,7 @@ class HabitController extends Controller
 
     public function update(UpdateHabitRequest $request, int $id, UpdateHabitAction $action): JsonResponse
     {
-        $habit = $this->repository->findById($id);
-
-        if (!$habit || $habit->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $habit = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $habit = $action->execute(
             habitId: $id,
@@ -66,11 +64,7 @@ class HabitController extends Controller
 
     public function destroy(Request $request, int $id, DeleteHabitAction $action): JsonResponse
     {
-        $habit = $this->repository->findById($id);
-
-        if (!$habit || $habit->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 
@@ -81,11 +75,7 @@ class HabitController extends Controller
 
     public function toggle(Request $request, int $id, ToggleHabitAction $action): JsonResponse
     {
-        $habit = $this->repository->findById($id);
-
-        if (!$habit || $habit->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $habit = $action->execute($id);
 

@@ -53,6 +53,24 @@ class EloquentQuoteRepository implements QuoteRepositoryInterface
         ];
     }
 
+    public function save(Quote $quote): Quote
+    {
+        $model = QuoteModel::updateOrCreate(
+            ['id' => $quote->id],
+            [
+                'content' => $quote->content,
+                'author' => $quote->author,
+            ]
+        );
+
+        return $this->toEntity($model);
+    }
+
+    public function delete(int $id): void
+    {
+        QuoteModel::where('id', $id)->delete();
+    }
+
     private function toEntity(QuoteModel $model): Quote
     {
         return new Quote(

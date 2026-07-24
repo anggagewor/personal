@@ -12,9 +12,11 @@ use Modules\Scratchpad\Application\DTO\ScratchpadData;
 use Modules\Scratchpad\Domain\Contracts\ScratchpadRepositoryInterface;
 use Modules\Scratchpad\Infrastructure\Requests\StoreScratchpadRequest;
 use Modules\Scratchpad\Infrastructure\Requests\UpdateScratchpadRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class ScratchpadController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private ScratchpadRepositoryInterface $repository,
     ) {}
@@ -43,11 +45,7 @@ class ScratchpadController extends Controller
 
     public function update(UpdateScratchpadRequest $request, int $id, UpdateScratchpadAction $action): JsonResponse
     {
-        $scratchpad = $this->repository->findById($id);
-
-        if (!$scratchpad || $scratchpad->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $scratchpad = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $scratchpad = $action->execute(
             scratchpadId: $id,
@@ -65,11 +63,7 @@ class ScratchpadController extends Controller
 
     public function destroy(Request $request, int $id, DeleteScratchpadAction $action): JsonResponse
     {
-        $scratchpad = $this->repository->findById($id);
-
-        if (!$scratchpad || $scratchpad->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 

@@ -12,9 +12,11 @@ use Modules\ReadingList\Application\Actions\ToggleReadAction;
 use Modules\ReadingList\Application\DTO\ReadingItemData;
 use Modules\ReadingList\Domain\Contracts\ReadingListRepositoryInterface;
 use Modules\ReadingList\Infrastructure\Requests\StoreReadingItemRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class ReadingListController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private ReadingListRepositoryInterface $repository,
     ) {}
@@ -52,11 +54,7 @@ class ReadingListController extends Controller
 
     public function destroy(Request $request, int $id, DeleteReadingItemAction $action): JsonResponse
     {
-        $item = $this->repository->findById($id);
-
-        if (!$item || $item->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 
@@ -67,11 +65,7 @@ class ReadingListController extends Controller
 
     public function toggleRead(Request $request, int $id, ToggleReadAction $action): JsonResponse
     {
-        $item = $this->repository->findById($id);
-
-        if (!$item || $item->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $item = $action->execute($id);
 
@@ -83,11 +77,7 @@ class ReadingListController extends Controller
 
     public function toggleFavorite(Request $request, int $id, ToggleFavoriteAction $action): JsonResponse
     {
-        $item = $this->repository->findById($id);
-
-        if (!$item || $item->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $item = $action->execute($id);
 

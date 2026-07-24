@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { get, post, put, del } from '@purdia/http'
+import { useToast } from '@purdia/toast'
 import { Plus, Trash2, ExternalLink, Bookmark } from '@lucide/vue'
+
+const toast = useToast()
 
 interface BookmarkItem {
   id: number
@@ -24,7 +27,9 @@ async function fetchBookmarks() {
   try {
     const response = await get<Record<string, BookmarkItem[]>>('/bookmarks')
     grouped.value = response.data
-  } catch { /* */ }
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
   loading.value = false
 }
 
@@ -32,18 +37,29 @@ async function saveBookmark() {
   if (!form.value.title.trim() || !form.value.url.trim()) return
   const payload = { ...form.value, category: form.value.category || null, description: form.value.description || null }
 
-  if (editingBookmark.value) {
-    await put(`/bookmarks/${editingBookmark.value.id}`, payload)
-  } else {
-    await post('/bookmarks', payload)
+  try {
+    if (editingBookmark.value) {
+      await put(`/bookmarks/${editingBookmark.value.id}`, payload)
+      toast.success('Bookmark berhasil diperbarui.')
+    } else {
+      await post('/bookmarks', payload)
+      toast.success('Bookmark berhasil ditambahkan.')
+    }
+    closeForm()
+    fetchBookmarks()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
   }
-  closeForm()
-  fetchBookmarks()
 }
 
 async function deleteBookmark(bookmark: BookmarkItem) {
-  await del(`/bookmarks/${bookmark.id}`)
-  fetchBookmarks()
+  try {
+    await del(`/bookmarks/${bookmark.id}`)
+    toast.success('Bookmark berhasil dihapus.')
+    fetchBookmarks()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 function openNew() {
@@ -118,7 +134,7 @@ fetchBookmarks()
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showForm" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" @click.self="closeForm">
-          <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+          <div class="w-full max-w-md rounded-xl bg-white px-5 py-4 shadow-xl dark:bg-gray-800">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editingBookmark ? 'Edit Bookmark' : 'Bookmark Baru' }}</h2>
             <form class="mt-4 space-y-4" @submit.prevent="saveBookmark">
               <input v-model="form.title" type="text" placeholder="Judul" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />

@@ -12,9 +12,12 @@ use Modules\Bookmark\Application\DTO\BookmarkData;
 use Modules\Bookmark\Domain\Contracts\BookmarkRepositoryInterface;
 use Modules\Bookmark\Infrastructure\Requests\StoreBookmarkRequest;
 use Modules\Bookmark\Infrastructure\Requests\UpdateBookmarkRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class BookmarkController extends Controller
 {
+    use AuthorizesOwnership;
+
     public function __construct(
         private BookmarkRepositoryInterface $repository,
     ) {}
@@ -45,11 +48,7 @@ class BookmarkController extends Controller
 
     public function update(UpdateBookmarkRequest $request, int $id, UpdateBookmarkAction $action): JsonResponse
     {
-        $bookmark = $this->repository->findById($id);
-
-        if (!$bookmark || $bookmark->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $bookmark = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $bookmark = $action->execute(
             bookmarkId: $id,
@@ -73,11 +72,7 @@ class BookmarkController extends Controller
 
     public function destroy(Request $request, int $id, DeleteBookmarkAction $action): JsonResponse
     {
-        $bookmark = $this->repository->findById($id);
-
-        if (!$bookmark || $bookmark->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 

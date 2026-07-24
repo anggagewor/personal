@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { get, post, del } from '@purdia/http'
+import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Trash2, TrendingUp, TrendingDown, Wallet } from '@lucide/vue'
+
+const toast = useToast()
 
 interface FinanceItem {
   id: number
@@ -44,20 +47,32 @@ async function fetchData() {
     ])
     transactions.value = txRes.data
     summary.value = sumRes.data
-  } catch { /* */ }
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function addTransaction() {
   if (!form.value.category || !form.value.amount) return
-  await post('/finances', { ...form.value, amount: parseFloat(form.value.amount) })
-  showForm.value = false
-  form.value = { type: 'expense', category: '', amount: '', description: '', date: new Date().toISOString().slice(0, 10) }
-  fetchData()
+  try {
+    await post('/finances', { ...form.value, amount: parseFloat(form.value.amount) })
+    toast.success('Transaksi berhasil ditambahkan.')
+    showForm.value = false
+    form.value = { type: 'expense', category: '', amount: '', description: '', date: new Date().toISOString().slice(0, 10) }
+    fetchData()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function deleteTransaction(item: FinanceItem) {
-  await del(`/finances/${item.id}`)
-  fetchData()
+  try {
+    await del(`/finances/${item.id}`)
+    toast.success('Transaksi berhasil dihapus.')
+    fetchData()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 watch(currentMonth, () => fetchData())
@@ -130,26 +145,24 @@ fetchData()
     <!-- Form modal -->
     <BaseModal v-model="showForm" size="md">
       <template #default>
-        <div class="p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Transaksi</h2>
-          <form class="mt-4 space-y-4" @submit.prevent="addTransaction">
-            <div class="flex gap-2">
-              <button type="button" v-for="t in ['expense', 'income']" :key="t"
-                class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-                :class="form.type === t ? (t === 'expense' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white') : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'"
-                @click="form.type = t; form.category = ''"
-              >{{ t === 'expense' ? 'Pengeluaran' : 'Pemasukan' }}</button>
-            </div>
-            <BaseSelect v-model="form.category" label="Kategori" :options="categories[form.type as 'expense' | 'income'].map(c => ({ label: c, value: c }))" required />
-            <BaseInput v-model="form.amount" label="Jumlah (Rp)" type="number" placeholder="50000" required />
-            <BaseInput v-model="form.description" label="Keterangan" placeholder="Opsional" />
-            <BaseInput v-model="form.date" label="Tanggal" type="date" required />
-            <div class="flex justify-end gap-2 pt-2">
-              <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
-              <BaseButton variant="primary" size="sm" type="submit">Simpan</BaseButton>
-            </div>
-          </form>
-        </div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Transaksi</h2>
+        <form class="mt-4 space-y-4" @submit.prevent="addTransaction">
+          <div class="flex gap-2">
+            <button type="button" v-for="t in ['expense', 'income']" :key="t"
+              class="flex-1 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+              :class="form.type === t ? (t === 'expense' ? 'bg-red-500 text-white' : 'bg-emerald-500 text-white') : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'"
+              @click="form.type = t; form.category = ''"
+            >{{ t === 'expense' ? 'Pengeluaran' : 'Pemasukan' }}</button>
+          </div>
+          <BaseSelect v-model="form.category" label="Kategori" :options="categories[form.type as 'expense' | 'income'].map(c => ({ label: c, value: c }))" required />
+          <BaseInput v-model="form.amount" label="Jumlah (Rp)" type="number" placeholder="50000" required />
+          <BaseInput v-model="form.description" label="Keterangan" placeholder="Opsional" />
+          <BaseInput v-model="form.date" label="Tanggal" type="date" required />
+          <div class="flex justify-end gap-2 pt-2">
+            <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
+            <BaseButton variant="primary" size="sm" type="submit">Simpan</BaseButton>
+          </div>
+        </form>
       </template>
     </BaseModal>
   </div>

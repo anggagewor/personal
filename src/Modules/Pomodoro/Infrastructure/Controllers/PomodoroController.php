@@ -11,9 +11,12 @@ use Modules\Pomodoro\Application\Actions\CreatePomodoroAction;
 use Modules\Pomodoro\Application\DTO\PomodoroData;
 use Modules\Pomodoro\Domain\Contracts\PomodoroRepositoryInterface;
 use Modules\Pomodoro\Infrastructure\Requests\StorePomodoroRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class PomodoroController extends Controller
 {
+    use AuthorizesOwnership;
+
     public function __construct(
         private PomodoroRepositoryInterface $repository,
     ) {}
@@ -46,11 +49,7 @@ class PomodoroController extends Controller
 
     public function complete(Request $request, int $id, CompletePomodoroAction $action): JsonResponse
     {
-        $pomodoro = $this->repository->findById($id);
-
-        if (!$pomodoro || $pomodoro->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $pomodoro = $action->execute($id);
 
@@ -62,11 +61,7 @@ class PomodoroController extends Controller
 
     public function cancel(Request $request, int $id, CancelPomodoroAction $action): JsonResponse
     {
-        $pomodoro = $this->repository->findById($id);
-
-        if (!$pomodoro || $pomodoro->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $pomodoro = $action->execute($id);
 
