@@ -2,15 +2,15 @@
 
 namespace Modules\Task\Application\DTO;
 
-class TaskData
+readonly class TaskData
 {
     public function __construct(
-        public readonly string $title,
-        public readonly ?string $description = null,
-        public readonly string $status = 'pending',
-        public readonly string $priority = 'medium',
-        public readonly ?string $dueDate = null,
-        public readonly int $position = 0,
+        public string $title,
+        public ?string $description = null,
+        public string $status = 'pending',
+        public string $priority = 'medium',
+        public ?string $dueDate = null,
+        public int $position = 0,
     ) {}
 
     public static function fromArray(array $data): self

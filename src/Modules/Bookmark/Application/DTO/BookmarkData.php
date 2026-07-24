@@ -2,14 +2,14 @@
 
 namespace Modules\Bookmark\Application\DTO;
 
-class BookmarkData
+readonly class BookmarkData
 {
     public function __construct(
-        public readonly string $title,
-        public readonly string $url,
-        public readonly ?string $description = null,
-        public readonly ?string $category = null,
-        public readonly ?string $icon = null,
+        public string $title,
+        public string $url,
+        public ?string $description = null,
+        public ?string $category = null,
+        public ?string $icon = null,
     ) {}
 
     public static function fromArray(array $data): self

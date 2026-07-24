@@ -2,6 +2,7 @@
 
 namespace Modules\Quote\Application\Actions;
 
+use Modules\Quote\Application\DTO\QuoteData;
 use Modules\Quote\Domain\Contracts\QuoteRepositoryInterface;
 use Modules\Quote\Domain\Entities\Quote;
 
@@ -11,12 +12,12 @@ class CreateQuoteAction
         private QuoteRepositoryInterface $repository,
     ) {}
 
-    public function execute(string $content, ?string $author = null): Quote
+    public function execute(QuoteData $data): Quote
     {
         $quote = new Quote(
             id: null,
-            content: $content,
-            author: $author,
+            content: $data->content,
+            author: $data->author,
         );
 
         return $this->repository->save($quote);

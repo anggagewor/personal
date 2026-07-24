@@ -2,11 +2,11 @@
 
 namespace Modules\Pomodoro\Application\DTO;
 
-class PomodoroData
+readonly class PomodoroData
 {
     public function __construct(
-        public readonly ?int $taskId = null,
-        public readonly int $duration = 25,
+        public ?int $taskId = null,
+        public int $duration = 25,
     ) {}
 
     public static function fromArray(array $data): self

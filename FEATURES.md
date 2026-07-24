@@ -6,8 +6,8 @@
 |-------|-----------|
 | Login | Email + password, return token |
 | Register | Buat akun baru |
-| Logout | Revoke token |
-| Token Refresh | Perpanjang session |
+| Logout | Revoke semua token |
+| Token Refresh | Perpanjang session tanpa login ulang |
 | Profile | Update nama, email, password, avatar |
 | Preferences | Theme (dark/light), primary color, locale, sidebar state |
 
@@ -20,8 +20,9 @@
 | Fitur | Deskripsi |
 |-------|-----------|
 | CRUD | Buat, baca, edit, hapus catatan |
-| Rich Text | Content pakai longText (support HTML/markdown) |
-| Pin | Toggle pin untuk catatan penting |
+| Rich Text | Content pakai Tiptap editor (HTML) |
+| Pin | Toggle pin untuk catatan penting (muncul di atas) |
+| Search | Pencarian berdasarkan judul |
 | Soft Delete | Bisa di-restore dari trash |
 
 **Endpoints:** `/api/notes`, `/api/notes/{id}/toggle-pin`
@@ -33,7 +34,7 @@
 | Fitur | Deskripsi |
 |-------|-----------|
 | CRUD | Simpan, edit, hapus bookmark URL |
-| Kategori | Organisasi bookmark per kategori |
+| Kategori | Organisasi bookmark per kategori (grouped response) |
 | Icon | Custom icon per bookmark |
 | Deskripsi | Catatan tambahan untuk tiap bookmark |
 
@@ -46,11 +47,11 @@
 | Fitur | Deskripsi |
 |-------|-----------|
 | CRUD | Buat, edit, hapus task |
-| Status | Todo → In Progress → Done |
+| Status | Pending → In Progress → Completed |
 | Priority | Low, Medium, High |
 | Due Date | Tanggal deadline |
-| Drag Reorder | Atur urutan task via drag & drop |
-| Recurring | Task berulang (daily/weekly/monthly) dengan batas tanggal |
+| Reorder | Atur urutan task (position-based) |
+| Recurrence | Task berulang (daily/weekly/monthly) |
 | Soft Delete | Bisa di-restore dari trash |
 
 **Endpoints:** `/api/tasks`, `/api/tasks/reorder`
@@ -62,6 +63,7 @@
 | Fitur | Deskripsi |
 |-------|-----------|
 | Events CRUD | Buat, edit, hapus event di kalender |
+| Date Range Filter | Filter events berdasarkan start_date & end_date |
 | All-day Event | Event seharian tanpa jam spesifik |
 | Color Coded | Warna berbeda per event |
 | Hari Libur | Daftar hari libur nasional Indonesia (seeded) |
@@ -74,7 +76,7 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| Start Session | Mulai timer pomodoro |
+| Start Session | Mulai timer pomodoro (duration configurable) |
 | Complete | Tandai session selesai |
 | Cancel | Batalkan session yang sedang berjalan |
 | Link to Task | Hubungkan pomodoro ke task tertentu (opsional) |
@@ -91,6 +93,7 @@
 | CRUD | Quick notes singkat |
 | Warna | Pilihan warna background |
 | Posisi | Atur posisi/urutan scratchpad |
+| Quick Capture | Input cepat dari dashboard |
 
 **Endpoints:** `/api/scratchpads`
 
@@ -103,8 +106,9 @@
 | CRUD | Buat, edit, hapus habit |
 | Frequency | Daily atau weekly |
 | Daily Toggle | Check-off harian (habit log per tanggal) |
+| Streak | Current streak & longest streak tracking |
 | Active/Inactive | Nonaktifkan habit tanpa hapus |
-| Icon & Color | Kustomisasi tampilan |
+| Color | Kustomisasi warna |
 
 **Endpoints:** `/api/habits`, `/api/habits/{id}/toggle`
 
@@ -116,8 +120,9 @@
 |-------|-----------|
 | CRUD | Catat pemasukan & pengeluaran |
 | Type | Income atau Expense |
-| Category | Kategori (food, transport, salary, dll) |
-| Summary | Ringkasan total income/expense/balance |
+| Category | Kategori per type (makanan, transport, gaji, dll) |
+| Month Filter | Filter transaksi per bulan |
+| Summary | Ringkasan total income/expense/balance per bulan |
 | Date | Tanggal transaksi |
 
 **Endpoints:** `/api/finances`, `/api/finances/summary`
@@ -129,9 +134,9 @@
 | Fitur | Deskripsi |
 |-------|-----------|
 | Tambah Artikel | Simpan URL artikel untuk dibaca nanti |
-| Auto Metadata | Thumbnail & domain otomatis |
 | Toggle Read | Tandai sudah/belum dibaca |
 | Toggle Favorite | Tandai sebagai favorit |
+| Filter | Filter by read/unread, favorite |
 | Hapus | Hapus dari daftar |
 
 **Endpoints:** `/api/reading-list`, `/api/reading-list/{id}/toggle-read`, `/api/reading-list/{id}/toggle-favorite`
@@ -142,10 +147,12 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| Daily Entry | Satu jurnal per hari per user |
+| Daily Entry | Satu jurnal per hari per user (upsert) |
 | Mood | Pilihan mood: happy, neutral, sad, stressed, energized |
 | Content | Tulis isi jurnal bebas |
+| Month Filter | Filter journal per bulan |
 | Mood Stats | Statistik mood dari waktu ke waktu |
+| Show by Date | Lihat jurnal berdasarkan tanggal |
 | Hapus | Hapus entry jurnal |
 
 **Endpoints:** `/api/journals`, `/api/journals/moods`, `/api/journals/{date}`
@@ -159,11 +166,11 @@
 | CRUD | Buat, edit, hapus goal |
 | Target Date | Tanggal target penyelesaian |
 | Status | Active, Completed, Abandoned |
-| Progress | Persentase progress (0-100%) |
 | Milestones | Sub-target dalam satu goal |
 | Toggle Milestone | Tandai milestone selesai/belum |
+| Add Milestone | Tambah milestone ke goal yang sudah ada |
 
-**Endpoints:** `/api/goals`, `/api/goals/{id}/milestones`, `/api/milestones/{id}/toggle`
+**Endpoints:** `/api/goals`, `/api/goals/{id}/milestones`, `/api/goals/{id}/milestones/{milestoneId}/toggle`
 
 ---
 
@@ -173,6 +180,7 @@
 |-------|-----------|
 | CRUD | Buat, edit, hapus item wishlist |
 | Category | Organisasi per kategori |
+| Filter | Filter by completed/pending, category |
 | Toggle Complete | Tandai sudah terpenuhi |
 | Completed At | Timestamp kapan terpenuhi |
 
@@ -186,8 +194,8 @@
 |-------|-----------|
 | CRUD | Buat, edit, hapus tag |
 | Color | Warna per tag |
-| Attach/Detach | Pasang tag ke item apapun (notes, tasks, bookmarks, dll) |
-| Polymorphic | Satu sistem tag untuk semua jenis konten |
+| Attach/Detach | Pasang tag ke notes atau tasks |
+| Per-user | Tag milik user masing-masing |
 
 **Endpoints:** `/api/tags`, `/api/tags/{id}/attach`, `/api/tags/{id}/detach`
 
@@ -197,11 +205,13 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| Quote of the Day | Satu quote motivasi per hari |
-| Seeded | Data quote sudah di-seed ke database |
-| Author | Nama pengarang quote |
+| Quote of the Day | Satu quote motivasi per hari (rotasi berdasarkan day of year) |
+| List & Search | Lihat semua quotes dengan pagination & search |
+| Tambah Quote | Insert quote baru secara manual |
+| Hapus Quote | Hapus quote dari database |
+| Seeded | 20 quote motivasi awal di-seed |
 
-**Endpoints:** `/api/quotes/today`
+**Endpoints:** `/api/quotes`, `/api/quotes/today`
 
 ---
 
@@ -209,10 +219,10 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| List | Lihat semua item yang sudah di-soft-delete |
+| List | Lihat semua item yang sudah di-soft-delete (notes, tasks) |
 | Restore | Kembalikan item ke state aktif |
 | Force Delete | Hapus permanen |
-| Multi-type | Support notes, tasks, dan entity lain yang pakai soft delete |
+| 30-day Limit | Hanya tampilkan trash dalam 30 hari terakhir |
 
 **Endpoints:** `/api/trash`, `/api/trash/{type}/{id}/restore`, `/api/trash/{type}/{id}` (DELETE)
 
@@ -222,35 +232,49 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| Auto Log | Catat aktivitas user secara otomatis |
-| Action & Description | Jenis aksi + deskripsi |
-| Metadata | Data tambahan dalam format JSON |
-| Timeline | Riwayat aktivitas dari waktu ke waktu |
+| Auto Log | Catat aktivitas user |
+| Paginated | List dengan pagination |
+| Per-user | Hanya lihat aktivitas sendiri |
 
 **Endpoints:** `/api/activity-logs`
 
 ---
 
-## 18. Settings
+## 18. Dashboard
 
-| Halaman | Fitur |
-|---------|-------|
-| Account | Edit profil, ubah password, upload avatar |
-| Appearance | Theme (dark/light), primary color |
-| General | Locale, sidebar preference |
-| Export | Export data (TODO) |
+| Fitur | Deskripsi |
+|-------|-----------|
+| Stat Cards | Total notes, tasks pending, bookmarks, events mendatang |
+| Weekly Summary | Tasks completed/created, pomodoros, focus minutes, habits, notes, streak |
+| Quote of the Day | Tampil di dashboard |
+| Weather | Cuaca kota saat ini (OpenWeatherMap) |
+| Quick Capture | Input cepat ke scratchpad |
+| Recent Tasks | 5 task pending terbaru |
+| Recent Notes | 3 catatan terbaru |
+
+**Endpoints:** `/api/dashboard/weekly-summary`, `/api/weather/current`
 
 ---
 
-## 19. Dashboard
+## 19. Settings
 
-Halaman utama yang menampilkan ringkasan dari berbagai modul:
-- Overview task yang aktif
-- Habit progress hari ini
-- Pomodoro stats
-- Quote of the day
-- Calendar events mendatang
-- Finance summary
+| Halaman | Fitur |
+|---------|-------|
+| Account | Edit profil, ubah password, upload/hapus avatar |
+| Appearance | Theme (dark/light), primary color |
+| General | Locale, sidebar preference |
+| Export | Export data (planned) |
+
+---
+
+## 20. Error Handling
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Global Toast | Error API otomatis ditampilkan sebagai toast notification |
+| Success Feedback | Operasi berhasil (create/update/delete) tampilkan toast sukses |
+| Silent Refresh | Token expired otomatis di-refresh tanpa user tahu |
+| Ownership Check | Reusable `AuthorizesOwnership` trait di semua controllers |
 
 ---
 
@@ -265,7 +289,6 @@ Halaman utama yang menampilkan ringkasan dari berbagai modul:
 | Bookmarks | `/bookmarks` |
 | Tasks | `/tasks` |
 | Calendar | `/calendar` |
-| Activity | `/activity` |
 | Pomodoro | `/pomodoro` |
 | Scratchpads | `/scratchpads` |
 | Habits | `/habits` |
@@ -273,7 +296,9 @@ Halaman utama yang menampilkan ringkasan dari berbagai modul:
 | Reading List | `/reading-list` |
 | Journal | `/journal` |
 | Goals | `/goals` |
-| Streaks | `/streaks` |
+| Quotes | `/quotes` |
 | Wishlist | `/wishlist` |
+| Streaks | `/streaks` |
+| Activity | `/activity` |
 | Trash | `/trash` |
-| Settings | `/settings/*` |
+| Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/export` |

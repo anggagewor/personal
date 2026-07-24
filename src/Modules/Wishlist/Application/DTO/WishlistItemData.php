@@ -2,12 +2,12 @@
 
 namespace Modules\Wishlist\Application\DTO;
 
-class WishlistItemData
+readonly class WishlistItemData
 {
     public function __construct(
-        public readonly string $title,
-        public readonly ?string $description = null,
-        public readonly ?string $category = null,
+        public string $title,
+        public ?string $description = null,
+        public ?string $category = null,
     ) {}
 
     public static function fromArray(array $data): self

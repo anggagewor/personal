@@ -2,14 +2,14 @@
 
 namespace Modules\Goal\Application\DTO;
 
-class GoalData
+readonly class GoalData
 {
     public function __construct(
-        public readonly string $title,
-        public readonly ?string $description = null,
-        public readonly ?string $targetDate = null,
-        public readonly string $status = 'active',
-        public readonly array $milestones = [],
+        public string $title,
+        public ?string $description = null,
+        public ?string $targetDate = null,
+        public string $status = 'active',
+        public array $milestones = [],
     ) {}
 
     public static function fromArray(array $data): self

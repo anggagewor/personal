@@ -2,15 +2,15 @@
 
 namespace Modules\Calendar\Application\DTO;
 
-class CalendarEventData
+readonly class CalendarEventData
 {
     public function __construct(
-        public readonly string $title,
-        public readonly ?string $description = null,
-        public readonly ?string $startDate = null,
-        public readonly ?string $endDate = null,
-        public readonly ?string $color = null,
-        public readonly bool $isAllDay = false,
+        public string $title,
+        public ?string $description = null,
+        public ?string $startDate = null,
+        public ?string $endDate = null,
+        public ?string $color = null,
+        public bool $isAllDay = false,
     ) {}
 
     public static function fromArray(array $data): self

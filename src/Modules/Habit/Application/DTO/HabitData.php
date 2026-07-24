@@ -2,11 +2,11 @@
 
 namespace Modules\Habit\Application\DTO;
 
-class HabitData
+readonly class HabitData
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $frequency = 'daily',
+        public string $name,
+        public string $frequency = 'daily',
     ) {}
 
     public static function fromArray(array $data): self

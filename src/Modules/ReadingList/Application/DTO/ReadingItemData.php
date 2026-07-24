@@ -2,11 +2,11 @@
 
 namespace Modules\ReadingList\Application\DTO;
 
-class ReadingItemData
+readonly class ReadingItemData
 {
     public function __construct(
-        public readonly ?string $title = null,
-        public readonly ?string $url = null,
+        public ?string $title = null,
+        public ?string $url = null,
     ) {}
 
     public static function fromArray(array $data): self

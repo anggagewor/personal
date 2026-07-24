@@ -2,12 +2,12 @@
 
 namespace Modules\Note\Application\DTO;
 
-class NoteData
+readonly class NoteData
 {
     public function __construct(
-        public readonly string $title,
-        public readonly string $content,
-        public readonly bool $isPinned = false,
+        public string $title,
+        public string $content,
+        public bool $isPinned = false,
     ) {}
 
     public static function fromArray(array $data): self

@@ -6,9 +6,9 @@ Personal productivity dashboard yang dibangun dengan Laravel 13 (DDD Modular) da
 
 **Backend:**
 - PHP 8.3 + Laravel 13
-- DDD Modular Architecture (`src/Domain/`)
+- DDD Layered Modular Architecture (`src/Modules/`)
 - Laravel Sanctum (token-based auth)
-- SQLite / MySQL
+- MariaDB (production) / SQLite (testing)
 
 **Frontend:**
 - Vue 3 + TypeScript (Composition API)
@@ -19,8 +19,9 @@ Personal productivity dashboard yang dibangun dengan Laravel 13 (DDD Modular) da
 
 **Internal Packages (monorepo `packages/`):**
 - `@purdia/auth` — Authentication store & route guard
-- `@purdia/http` — HTTP client wrapper
-- `@purdia/composables` — Reusable composables (useApi, usePagination, dll)
+- `@purdia/http` — HTTP client with silent token refresh & global error handling
+- `@purdia/toast` — Toast notification system (Pinia store + component)
+- `@purdia/composables` — Reusable composables (useApi, usePagination)
 - `@purdia/ui` — Component library (40+ komponen)
 - `@purdia/charts` — Chart components (Bar, Line, Doughnut)
 - `@purdia/theme` — Dark/light mode & color scheme
@@ -35,31 +36,38 @@ Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur.
 - 🔐 Authentication (login, register, token refresh)
 - 📝 Notes dengan rich text editor & pin
 - 🔖 Bookmarks dengan kategori
-- ✅ Task management (status, priority, drag reorder, recurring)
+- ✅ Task management (status, priority, reorder, recurrence)
 - 📅 Calendar events & hari libur nasional
 - 🍅 Pomodoro timer
 - 📋 Scratchpads (quick notes)
-- 🎯 Habit tracker (daily/weekly)
-- 💰 Finance tracker (income/expense)
+- 🎯 Habit tracker (daily/weekly + streak)
+- 💰 Finance tracker (income/expense + summary)
 - 📚 Reading list
 - 📓 Daily journal & mood tracker
 - 🏆 Goals & milestones
 - 🎁 Wishlist
-- 🏷️ Tags (polymorphic, bisa attach ke item apapun)
-- 💬 Daily motivational quotes
+- 🏷️ Tags (polymorphic, attach ke notes/tasks)
+- 💬 Daily motivational quotes (CRUD + quote of the day)
 - 🗑️ Unified trash (restore / permanent delete)
+- 📊 Dashboard (weekly summary, weather, quick capture)
 - ⚙️ Settings (profile, appearance, export)
 
 ## Arsitektur
 
 ```
-src/Domain/          → Domain layer (controllers, models, actions, enums)
-app/                 → Laravel boilerplate (providers, middleware)
-resources/js/        → Vue 3 SPA
-packages/            → @purdia/* internal packages
-routes/api.php       → API routes
-database/migrations/ → Database schema
+src/Modules/
+├── {Module}/
+│   ├── Domain/           → Entities, Enums, Contracts (pure PHP)
+│   ├── Application/      → Actions (use cases), DTOs
+│   └── Infrastructure/   → Controllers, Models, Repositories, Routes, Migrations
+└── Shared/               → Cross-module traits, contracts
+
+app/                      → Laravel boilerplate (providers, middleware)
+resources/js/             → Vue 3 SPA
+packages/                 → @purdia/* internal packages
 ```
+
+Dependency rule: `Domain ← Application ← Infrastructure`
 
 ## Setup
 
@@ -88,6 +96,14 @@ Ini akan jalankan secara bersamaan:
 - Log viewer (Pail)
 - Vite HMR
 
+## Testing
+
+```bash
+php artisan test --testsuite=Feature
+```
+
+Tests menggunakan SQLite in-memory. Semua module punya feature test.
+
 ## Build
 
 ```bash
@@ -96,7 +112,7 @@ npm run build
 
 ## API
 
-Semua API endpoint ada di `routes/api.php`. Format response konsisten:
+Setiap module punya route sendiri di `src/Modules/{Module}/Infrastructure/Routes/api.php`. Format response konsisten:
 
 ```json
 {

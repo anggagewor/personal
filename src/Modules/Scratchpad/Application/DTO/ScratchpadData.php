@@ -2,12 +2,12 @@
 
 namespace Modules\Scratchpad\Application\DTO;
 
-class ScratchpadData
+readonly class ScratchpadData
 {
     public function __construct(
-        public readonly ?string $content = null,
-        public readonly ?string $color = null,
-        public readonly int $position = 0,
+        public ?string $content = null,
+        public ?string $color = null,
+        public int $position = 0,
     ) {}
 
     public static function fromArray(array $data): self

@@ -2,12 +2,12 @@
 
 namespace Modules\Journal\Application\DTO;
 
-class JournalData
+readonly class JournalData
 {
     public function __construct(
-        public readonly string $content,
-        public readonly ?string $mood = null,
-        public readonly ?string $date = null,
+        public string $content,
+        public ?string $mood = null,
+        public ?string $date = null,
     ) {}
 
     public static function fromArray(array $data): self

@@ -2,14 +2,14 @@
 
 namespace Modules\Finance\Application\DTO;
 
-class FinanceData
+readonly class FinanceData
 {
     public function __construct(
-        public readonly string $type,
-        public readonly float $amount,
-        public readonly ?string $category = null,
-        public readonly ?string $description = null,
-        public readonly ?string $date = null,
+        public string $type,
+        public float $amount,
+        public ?string $category = null,
+        public ?string $description = null,
+        public ?string $date = null,
     ) {}
 
     public static function fromArray(array $data): self

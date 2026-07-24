@@ -9,6 +9,7 @@ use Modules\Quote\Application\Actions\CreateQuoteAction;
 use Modules\Quote\Application\Actions\DeleteQuoteAction;
 use Modules\Quote\Application\Actions\GetTodayQuoteAction;
 use Modules\Quote\Application\Actions\ListQuotesAction;
+use Modules\Quote\Application\DTO\QuoteData;
 use Modules\Quote\Infrastructure\Requests\StoreQuoteRequest;
 
 class QuoteController extends Controller
@@ -44,8 +45,7 @@ class QuoteController extends Controller
     public function store(StoreQuoteRequest $request, CreateQuoteAction $action): JsonResponse
     {
         $quote = $action->execute(
-            content: $request->validated('content'),
-            author: $request->validated('author'),
+            QuoteData::fromArray($request->validated()),
         );
 
         return response()->json([
