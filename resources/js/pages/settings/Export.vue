@@ -85,8 +85,7 @@ async function handleExport(option: ExportOption) {
           </div>
           <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ option.description }}</p>
         </div>
-        <BaseButton variant="secondary" size="sm" @click="handleExport(option)">
-          <Download :size="14" class="mr-1" />
+        <BaseButton variant="secondary" size="sm" :icon="Download" @click="handleExport(option)">
           Download
         </BaseButton>
       </div>

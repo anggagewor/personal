@@ -101,8 +101,7 @@ onMounted(fetchItems)
         <Heart :size="24" class="text-pink-500" />
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Wishlist</h1>
       </div>
-      <BaseButton @click="showModal = true">
-        <Plus :size="16" class="mr-1" />
+      <BaseButton :icon="Plus" @click="showModal = true">
         Tambah
       </BaseButton>
     </div>

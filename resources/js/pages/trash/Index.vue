@@ -103,12 +103,10 @@ onMounted(fetchItems)
         </div>
 
         <div class="flex items-center gap-2">
-          <BaseButton variant="secondary" size="sm" @click="restoreItem(item)">
-            <RotateCcw :size="14" class="mr-1" />
+          <BaseButton variant="secondary" size="sm" :icon="RotateCcw" @click="restoreItem(item)">
             Pulihkan
           </BaseButton>
-          <BaseButton variant="danger" size="sm" @click="permanentDelete(item)">
-            <Trash2 :size="14" class="mr-1" />
+          <BaseButton variant="danger" size="sm" :icon="Trash2" @click="permanentDelete(item)">
             Hapus
           </BaseButton>
         </div>
