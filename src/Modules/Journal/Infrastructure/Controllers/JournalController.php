@@ -10,9 +10,11 @@ use Modules\Journal\Application\Actions\DeleteJournalAction;
 use Modules\Journal\Application\DTO\JournalData;
 use Modules\Journal\Domain\Contracts\JournalRepositoryInterface;
 use Modules\Journal\Infrastructure\Requests\StoreJournalRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class JournalController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private JournalRepositoryInterface $repository,
     ) {}
@@ -64,11 +66,7 @@ class JournalController extends Controller
 
     public function destroy(Request $request, int $id, DeleteJournalAction $action): JsonResponse
     {
-        $journal = $this->repository->findById($id);
-
-        if (!$journal || $journal->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 

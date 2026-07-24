@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { get, post, put, del } from '@purdia/http'
+import { useToast } from '@purdia/toast'
 import { Plus, Trash2, ListTodo, Check } from '@lucide/vue'
+
+const toast = useToast()
 
 interface Task {
   id: number
   title: string
   description: string | null
-  status: 'todo' | 'in_progress' | 'done'
+  status: 'pending' | 'in_progress' | 'completed'
   priority: 'low' | 'medium' | 'high'
   due_date: string | null
   position: number
@@ -16,17 +19,17 @@ interface Task {
 
 const tasks = ref<Task[]>([])
 const loading = ref(false)
-const filter = ref<'all' | 'todo' | 'in_progress' | 'done'>('all')
+const filter = ref<'all' | 'pending' | 'in_progress' | 'completed'>('all')
 const showForm = ref(false)
 const editingTask = ref<Task | null>(null)
 
 const form = ref({ title: '', description: '', priority: 'medium' as Task['priority'], due_date: '' })
 
-const statusLabels: Record<string, string> = { todo: 'To Do', in_progress: 'Proses', done: 'Selesai' }
+const statusLabels: Record<string, string> = { pending: 'To Do', in_progress: 'Proses', completed: 'Selesai' }
 const statusColors: Record<string, string> = {
-  todo: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+  pending: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
   in_progress: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-  done: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+  completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
 }
 const priorityColors: Record<string, string> = {
   low: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
@@ -41,7 +44,9 @@ async function fetchTasks() {
   try {
     const response = await get<Task[]>('/tasks', { params })
     tasks.value = response.data
-  } catch { /* */ }
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
   loading.value = false
 }
 
@@ -49,25 +54,40 @@ async function saveTask() {
   if (!form.value.title.trim()) return
   const payload = { ...form.value, due_date: form.value.due_date || null }
 
-  if (editingTask.value) {
-    const response = await put<Task>(`/tasks/${editingTask.value.id}`, payload)
-    const idx = tasks.value.findIndex((t) => t.id === editingTask.value!.id)
-    if (idx >= 0) tasks.value[idx] = response.data
-  } else {
-    const response = await post<Task>('/tasks', payload)
-    tasks.value.unshift(response.data)
+  try {
+    if (editingTask.value) {
+      const response = await put<Task>(`/tasks/${editingTask.value.id}`, payload)
+      const idx = tasks.value.findIndex((t) => t.id === editingTask.value!.id)
+      if (idx >= 0) tasks.value[idx] = response.data
+      toast.success('Task berhasil diperbarui.')
+    } else {
+      const response = await post<Task>('/tasks', payload)
+      tasks.value.unshift(response.data)
+      toast.success('Task berhasil dibuat.')
+    }
+    closeForm()
+  } catch {
+    // Error toast handled globally by @purdia/http onError
   }
-  closeForm()
 }
 
 async function updateStatus(task: Task, status: Task['status']) {
-  await put<Task>(`/tasks/${task.id}`, { status })
-  task.status = status
+  try {
+    await put<Task>(`/tasks/${task.id}`, { status })
+    task.status = status
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 async function deleteTask(task: Task) {
-  await del(`/tasks/${task.id}`)
-  tasks.value = tasks.value.filter((t) => t.id !== task.id)
+  try {
+    await del(`/tasks/${task.id}`)
+    tasks.value = tasks.value.filter((t) => t.id !== task.id)
+    toast.success('Task berhasil dihapus.')
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
 }
 
 function openNew() {
@@ -110,7 +130,7 @@ fetchTasks()
     <!-- Filter tabs -->
     <div class="mt-5 flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-700 dark:bg-gray-800">
       <button
-        v-for="f in (['all', 'todo', 'in_progress', 'done'] as const)"
+        v-for="f in (['all', 'pending', 'in_progress', 'completed'] as const)"
         :key="f"
         class="rounded-md px-3 py-1.5 text-xs font-medium transition-colors"
         :class="filter === f ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
@@ -130,15 +150,15 @@ fetchTasks()
         <!-- Status checkbox -->
         <button
           class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-          :class="task.status === 'done' ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-primary-500 dark:border-gray-600'"
-          @click="updateStatus(task, task.status === 'done' ? 'todo' : 'done')"
+          :class="task.status === 'completed' ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-gray-300 hover:border-primary-500 dark:border-gray-600'"
+          @click="updateStatus(task, task.status === 'completed' ? 'pending' : 'completed')"
         >
-          <Check v-if="task.status === 'done'" :size="12" />
+          <Check v-if="task.status === 'completed'" :size="12" />
         </button>
 
         <!-- Content -->
         <div class="flex-1 min-w-0 cursor-pointer" @click="openEdit(task)">
-          <p class="text-sm font-medium text-gray-900 dark:text-white" :class="task.status === 'done' ? 'line-through opacity-50' : ''">
+          <p class="text-sm font-medium text-gray-900 dark:text-white" :class="task.status === 'completed' ? 'line-through opacity-50' : ''">
             {{ task.title }}
           </p>
           <div class="mt-1 flex items-center gap-2">
@@ -165,7 +185,7 @@ fetchTasks()
     <Teleport to="body">
       <Transition name="modal">
         <div v-if="showForm" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-4" @click.self="closeForm">
-          <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+          <div class="w-full max-w-md rounded-xl bg-white px-5 py-4 shadow-xl dark:bg-gray-800">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ editingTask ? 'Edit Tugas' : 'Tugas Baru' }}</h2>
             <form class="mt-4 space-y-4" @submit.prevent="saveTask">
               <input v-model="form.title" type="text" placeholder="Judul tugas" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />

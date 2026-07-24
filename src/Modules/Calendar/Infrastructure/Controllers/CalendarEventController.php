@@ -12,9 +12,12 @@ use Modules\Calendar\Application\DTO\CalendarEventData;
 use Modules\Calendar\Domain\Contracts\CalendarEventRepositoryInterface;
 use Modules\Calendar\Infrastructure\Requests\StoreCalendarEventRequest;
 use Modules\Calendar\Infrastructure\Requests\UpdateCalendarEventRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class CalendarEventController extends Controller
 {
+    use AuthorizesOwnership;
+
     public function __construct(
         private CalendarEventRepositoryInterface $repository,
     ) {}
@@ -50,11 +53,7 @@ class CalendarEventController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $event = $this->repository->findById($id);
-
-        if (!$event || $event->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $event = $this->findOwnedOrFail($this->repository, $id, $request);
 
         return response()->json([
             'data' => $event,
@@ -63,11 +62,7 @@ class CalendarEventController extends Controller
 
     public function update(UpdateCalendarEventRequest $request, int $id, UpdateCalendarEventAction $action): JsonResponse
     {
-        $event = $this->repository->findById($id);
-
-        if (!$event || $event->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $event = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $event = $action->execute(
             eventId: $id,
@@ -92,11 +87,7 @@ class CalendarEventController extends Controller
 
     public function destroy(Request $request, int $id, DeleteCalendarEventAction $action): JsonResponse
     {
-        $event = $this->repository->findById($id);
-
-        if (!$event || $event->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 

@@ -27,6 +27,7 @@ export default defineConfig({
       '@purdia/crypto': path.resolve(__dirname, 'packages/crypto/src/index.ts'),
       '@purdia/http': path.resolve(__dirname, 'packages/http/src/index.ts'),
       '@purdia/theme': path.resolve(__dirname, 'packages/theme/src/index.ts'),
+      '@purdia/toast': path.resolve(__dirname, 'packages/toast/src/index.ts'),
       '@purdia/composables': path.resolve(__dirname, 'packages/composables/src/index.ts'),
       '@purdia/ui': path.resolve(__dirname, 'packages/ui'),
       // Force axios to use its pre-built browser ESM bundle

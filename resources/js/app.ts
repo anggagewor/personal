@@ -6,6 +6,7 @@ import { configureSecureStorage } from '@purdia/crypto'
 import { configureAuth, createAuthGuard } from '@purdia/auth'
 import { configureTheme } from '@purdia/theme'
 import { useAuthStore } from '@purdia/auth'
+import { useToastStore } from '@purdia/toast'
 import { routes } from '@/router'
 import App from '@/App.vue'
 
@@ -47,6 +48,10 @@ initHttp({
     auth: { baseURL: '/api/auth', timeout: 15_000 },
   },
   onUnauthorized: () => router.push({ name: 'login' }),
+  onError: (err) => {
+    const toast = useToastStore()
+    toast.error(err.message)
+  },
   locale: () => localStorage.getItem('app_locale') ?? 'id',
 })
 

@@ -379,61 +379,59 @@ fetchEvents()
     <!-- Event form modal -->
     <BaseModal v-model="showForm" size="md">
       <template #default>
-        <div class="p-6">
-          <div class="flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              {{ editingEvent ? 'Edit Event' : 'Event Baru' }}
-            </h2>
-            <button
-              v-if="editingEvent"
-              class="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-              title="Hapus event"
-              @click="deleteEvent()"
-            >
-              <Trash2 :size="16" />
-            </button>
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ editingEvent ? 'Edit Event' : 'Event Baru' }}
+          </h2>
+          <button
+            v-if="editingEvent"
+            class="rounded p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+            title="Hapus event"
+            @click="deleteEvent()"
+          >
+            <Trash2 :size="16" />
+          </button>
+        </div>
+
+        <form class="mt-4 space-y-4" @submit.prevent="saveEvent">
+          <BaseInput
+            v-model="form.title"
+            label="Judul"
+            placeholder="Judul event"
+            required
+          />
+
+          <div class="grid grid-cols-2 gap-3">
+            <BaseDatePicker
+              v-model="form.start_at"
+              mode="datetime"
+              label="Mulai"
+              placeholder="Pilih tanggal & waktu"
+            />
+            <BaseDatePicker
+              v-model="form.end_at"
+              mode="datetime"
+              label="Selesai (opsional)"
+              placeholder="Pilih tanggal & waktu"
+            />
           </div>
 
-          <form class="mt-4 space-y-4" @submit.prevent="saveEvent">
-            <BaseInput
-              v-model="form.title"
-              label="Judul"
-              placeholder="Judul event"
-              required
-            />
+          <BaseTextarea
+            v-model="form.description"
+            label="Deskripsi"
+            placeholder="Deskripsi event (opsional)"
+            :rows="3"
+          />
 
-            <div class="grid grid-cols-2 gap-3">
-              <BaseDatePicker
-                v-model="form.start_at"
-                mode="datetime"
-                label="Mulai"
-                placeholder="Pilih tanggal & waktu"
-              />
-              <BaseDatePicker
-                v-model="form.end_at"
-                mode="datetime"
-                label="Selesai (opsional)"
-                placeholder="Pilih tanggal & waktu"
-              />
-            </div>
-
-            <BaseTextarea
-              v-model="form.description"
-              label="Deskripsi"
-              placeholder="Deskripsi event (opsional)"
-              :rows="3"
-            />
-
-            <div class="flex justify-end gap-2 pt-2">
-              <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">
-                Batal
-              </BaseButton>
-              <BaseButton variant="primary" size="sm" type="submit">
-                Simpan
-              </BaseButton>
-            </div>
-          </form>
-        </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">
+              Batal
+            </BaseButton>
+            <BaseButton variant="primary" size="sm" type="submit">
+              Simpan
+            </BaseButton>
+          </div>
+        </form>
       </template>
     </BaseModal>
   </div>

@@ -14,6 +14,7 @@
     "@purdia/http": "file:packages/http",
     "@purdia/tailwind": "file:packages/tailwind",
     "@purdia/theme": "file:packages/theme",
+    "@purdia/toast": "file:packages/toast",
     "@purdia/ui": "file:packages/ui",
     "pinia": "^3.0.4",
     "vue": "^3.5.38",

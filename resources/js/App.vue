@@ -5,6 +5,7 @@ import { useAuthStore } from '@purdia/auth'
 import { usePreferences } from '@/composables/usePreferences'
 import { useProfile } from '@/composables/useProfile'
 import { get } from '@purdia/http'
+import { ToastContainer } from '@purdia/toast'
 
 const auth = useAuthStore()
 const preferences = usePreferences()
@@ -30,4 +31,5 @@ onMounted(async () => {
 
 <template>
   <RouterView />
+  <ToastContainer />
 </template>

@@ -45,6 +45,7 @@ import {
   Flame,
   Download,
   Star,
+  Quote,
 } from '@lucide/vue'
 import type { Component } from 'vue'
 
@@ -91,6 +92,7 @@ const iconMap: Record<string, Component> = {
   Flame,
   Download,
   Star,
+  Quote,
 }
 
 export function resolveIcon(name: string): Component | null {

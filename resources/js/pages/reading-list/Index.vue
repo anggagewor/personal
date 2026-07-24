@@ -111,17 +111,15 @@ fetchItems()
 
     <BaseModal v-model="showForm" size="sm">
       <template #default>
-        <div class="p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Artikel</h2>
-          <form class="mt-4 space-y-4" @submit.prevent="addItem">
-            <BaseInput v-model="form.url" label="URL" placeholder="https://..." required />
-            <BaseInput v-model="form.title" label="Judul (opsional)" placeholder="Auto-detect dari URL" />
-            <div class="flex justify-end gap-2 pt-2">
-              <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
-              <BaseButton variant="primary" size="sm" type="submit">Simpan</BaseButton>
-            </div>
-          </form>
-        </div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Tambah Artikel</h2>
+        <form class="mt-4 space-y-4" @submit.prevent="addItem">
+          <BaseInput v-model="form.url" label="URL" placeholder="https://..." required />
+          <BaseInput v-model="form.title" label="Judul (opsional)" placeholder="Auto-detect dari URL" />
+          <div class="flex justify-end gap-2 pt-2">
+            <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
+            <BaseButton variant="primary" size="sm" type="submit">Simpan</BaseButton>
+          </div>
+        </form>
       </template>
     </BaseModal>
   </div>

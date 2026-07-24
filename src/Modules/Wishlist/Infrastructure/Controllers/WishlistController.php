@@ -13,9 +13,11 @@ use Modules\Wishlist\Application\DTO\WishlistItemData;
 use Modules\Wishlist\Domain\Contracts\WishlistRepositoryInterface;
 use Modules\Wishlist\Infrastructure\Requests\StoreWishlistItemRequest;
 use Modules\Wishlist\Infrastructure\Requests\UpdateWishlistItemRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class WishlistController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private WishlistRepositoryInterface $repository,
     ) {}
@@ -53,11 +55,7 @@ class WishlistController extends Controller
 
     public function update(UpdateWishlistItemRequest $request, int $id, UpdateWishlistItemAction $action): JsonResponse
     {
-        $item = $this->repository->findById($id);
-
-        if (!$item || $item->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $item = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $item = $action->execute(
             itemId: $id,
@@ -79,11 +77,7 @@ class WishlistController extends Controller
 
     public function destroy(Request $request, int $id, DeleteWishlistItemAction $action): JsonResponse
     {
-        $item = $this->repository->findById($id);
-
-        if (!$item || $item->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 
@@ -94,11 +88,7 @@ class WishlistController extends Controller
 
     public function toggle(Request $request, int $id, ToggleWishlistItemAction $action): JsonResponse
     {
-        $item = $this->repository->findById($id);
-
-        if (!$item || $item->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $item = $action->execute($id);
 

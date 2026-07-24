@@ -12,9 +12,11 @@ use Modules\Finance\Application\DTO\FinanceData;
 use Modules\Finance\Domain\Contracts\FinanceRepositoryInterface;
 use Modules\Finance\Infrastructure\Requests\StoreFinanceRequest;
 use Modules\Finance\Infrastructure\Requests\UpdateFinanceRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class FinanceController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private FinanceRepositoryInterface $repository,
     ) {}
@@ -49,11 +51,7 @@ class FinanceController extends Controller
 
     public function update(UpdateFinanceRequest $request, int $id, UpdateFinanceAction $action): JsonResponse
     {
-        $finance = $this->repository->findById($id);
-
-        if (!$finance || $finance->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $finance = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $finance = $action->execute(
             financeId: $id,
@@ -77,11 +75,7 @@ class FinanceController extends Controller
 
     public function destroy(Request $request, int $id, DeleteFinanceAction $action): JsonResponse
     {
-        $finance = $this->repository->findById($id);
-
-        if (!$finance || $finance->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 

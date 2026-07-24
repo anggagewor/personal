@@ -15,17 +15,20 @@ use Modules\Task\Domain\Enums\TaskPriority;
 use Modules\Task\Domain\Enums\TaskStatus;
 use Modules\Task\Infrastructure\Requests\StoreTaskRequest;
 use Modules\Task\Infrastructure\Requests\UpdateTaskRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class TaskController extends Controller
 {
+    use AuthorizesOwnership;
+
     public function __construct(
         private TaskRepositoryInterface $repository,
     ) {}
 
     public function index(Request $request): JsonResponse
     {
-        $status = $request->query('status') ? TaskStatus::from($request->query('status')) : null;
-        $priority = $request->query('priority') ? TaskPriority::from($request->query('priority')) : null;
+        $status = $request->query('status') ? TaskStatus::tryFrom($request->query('status')) : null;
+        $priority = $request->query('priority') ? TaskPriority::tryFrom($request->query('priority')) : null;
 
         $result = $this->repository->findByUserPaginated(
             userId: $request->user()->id,
@@ -55,11 +58,7 @@ class TaskController extends Controller
 
     public function update(UpdateTaskRequest $request, int $id, UpdateTaskAction $action): JsonResponse
     {
-        $task = $this->repository->findById($id);
-
-        if (!$task || $task->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $task = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $task = $action->execute(
             taskId: $id,
@@ -84,11 +83,7 @@ class TaskController extends Controller
 
     public function destroy(Request $request, int $id, DeleteTaskAction $action): JsonResponse
     {
-        $task = $this->repository->findById($id);
-
-        if (!$task || $task->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 

@@ -26,7 +26,8 @@ class EloquentFinanceRepository implements FinanceRepositoryInterface
         $query = FinanceModel::where('user_id', $userId);
 
         if ($month) {
-            $query->whereRaw("strftime('%Y-%m', date) = ?", [$month]);
+            [$year, $mon] = explode('-', $month);
+            $query->whereYear('date', $year)->whereMonth('date', $mon);
         }
 
         if ($type) {
@@ -73,7 +74,8 @@ class EloquentFinanceRepository implements FinanceRepositoryInterface
         $query = FinanceModel::where('user_id', $userId);
 
         if ($month) {
-            $query->whereRaw("strftime('%Y-%m', date) = ?", [$month]);
+            [$year, $mon] = explode('-', $month);
+            $query->whereYear('date', $year)->whereMonth('date', $mon);
         }
 
         $income = (clone $query)->where('type', 'income')->sum('amount');

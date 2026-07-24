@@ -141,27 +141,25 @@ fetchGoals()
     <!-- Create modal -->
     <BaseModal v-model="showForm" size="md">
       <template #default>
-        <div class="p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Goal Baru</h2>
-          <form class="mt-4 space-y-4" @submit.prevent="createGoal">
-            <BaseInput v-model="form.title" label="Judul Goal" placeholder="Contoh: Belajar Go" required />
-            <BaseTextarea v-model="form.description" label="Deskripsi (opsional)" :rows="2" />
-            <BaseInput v-model="form.target_date" label="Target Tanggal" type="date" />
-            <div>
-              <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milestones</p>
-              <div class="space-y-2">
-                <div v-for="(ms, i) in form.milestones" :key="i" class="flex gap-2">
-                  <input v-model="ms.title" class="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white" :placeholder="`Milestone ${i + 1}`" />
-                </div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Goal Baru</h2>
+        <form class="mt-4 space-y-4" @submit.prevent="createGoal">
+          <BaseInput v-model="form.title" label="Judul Goal" placeholder="Contoh: Belajar Go" required />
+          <BaseTextarea v-model="form.description" label="Deskripsi (opsional)" :rows="2" />
+          <BaseInput v-model="form.target_date" label="Target Tanggal" type="date" />
+          <div>
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Milestones</p>
+            <div class="space-y-2">
+              <div v-for="(ms, i) in form.milestones" :key="i" class="flex gap-2">
+                <input v-model="ms.title" class="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-white" :placeholder="`Milestone ${i + 1}`" />
               </div>
-              <button type="button" class="mt-2 text-xs text-primary-600 hover:underline" @click="addMilestoneField">+ Tambah milestone</button>
             </div>
-            <div class="flex justify-end gap-2 pt-2">
-              <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
-              <BaseButton variant="primary" size="sm" type="submit">Buat Goal</BaseButton>
-            </div>
-          </form>
-        </div>
+            <button type="button" class="mt-2 text-xs text-primary-600 hover:underline" @click="addMilestoneField">+ Tambah milestone</button>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <BaseButton variant="secondary" size="sm" type="button" @click="showForm = false">Batal</BaseButton>
+            <BaseButton variant="primary" size="sm" type="submit">Buat Goal</BaseButton>
+          </div>
+        </form>
       </template>
     </BaseModal>
   </div>

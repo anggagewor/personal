@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { get, post } from '@purdia/http'
 import { useAuthStore } from '@purdia/auth'
+import { useToast } from '@purdia/toast'
 import {
   FileText, ListTodo, Bookmark, Calendar, Clock, Quote,
   CloudSun, Droplets, Wind, TrendingUp, CheckCircle2, Timer,
@@ -9,6 +10,7 @@ import {
 } from '@lucide/vue'
 
 const auth = useAuthStore()
+const toast = useToast()
 
 // --- Stats ---
 const stats = ref({ notes: 0, tasks_pending: 0, bookmarks: 0, events_upcoming: 0 })
@@ -52,7 +54,10 @@ async function submitQuickCapture() {
   try {
     await post('/scratchpads', { content: quickNote.value.trim() })
     quickNote.value = ''
-  } catch { /* */ }
+    toast.success('Catatan cepat disimpan.')
+  } catch {
+    // Error toast handled globally by @purdia/http onError
+  }
   quickSaving.value = false
 }
 
@@ -60,7 +65,7 @@ onMounted(async () => {
   try {
     const [notesRes, tasksRes, bookmarksRes, eventsRes, quoteRes, weatherRes, weeklyRes] = await Promise.allSettled([
       get<unknown[]>('/notes', { params: { per_page: 5 } }),
-      get<unknown[]>('/tasks', { params: { per_page: 5, status: 'todo' } }),
+      get<unknown[]>('/tasks', { params: { per_page: 5, status: 'pending' } }),
       get<Record<string, unknown[]>>('/bookmarks'),
       get<unknown[]>('/calendar-events', { params: { start: new Date().toISOString().slice(0, 10) } }),
       get<{ id: number; content: string; author: string | null }>('/quotes/today'),

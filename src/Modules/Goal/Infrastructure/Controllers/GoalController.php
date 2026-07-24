@@ -14,9 +14,11 @@ use Modules\Goal\Application\DTO\GoalData;
 use Modules\Goal\Domain\Contracts\GoalRepositoryInterface;
 use Modules\Goal\Infrastructure\Requests\StoreGoalRequest;
 use Modules\Goal\Infrastructure\Requests\UpdateGoalRequest;
+use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
 class GoalController extends Controller
 {
+    use AuthorizesOwnership;
     public function __construct(
         private GoalRepositoryInterface $repository,
     ) {}
@@ -45,11 +47,7 @@ class GoalController extends Controller
 
     public function update(UpdateGoalRequest $request, int $id, UpdateGoalAction $action): JsonResponse
     {
-        $goal = $this->repository->findById($id);
-
-        if (!$goal || $goal->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $goal = $this->findOwnedOrFail($this->repository, $id, $request);
 
         $goal = $action->execute(
             goalId: $id,
@@ -72,11 +70,7 @@ class GoalController extends Controller
 
     public function destroy(Request $request, int $id, DeleteGoalAction $action): JsonResponse
     {
-        $goal = $this->repository->findById($id);
-
-        if (!$goal || $goal->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $action->execute($id);
 
@@ -87,11 +81,7 @@ class GoalController extends Controller
 
     public function addMilestone(Request $request, int $id, AddMilestoneAction $action): JsonResponse
     {
-        $goal = $this->repository->findById($id);
-
-        if (!$goal || $goal->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -107,11 +97,7 @@ class GoalController extends Controller
 
     public function toggleMilestone(Request $request, int $id, int $milestoneId, ToggleMilestoneAction $action): JsonResponse
     {
-        $goal = $this->repository->findById($id);
-
-        if (!$goal || $goal->userId !== $request->user()->id) {
-            abort(403);
-        }
+        $this->findOwnedOrFail($this->repository, $id, $request);
 
         $goal = $action->execute($id, $milestoneId);
 
