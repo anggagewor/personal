@@ -8,6 +8,7 @@ import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { formatCurrency, formatDate } from '@purdia/utils'
 import { Plus, Trash2, TrendingUp, TrendingDown, Wallet } from '@lucide/vue'
+import { SummaryCardsSkeleton, ListSkeleton } from '@/components/skeletons'
 
 const toast = useToast()
 
@@ -31,6 +32,7 @@ const transactions = ref<FinanceItem[]>([])
 const summary = ref<Summary>({ income: 0, expense: 0, balance: 0, by_category: [] })
 const currentMonth = ref(new Date().toISOString().slice(0, 7))
 const showForm = ref(false)
+const loading = ref(true)
 const form = ref({ type: 'expense', category: '', amount: '', description: '', date: new Date().toISOString().slice(0, 10) })
 
 const categories = {
@@ -39,6 +41,7 @@ const categories = {
 }
 
 async function fetchData() {
+  loading.value = true
   try {
     const [txRes, sumRes] = await Promise.all([
       get<FinanceItem[]>('/finances', { params: { month: currentMonth.value, per_page: 50 } }),
@@ -48,6 +51,8 @@ async function fetchData() {
     summary.value = sumRes.data
   } catch {
     // Error toast handled globally by @purdia/http onError
+  } finally {
+    loading.value = false
   }
 }
 
@@ -92,6 +97,11 @@ fetchData()
     </div>
 
     <!-- Summary cards -->
+    <template v-if="loading">
+      <SummaryCardsSkeleton class="mt-6" />
+      <ListSkeleton class="mt-6" :count="5" />
+    </template>
+    <template v-else>
     <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
       <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
         <div class="flex items-center gap-3">
@@ -140,6 +150,7 @@ fetchData()
       </div>
       <div v-if="!transactions.length" class="py-8 text-center text-sm text-gray-400">Belum ada transaksi bulan ini.</div>
     </div>
+    </template>
 
     <!-- Form modal -->
     <BaseModal v-model="showForm" size="md">

@@ -35,6 +35,7 @@ class User
             'primary_color' => 'indigo',
             'locale' => 'id',
             'sidebar_collapsed' => false,
+            'timezones' => [],
         ];
 
         return array_merge($defaults, $this->preferences);

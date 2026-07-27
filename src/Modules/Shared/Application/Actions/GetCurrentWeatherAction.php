@@ -17,7 +17,7 @@ class GetCurrentWeatherAction
 
         $cacheKey = "weather:{$city}";
 
-        return Cache::remember($cacheKey, 1800, function () use ($apiKey, $city) {
+        return Cache::remember($cacheKey, 3600, function () use ($apiKey, $city) {
             $response = Http::get('https://api.openweathermap.org/data/2.5/weather', [
                 'q' => $city,
                 'appid' => $apiKey,

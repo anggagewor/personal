@@ -9,11 +9,17 @@ import type { Theme, PrimaryColor } from '@purdia/theme'
 // Types
 // ---------------------------------------------------------------------------
 
+export interface TimezoneEntry {
+  label: string
+  timezone: string
+}
+
 export interface UserPreferences {
   theme: Theme
   primary_color: PrimaryColor
   locale: string
   sidebar_collapsed: boolean
+  timezones: TimezoneEntry[]
 }
 
 // ---------------------------------------------------------------------------
@@ -138,5 +144,6 @@ function getDefaults(): UserPreferences {
     primary_color: 'indigo',
     locale: 'id',
     sidebar_collapsed: false,
+    timezones: [],
   }
 }

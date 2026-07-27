@@ -9,6 +9,8 @@ import {
   CloudSun, Droplets, Wind, TrendingUp, CheckCircle2, Timer,
   Flame, Send, StickyNote,
 } from '@lucide/vue'
+import WorldClock from '@/components/WorldClock.vue'
+import type { TimezoneEntry } from '@/composables/usePreferences'
 
 const auth = useAuthStore()
 const toast = useToast()
@@ -45,6 +47,9 @@ interface WeeklySummary {
 }
 const weeklySummary = ref<WeeklySummary | null>(null)
 
+// --- World Clock ---
+const savedTimezones = ref<TimezoneEntry[]>([])
+
 // --- Quick Capture ---
 const quickNote = ref('')
 const quickSaving = ref(false)
@@ -64,7 +69,7 @@ async function submitQuickCapture() {
 
 onMounted(async () => {
   try {
-    const [notesRes, tasksRes, bookmarksRes, eventsRes, quoteRes, weatherRes, weeklyRes] = await Promise.allSettled([
+    const [notesRes, tasksRes, bookmarksRes, eventsRes, quoteRes, weatherRes, weeklyRes, prefsRes] = await Promise.allSettled([
       get<unknown[]>('/notes', { params: { per_page: 5 } }),
       get<unknown[]>('/tasks', { params: { per_page: 5, status: 'pending' } }),
       get<Record<string, unknown[]>>('/bookmarks'),
@@ -72,6 +77,7 @@ onMounted(async () => {
       get<{ id: number; content: string; author: string | null }>('/quotes/today'),
       get<WeatherData>('/weather/current'),
       get<WeeklySummary>('/dashboard/weekly-summary'),
+      get<{ timezones?: TimezoneEntry[] }>('/preferences'),
     ])
 
     if (notesRes.status === 'fulfilled') {
@@ -98,6 +104,12 @@ onMounted(async () => {
     if (weeklyRes.status === 'fulfilled') {
       weeklySummary.value = weeklyRes.value.data as WeeklySummary
     }
+    if (prefsRes.status === 'fulfilled') {
+      const prefs = prefsRes.value.data as { timezones?: TimezoneEntry[] }
+      if (Array.isArray(prefs.timezones)) {
+        savedTimezones.value = prefs.timezones
+      }
+    }
   } catch { /* */ }
   loading.value = false
 })
@@ -123,12 +135,18 @@ const statCards = [
       </div>
 
       <!-- Weather mini -->
-      <div v-if="weather" class="hidden items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 sm:flex dark:border-gray-700 dark:bg-gray-800">
-        <img :src="weatherIconUrl(weather.icon)" :alt="weather.description" class="h-8 w-8" />
-        <div class="text-right">
-          <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ weather.temp }}°C</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">{{ weather.city }}</p>
-        </div>
+      <div class="hidden items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 sm:flex dark:border-gray-700 dark:bg-gray-800">
+        <template v-if="weather">
+          <img :src="weatherIconUrl(weather.icon)" :alt="weather.description" class="h-8 w-8" />
+          <div class="text-right">
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ weather.temp }}°C</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ weather.city }}</p>
+          </div>
+        </template>
+        <template v-else>
+          <CloudSun :size="20" class="text-gray-300 dark:text-gray-600" />
+          <p class="text-xs text-gray-400 dark:text-gray-500">Cuaca belum tersedia</p>
+        </template>
       </div>
     </div>
 
@@ -194,28 +212,35 @@ const statCards = [
       </div>
 
       <!-- Weather Detail -->
-      <div v-if="weather" class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+      <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Cuaca Saat Ini</h2>
-        <div class="mt-3 flex items-center gap-4">
-          <img :src="weatherIconUrl(weather.icon)" :alt="weather.description" class="h-14 w-14" />
-          <div>
-            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ weather.temp }}°C</p>
-            <p class="text-sm capitalize text-gray-500 dark:text-gray-400">{{ weather.description }}</p>
+        <template v-if="weather">
+          <div class="mt-3 flex items-center gap-4">
+            <img :src="weatherIconUrl(weather.icon)" :alt="weather.description" class="h-14 w-14" />
+            <div>
+              <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ weather.temp }}°C</p>
+              <p class="text-sm capitalize text-gray-500 dark:text-gray-400">{{ weather.description }}</p>
+            </div>
           </div>
-        </div>
-        <div class="mt-4 grid grid-cols-3 gap-3">
-          <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <CloudSun :size="14" class="text-gray-400" />
-            <span>Terasa {{ weather.feels_like }}°C</span>
+          <div class="mt-4 grid grid-cols-3 gap-3">
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <CloudSun :size="14" class="text-gray-400" />
+              <span>Terasa {{ weather.feels_like }}°C</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Droplets :size="14" class="text-blue-400" />
+              <span>{{ weather.humidity }}%</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Wind :size="14" class="text-gray-400" />
+              <span>{{ weather.wind_speed }} km/h</span>
+            </div>
           </div>
-          <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <Droplets :size="14" class="text-blue-400" />
-            <span>{{ weather.humidity }}%</span>
-          </div>
-          <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-            <Wind :size="14" class="text-gray-400" />
-            <span>{{ weather.wind_speed }} km/h</span>
-          </div>
+        </template>
+        <div v-else class="mt-4 flex flex-col items-center py-4 text-center">
+          <CloudSun :size="32" class="text-gray-300 dark:text-gray-600" />
+          <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">Data cuaca belum tersedia.</p>
+          <p class="mt-1 text-xs text-gray-400 dark:text-gray-600">Pastikan API key OpenWeather sudah aktif.</p>
         </div>
       </div>
 
@@ -260,6 +285,9 @@ const statCards = [
           <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ weeklySummary.habits_today }}/{{ weeklySummary.habits_total }}</span>
         </div>
       </div>
+
+      <!-- World Clock -->
+      <WorldClock :timezones="savedTimezones" />
 
       <!-- Recent Tasks -->
       <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
