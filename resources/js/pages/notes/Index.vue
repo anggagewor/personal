@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
+import { formatDate } from '@purdia/utils'
 import BaseEditor from '@purdia/ui/src/components/BaseEditor.vue'
 import { Plus, Pin, Search, Trash2, FileText } from '@lucide/vue'
 
@@ -157,7 +158,7 @@ fetchNotes()
         </div>
         <p class="mt-2 text-xs text-gray-500 line-clamp-3 dark:text-gray-400" v-html="note.content"></p>
         <div class="mt-3 flex items-center justify-between">
-          <span class="text-xs text-gray-400">{{ new Date(note.updated_at).toLocaleDateString('id-ID') }}</span>
+          <span class="text-xs text-gray-400">{{ formatDate(note.updated_at) }}</span>
           <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
               class="rounded p-1 text-gray-400 hover:text-primary-600"

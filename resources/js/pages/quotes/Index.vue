@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { get, post, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
+import { debounce } from '@purdia/utils'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
@@ -30,8 +31,6 @@ const search = ref('')
 const loading = ref(false)
 const showForm = ref(false)
 const form = ref({ content: '', author: '' })
-
-let searchTimer: ReturnType<typeof setTimeout> | null = null
 
 async function fetchToday() {
   try {
@@ -79,16 +78,13 @@ async function deleteQuote(quote: QuoteItem) {
   }
 }
 
-function onSearch() {
-  if (searchTimer) clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => fetchQuotes(1), 300)
-}
+const hasQuotes = computed(() => quotes.value.length > 0)
+
+const onSearch = debounce(() => fetchQuotes(1), 300)
 
 function goToPage(page: number) {
   fetchQuotes(page)
 }
-
-const hasQuotes = computed(() => quotes.value.length > 0)
 
 fetchToday()
 fetchQuotes()

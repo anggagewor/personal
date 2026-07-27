@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { get } from '@purdia/http'
+import { formatDate } from '@purdia/utils'
 import { Flame } from '@lucide/vue'
 
 interface HabitLog {
@@ -90,10 +91,6 @@ const levelColors: Record<number, string> = {
 }
 
 const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-}
 
 onMounted(async () => {
   try {

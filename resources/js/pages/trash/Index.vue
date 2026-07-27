@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { get, post, del } from '@purdia/http'
+import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import BaseEmptyState from '@purdia/ui/src/components/BaseEmptyState.vue'
@@ -43,10 +44,6 @@ async function permanentDelete(item: TrashedItem) {
   } catch {
     // handle error
   }
-}
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 function typeLabel(type: string): string {

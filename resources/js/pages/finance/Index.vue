@@ -6,6 +6,7 @@ import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
+import { formatCurrency, formatDate } from '@purdia/utils'
 import { Plus, Trash2, TrendingUp, TrendingDown, Wallet } from '@lucide/vue'
 
 const toast = useToast()
@@ -36,8 +37,6 @@ const categories = {
   expense: ['Makanan', 'Transport', 'Hiburan', 'Belanja', 'Tagihan', 'Kesehatan', 'Pendidikan', 'Lainnya'],
   income: ['Gaji', 'Freelance', 'Investasi', 'Hadiah', 'Lainnya'],
 }
-
-const formatCurrency = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
 async function fetchData() {
   try {
@@ -135,7 +134,7 @@ fetchData()
           <span class="text-sm font-semibold" :class="tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">
             {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(tx.amount) }}
           </span>
-          <span class="text-xs text-gray-400">{{ new Date(tx.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) }}</span>
+          <span class="text-xs text-gray-400">{{ formatDate(tx.date, { day: 'numeric', month: 'short' }) }}</span>
           <button class="rounded p-1 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500" @click="deleteTransaction(tx)"><Trash2 :size="14" /></button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { get, post, put, del } from '@purdia/http'
+import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -84,10 +85,6 @@ async function deleteItem(item: WishlistItem) {
   } catch {
     // handle error
   }
-}
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 onMounted(fetchItems)

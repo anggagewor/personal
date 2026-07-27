@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { get, post } from '@purdia/http'
 import { useAuthStore } from '@purdia/auth'
 import { useToast } from '@purdia/toast'
+import { formatDate } from '@purdia/utils'
 import {
   FileText, ListTodo, Bookmark, Calendar, Clock, Quote,
   CloudSun, Droplets, Wind, TrendingUp, CheckCircle2, Timer,
@@ -284,7 +285,7 @@ const statCards = [
         <div v-if="recentNotes.length" class="mt-4 space-y-3">
           <div v-for="note in recentNotes" :key="note.id" class="flex items-center justify-between">
             <span class="flex-1 truncate text-sm text-gray-700 dark:text-gray-300">{{ note.title }}</span>
-            <span class="flex items-center gap-1 text-xs text-gray-400"><Clock :size="12" />{{ new Date(note.updated_at).toLocaleDateString('id-ID') }}</span>
+            <span class="flex items-center gap-1 text-xs text-gray-400"><Clock :size="12" />{{ formatDate(note.updated_at) }}</span>
           </div>
         </div>
         <p v-else class="mt-4 text-sm text-gray-400">Belum ada catatan.</p>

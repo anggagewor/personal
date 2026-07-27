@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { get, post, put, del } from '@purdia/http'
+import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
@@ -97,7 +98,7 @@ fetchGoals()
           <div>
             <h3 class="font-semibold text-gray-900 dark:text-white">{{ goal.title }}</h3>
             <p v-if="goal.description" class="mt-1 text-sm text-gray-500">{{ goal.description }}</p>
-            <p v-if="goal.target_date" class="mt-1 text-xs text-gray-400">Target: {{ new Date(goal.target_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</p>
+            <p v-if="goal.target_date" class="mt-1 text-xs text-gray-400">Target: {{ formatDate(goal.target_date, { day: 'numeric', month: 'long', year: 'numeric' }) }}</p>
           </div>
           <button class="rounded p-1.5 text-gray-400 hover:text-red-500" @click="deleteGoal(goal)"><Trash2 :size="14" /></button>
         </div>

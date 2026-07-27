@@ -10,29 +10,21 @@ export interface CalendarEvent {
   variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
 }
 
-export interface CalendarHighlight {
-  date: Date
-  type: 'holiday' | 'sunday'
-}
-
 interface Props {
   modelValue?: Date
   events?: CalendarEvent[]
   variant?: CalendarVariant
-  holidays?: Date[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'default',
   events: () => [],
-  holidays: () => [],
 })
 
 const emit = defineEmits<{
   'update:modelValue': [value: Date]
   'event-click': [event: CalendarEvent]
   'date-click': [date: Date]
-  'month-change': [date: Date]
 }>()
 
 const today = new Date()
@@ -52,8 +44,6 @@ interface CalendarDay {
   isCurrentMonth: boolean
   isToday: boolean
   isSelected: boolean
-  isSunday: boolean
-  isHoliday: boolean
   events: CalendarEvent[]
 }
 
@@ -93,8 +83,6 @@ function buildDay(date: Date, isCurrentMonth: boolean): CalendarDay {
     isCurrentMonth,
     isToday: isSameDay(date, today),
     isSelected: props.modelValue ? isSameDay(date, props.modelValue) : false,
-    isSunday: date.getDay() === 0,
-    isHoliday: isHolidayDate(date),
     events: getEventsForDate(date),
   }
 }
@@ -111,10 +99,6 @@ function getEventsForDate(date: Date): CalendarEvent[] {
   return props.events.filter((e) => isSameDay(new Date(e.date), date))
 }
 
-function isHolidayDate(date: Date): boolean {
-  return props.holidays.some((h) => isSameDay(new Date(h), date))
-}
-
 function prevMonth() {
   if (currentMonth.value === 0) {
     currentMonth.value = 11
@@ -122,7 +106,6 @@ function prevMonth() {
   } else {
     currentMonth.value--
   }
-  emit('month-change', new Date(currentYear.value, currentMonth.value, 1))
 }
 
 function nextMonth() {
@@ -132,7 +115,6 @@ function nextMonth() {
   } else {
     currentMonth.value++
   }
-  emit('month-change', new Date(currentYear.value, currentMonth.value, 1))
 }
 
 function selectDate(day: CalendarDay) {
@@ -163,15 +145,15 @@ const eventDotColors: Record<string, string> = {
     }"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-4">
       <button
         type="button"
-        class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 cursor-pointer dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+        class="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 cursor-pointer dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
         aria-label="Previous month"
         @click="prevMonth"
       >
         <svg
-          class="w-5 h-5"
+          class="w-4 h-4"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
@@ -183,15 +165,15 @@ const eventDotColors: Record<string, string> = {
           />
         </svg>
       </button>
-      <span class="text-base font-semibold text-gray-900 dark:text-gray-100">{{ monthLabel }}</span>
+      <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">{{ monthLabel }}</span>
       <button
         type="button"
-        class="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 cursor-pointer dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+        class="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 cursor-pointer dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
         aria-label="Next month"
         @click="nextMonth"
       >
         <svg
-          class="w-5 h-5"
+          class="w-4 h-4"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"
           fill="currentColor"
@@ -206,42 +188,38 @@ const eventDotColors: Record<string, string> = {
     </div>
 
     <!-- Week day headers -->
-    <div class="grid grid-cols-7 mb-2">
+    <div class="grid grid-cols-7 mb-1">
       <div
-        v-for="(day, idx) in weekDays"
+        v-for="day in weekDays"
         :key="day"
-        class="text-center text-sm font-medium py-2"
-        :class="idx === 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400'"
+        class="text-center text-xs font-medium text-gray-500 dark:text-gray-400 py-1"
       >
         {{ variant === 'compact' ? day.charAt(0) : day }}
       </div>
     </div>
 
     <!-- Calendar grid -->
-    <div class="grid grid-cols-7 gap-y-1">
+    <div class="grid grid-cols-7">
       <div
         v-for="(day, index) in calendarDays"
         :key="index"
-        class="relative flex flex-col items-center justify-start py-1.5 cursor-pointer"
+        class="relative flex flex-col items-center justify-start py-1 cursor-pointer"
         :class="{
-          'min-h-[3.25rem]': variant === 'default',
+          'min-h-[2.5rem]': variant === 'default',
           'min-h-[2rem]': variant === 'compact',
         }"
         @click="selectDate(day)"
       >
         <span
-          class="flex items-center justify-center rounded-full text-sm transition-colors"
+          class="flex items-center justify-center rounded-full text-xs transition-colors"
           :class="[
-            variant === 'compact' ? 'w-7 h-7' : 'w-9 h-9',
+            variant === 'compact' ? 'w-6 h-6' : 'w-7 h-7',
             {
               'bg-primary-500 text-white font-semibold': day.isSelected,
               'ring-2 ring-primary-300 dark:ring-primary-600': day.isToday && !day.isSelected,
-              'text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium':
-                (day.isSunday || day.isHoliday) && day.isCurrentMonth && !day.isSelected,
               'text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700':
-                day.isCurrentMonth && !day.isSelected && !day.isSunday && !day.isHoliday,
-              'text-red-300 dark:text-red-700': (day.isSunday || day.isHoliday) && !day.isCurrentMonth,
-              'text-gray-400 dark:text-gray-600': !day.isCurrentMonth && !day.isSunday && !day.isHoliday,
+                day.isCurrentMonth && !day.isSelected,
+              'text-gray-400 dark:text-gray-600': !day.isCurrentMonth,
             },
           ]"
         >
@@ -249,11 +227,11 @@ const eventDotColors: Record<string, string> = {
         </span>
 
         <!-- Event dots -->
-        <div v-if="day.events.length && variant === 'default'" class="flex gap-0.5 mt-1">
+        <div v-if="day.events.length && variant === 'default'" class="flex gap-0.5 mt-0.5">
           <span
             v-for="event in day.events.slice(0, 3)"
             :key="event.id"
-            class="w-1.5 h-1.5 rounded-full"
+            class="w-1 h-1 rounded-full"
             :class="eventDotColors[event.variant || 'primary']"
             :title="event.title"
             @click="handleEventClick(event, $event)"

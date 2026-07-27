@@ -1,19 +1,8 @@
 {
+  "extends": "./base.json",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "jsx": "preserve",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
+    "lib": ["ESNext", "DOM"],
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "emitDeclarationOnly": true
   }
 }

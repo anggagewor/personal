@@ -62,7 +62,7 @@ const modalClasses = computed(() => [
               &times;
             </button>
           </div>
-          <div class="px-5 py-4 overflow-y-auto dark:text-gray-300">
+          <div class="p-6 overflow-y-auto dark:text-gray-300">
             <slot />
           </div>
           <div

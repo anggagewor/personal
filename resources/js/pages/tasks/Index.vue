@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
+import { formatDate } from '@purdia/utils'
 import { Plus, Trash2, ListTodo, Check } from '@lucide/vue'
 
 const toast = useToast()
@@ -164,7 +165,7 @@ fetchTasks()
           <div class="mt-1 flex items-center gap-2">
             <span class="rounded px-1.5 py-0.5 text-xs" :class="statusColors[task.status]">{{ statusLabels[task.status] }}</span>
             <span class="rounded px-1.5 py-0.5 text-xs" :class="priorityColors[task.priority]">{{ task.priority }}</span>
-            <span v-if="task.due_date" class="text-xs text-gray-400">{{ new Date(task.due_date).toLocaleDateString('id-ID') }}</span>
+            <span v-if="task.due_date" class="text-xs text-gray-400">{{ formatDate(task.due_date) }}</span>
           </div>
         </div>
 

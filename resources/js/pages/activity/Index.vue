@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { get } from '@purdia/http'
+import { formatDate } from '@purdia/utils'
 import { Activity, Clock } from '@lucide/vue'
 
 interface Log {
@@ -35,11 +36,6 @@ function nextPage() {
   if (page.value < lastPage.value) { page.value++; fetchLogs() }
 }
 
-function formatTime(dateStr: string) {
-  const d = new Date(dateStr)
-  return d.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
 fetchLogs()
 </script>
 
@@ -61,7 +57,7 @@ fetchLogs()
           <p class="text-sm text-gray-900 dark:text-white">{{ log.description }}</p>
           <div class="mt-1 flex items-center gap-1.5 text-xs text-gray-400">
             <Clock :size="12" />
-            {{ formatTime(log.created_at) }}
+            {{ formatDate(log.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
           </div>
         </div>
         <span class="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { get, post, del } from '@purdia/http'
+import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseEditor from '@purdia/ui/src/components/BaseEditor.vue'
 import { ChevronLeft, ChevronRight, Smile, Meh, Frown, Zap, Battery } from '@lucide/vue'
@@ -69,7 +70,7 @@ function goToday() {
   fetchEntry()
 }
 
-const dateLabel = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+const dateLabel = (d: string) => formatDate(d, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
 fetchEntry()
 </script>

@@ -1,10 +1,16 @@
 {
   "name": "@purdia/tsconfig",
   "version": "0.1.0",
-  "private": true,
+  "description": "Shared TypeScript configurations for Purdia packages",
+  "files": [
+    "base.json",
+    "vue-lib.json",
+    "lib.json"
+  ],
+  "type": "module",
   "exports": {
-    "./lib": "./lib.json",
-    "./vue-lib": "./vue-lib.json"
-  },
-  "files": ["lib.json", "vue-lib.json"]
+    "./base": "./base.json",
+    "./vue-lib": "./vue-lib.json",
+    "./lib": "./lib.json"
+  }
 }
