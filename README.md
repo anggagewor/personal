@@ -1,6 +1,7 @@
 <p align="center">
   <img src="./docs/banner.png" alt="Purdia">
 </p>
+
 # Purdia Dashboard
 
 Personal productivity dashboard yang dibangun dengan Laravel 13 (DDD Modular) dan Vue 3 + TypeScript.
