@@ -129,7 +129,45 @@
 
 ---
 
-## 10. Reading List
+## 10. Market Watchlist
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Watchlist CRUD | Tambah/hapus simbol yang ingin dipantau (maks 15) |
+| Tipe Aset | Forex, crypto, stock, commodity |
+| Harga Real-time | Data dari Twelve Data API (cache sesuai refresh interval) |
+| Sparkline | Mini chart per simbol di dashboard |
+| History | Riwayat harga tersimpan di DB (30 hari) |
+| Cron Fetch | Scheduler otomatis tiap 15 menit (configurable) |
+| Rate Limit Aware | Chunk 8 symbols/request, estimasi daily calls di settings |
+| Combined Chart | Semua simbol dalam 1 chart performa (% change) |
+| Dashboard Widget | Compact view top 8 symbols + sparkline + harga + change |
+
+**Endpoints:** `/api/market/watchlist`, `/api/market/prices`, `/api/market/dashboard`, `/api/market/history/{symbol}`, `/api/market/config`
+
+**Commands:** `php artisan market:fetch-prices`
+
+---
+
+## 11. Emas Antam
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Harga Harian | Harga emas Antam per gram (Rp) |
+| Histori 15+ Tahun | Data dari 2010 - sekarang |
+| Import JSON | Seed database dari file `storage/antam.json` |
+| Daily Cron | Fetch harga terbaru otomatis jam 10:00 WIB |
+| Chart | Grafik interaktif dengan period selector (1m/3m/6m/1y/5y/all) |
+| Stats | Harga hari ini, 30d high/low, 30d perubahan |
+| Dashboard Widget | Harga terkini + sparkline 30 hari + compact stats |
+
+**Endpoints:** `/api/gold/dashboard`, `/api/gold/history?period=1y`
+
+**Commands:** `php artisan gold:import-history`, `php artisan gold:fetch-daily`
+
+---
+
+## 12. Reading List
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -143,7 +181,7 @@
 
 ---
 
-## 11. Journal & Mood Tracker
+## 13. Journal & Mood Tracker
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -159,7 +197,7 @@
 
 ---
 
-## 12. Goals & Milestones
+## 14. Goals & Milestones
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -174,7 +212,7 @@
 
 ---
 
-## 13. Wishlist
+## 15. Wishlist
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -188,7 +226,7 @@
 
 ---
 
-## 14. Tags (Polymorphic)
+## 16. Tags (Polymorphic)
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -201,7 +239,7 @@
 
 ---
 
-## 15. Daily Quotes
+## 17. Daily Quotes
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -215,7 +253,7 @@
 
 ---
 
-## 16. Trash (Unified)
+## 18. Trash (Unified)
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -228,7 +266,7 @@
 
 ---
 
-## 17. Activity Log
+## 19. Activity Log
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -240,14 +278,17 @@
 
 ---
 
-## 18. Dashboard
+## 20. Dashboard
 
 | Fitur | Deskripsi |
 |-------|-----------|
 | Stat Cards | Total notes, tasks pending, bookmarks, events mendatang |
 | Weekly Summary | Tasks completed/created, pomodoros, focus minutes, habits, notes, streak |
 | Quote of the Day | Tampil di dashboard |
-| Weather | Cuaca kota saat ini (OpenWeatherMap) |
+| Weather | Cuaca kota saat ini (OpenWeatherMap, cache 1 jam) |
+| World Clock | Timezone yang dikonfigurasi user, live update tiap detik |
+| Market Widget | Watchlist symbols + harga + sparkline chart (dari DB) |
+| Gold Widget | Harga emas Antam terkini + sparkline 30 hari + 30d stats |
 | Quick Capture | Input cepat ke scratchpad |
 | Recent Tasks | 5 task pending terbaru |
 | Recent Notes | 3 catatan terbaru |
@@ -256,18 +297,19 @@
 
 ---
 
-## 19. Settings
+## 21. Settings
 
 | Halaman | Fitur |
 |---------|-------|
 | Account | Edit profil, ubah password, upload/hapus avatar |
 | Appearance | Theme (dark/light), primary color |
-| General | Locale, sidebar preference |
+| General | Locale, sidebar preference, world clock timezone config |
+| Market | Kelola watchlist symbols (add/remove), API status & rate limit info |
 | Export | Export data (planned) |
 
 ---
 
-## 20. Error Handling
+## 22. Error Handling
 
 | Fitur | Deskripsi |
 |-------|-----------|
@@ -293,6 +335,8 @@
 | Scratchpads | `/scratchpads` |
 | Habits | `/habits` |
 | Finance | `/finance` |
+| Market | `/market` |
+| Emas Antam | `/gold` |
 | Reading List | `/reading-list` |
 | Journal | `/journal` |
 | Goals | `/goals` |
@@ -301,4 +345,4 @@
 | Streaks | `/streaks` |
 | Activity | `/activity` |
 | Trash | `/trash` |
-| Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/export` |
+| Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/market`, `/settings/export` |

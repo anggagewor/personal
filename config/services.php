@@ -40,4 +40,13 @@ return [
         'city' => env('OPENWEATHERMAP_CITY', 'Jakarta'),
     ],
 
+    'twelvedata' => [
+        'key' => env('TWELVEDATA_API_KEY'),
+        'refresh_interval' => env('TWELVEDATA_REFRESH_INTERVAL', 15), // minutes
+    ],
+
+    'antam' => [
+        'api_url' => env('ANTAM_API_URL'),
+    ],
+
 ];

@@ -121,6 +121,18 @@ export const routes: RouteRecordRaw[] = [
         name: 'activity',
         component: () => import('@/pages/activity/Index.vue'),
       },
+      // Market
+      {
+        path: 'market',
+        name: 'market',
+        component: () => import('@/pages/market/Index.vue'),
+      },
+      // Gold
+      {
+        path: 'gold',
+        name: 'gold',
+        component: () => import('@/pages/gold/Index.vue'),
+      },
       // Settings
       {
         path: 'settings/general',
@@ -141,6 +153,11 @@ export const routes: RouteRecordRaw[] = [
         path: 'settings/export',
         name: 'settings.export',
         component: () => import('@/pages/settings/Export.vue'),
+      },
+      {
+        path: 'settings/market',
+        name: 'settings.market',
+        component: () => import('@/pages/settings/Market.vue'),
       },
     ],
   },

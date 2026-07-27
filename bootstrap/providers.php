@@ -23,5 +23,7 @@ return [
     Modules\Quote\Infrastructure\Providers\QuoteServiceProvider::class,
     Modules\Wishlist\Infrastructure\Providers\WishlistServiceProvider::class,
     Modules\Trash\Infrastructure\Providers\TrashServiceProvider::class,
+    Modules\Market\Infrastructure\Providers\MarketServiceProvider::class,
+    Modules\Gold\Infrastructure\Providers\GoldServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
 ];

@@ -10,6 +10,8 @@ import {
   Flame, Send, StickyNote,
 } from '@lucide/vue'
 import WorldClock from '@/components/WorldClock.vue'
+import MarketWidget from '@/components/MarketWidget.vue'
+import GoldWidget from '@/components/GoldWidget.vue'
 import type { TimezoneEntry } from '@/composables/usePreferences'
 
 const auth = useAuthStore()
@@ -49,6 +51,9 @@ const weeklySummary = ref<WeeklySummary | null>(null)
 
 // --- World Clock ---
 const savedTimezones = ref<TimezoneEntry[]>([])
+
+// --- Market ---
+// Widget is self-contained, fetches from /market/dashboard
 
 // --- Quick Capture ---
 const quickNote = ref('')
@@ -288,6 +293,12 @@ const statCards = [
 
       <!-- World Clock -->
       <WorldClock :timezones="savedTimezones" />
+
+      <!-- Market Widget -->
+      <MarketWidget />
+
+      <!-- Gold Widget -->
+      <GoldWidget />
 
       <!-- Recent Tasks -->
       <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">

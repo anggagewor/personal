@@ -24,6 +24,7 @@ Personal productivity dashboard yang dibangun dengan Laravel 13 (DDD Modular) da
 - `@purdia/composables` — Reusable composables (useApi, usePagination)
 - `@purdia/ui` — Component library (40+ komponen)
 - `@purdia/charts` — Chart components (Bar, Line, Doughnut)
+- `@purdia/utils` — Utility functions (format, timing, misc)
 - `@purdia/theme` — Dark/light mode & color scheme
 - `@purdia/crypto` — Encrypted localStorage
 - `@purdia/tailwind` — Shared Tailwind config & tokens
@@ -42,6 +43,8 @@ Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur.
 - 📋 Scratchpads (quick notes)
 - 🎯 Habit tracker (daily/weekly + streak)
 - 💰 Finance tracker (income/expense + summary)
+- 📈 Market watchlist (forex, crypto, stock via Twelve Data + sparkline)
+- 🪙 Emas Antam (harga harian + chart historis 15 tahun)
 - 📚 Reading list
 - 📓 Daily journal & mood tracker
 - 🏆 Goals & milestones
@@ -49,8 +52,9 @@ Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur.
 - 🏷️ Tags (polymorphic, attach ke notes/tasks)
 - 💬 Daily motivational quotes (CRUD + quote of the day)
 - 🗑️ Unified trash (restore / permanent delete)
-- 📊 Dashboard (weekly summary, weather, quick capture)
-- ⚙️ Settings (profile, appearance, export)
+- 📊 Dashboard (weekly summary, weather, world clock, market widget, gold widget, quick capture)
+- 🌐 World Clock (configurable timezones, live update)
+- ⚙️ Settings (profile, appearance, market watchlist, export)
 
 ## Arsitektur
 

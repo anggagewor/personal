@@ -107,6 +107,18 @@ export const navigation: NavGroup[] = [
         to: '/finance',
       },
       {
+        id: 'market',
+        label: 'Market',
+        icon: 'TrendingUp',
+        to: '/market',
+      },
+      {
+        id: 'gold',
+        label: 'Emas Antam',
+        icon: 'Coins',
+        to: '/gold',
+      },
+      {
         id: 'quotes',
         label: 'Quotes',
         icon: 'Quote',
@@ -158,6 +170,7 @@ export const navigation: NavGroup[] = [
           { label: 'Umum', icon: 'SlidersHorizontal', to: '/settings/general' },
           { label: 'Tampilan', icon: 'Palette', to: '/settings/appearance' },
           { label: 'Akun', icon: 'UserCircle', to: '/settings/account' },
+          { label: 'Market', icon: 'TrendingUp', to: '/settings/market' },
           { label: 'Export', icon: 'Download', to: '/settings/export' },
         ],
       },

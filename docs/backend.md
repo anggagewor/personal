@@ -141,6 +141,8 @@ Domain ← Application ← Infrastructure
 | Scratchpad | Quick scratch notes |
 | Habit | Habit tracking + streak |
 | Finance | Personal finance tracking |
+| Market | Market watchlist (Twelve Data API + price history) |
+| Gold | Emas Antam (harga harian + histori 15 tahun) |
 | ReadingList | Reading list management |
 | Journal | Daily journal entries + mood |
 | Goal | Goal setting & milestones |
@@ -148,4 +150,4 @@ Domain ← Application ← Infrastructure
 | Quote | Motivational quotes (CRUD + daily) |
 | Wishlist | Wishlist items |
 | Trash | Soft-delete / restore |
-| Shared | Cross-module traits, contracts |
+| Shared | Cross-module traits, contracts, weather, dashboard |
