@@ -28,6 +28,11 @@ watch(() => route.path, (path) => syncWithRoute(path))
       <main class="flex-1 p-6">
         <RouterView />
       </main>
+
+      <!-- Footer -->
+      <footer class="px-6 py-4 text-center">
+        <p class="text-xs text-gray-400 dark:text-gray-600">Powered by Purdia</p>
+      </footer>
     </div>
 
     <!-- Command Palette (Cmd+K) -->
