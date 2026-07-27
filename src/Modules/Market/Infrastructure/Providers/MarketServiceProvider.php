@@ -33,17 +33,18 @@ class MarketServiceProvider extends ServiceProvider
             $schedule = $this->app->make(Schedule::class);
             $interval = (int) config('services.twelvedata.refresh_interval', 15);
 
-            $schedule->command('market:fetch-prices')
-                ->everyFifteenMinutes()
-                ->when(fn () => $interval <= 15)
+            $event = $schedule
+                ->command('market:fetch-prices')
                 ->withoutOverlapping()
                 ->runInBackground();
 
-            $schedule->command('market:fetch-prices')
-                ->cron("*/{$interval} * * * *")
-                ->when(fn () => $interval > 15)
-                ->withoutOverlapping()
-                ->runInBackground();
+            match (true) {
+                $interval === 1  => $event->everyMinute(),
+                $interval === 5  => $event->everyFiveMinutes(),
+                $interval === 10 => $event->everyTenMinutes(),
+                $interval === 15 => $event->everyFifteenMinutes(),
+                default          => $event->cron("*/{$interval} * * * *"),
+            };
         });
     }
 }

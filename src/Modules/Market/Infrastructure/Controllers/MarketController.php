@@ -84,14 +84,27 @@ class MarketController extends Controller
     }
 
     /**
-     * Get current prices for all watchlist symbols.
+     * Get current prices for all watchlist symbols (from DB, no live API call).
      */
-    public function prices(Request $request, FetchMarketPricesAction $action): JsonResponse
+    public function prices(Request $request): JsonResponse
     {
-        $prices = $action->execute($request->user()->id);
+        $userId = $request->user()->id;
+        $priceRepo = app(PriceHistoryRepositoryInterface::class);
+        $latestPrices = $priceRepo->getLatestPrices($userId);
+
+        $result = [];
+        foreach ($latestPrices as $symbol => $snapshot) {
+            $result[$symbol] = [
+                'symbol' => $snapshot->symbol,
+                'price' => $snapshot->price,
+                'change' => $snapshot->change,
+                'change_percent' => $snapshot->changePercent,
+                'previous_close' => $snapshot->previousClose,
+            ];
+        }
 
         return response()->json([
-            'data' => $prices,
+            'data' => $result,
             'meta' => [
                 'refresh_interval' => (int) config('services.twelvedata.refresh_interval', 15),
             ],
