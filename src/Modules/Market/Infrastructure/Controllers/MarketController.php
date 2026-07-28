@@ -6,14 +6,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Market\Application\Actions\AddWatchlistItemAction;
+use Modules\Market\Application\Actions\ExportMarketHistoryAction;
 use Modules\Market\Application\Actions\FetchMarketPricesAction;
 use Modules\Market\Application\Actions\GetPriceHistoryAction;
+use Modules\Market\Application\Actions\ImportMarketHistoryAction;
 use Modules\Market\Application\Actions\RemoveWatchlistItemAction;
 use Modules\Market\Application\DTO\WatchlistItemData;
 use Modules\Market\Domain\Contracts\PriceHistoryRepositoryInterface;
 use Modules\Market\Domain\Contracts\WatchlistRepositoryInterface;
 use Modules\Market\Infrastructure\Requests\StoreWatchlistItemRequest;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MarketController extends Controller
 {
@@ -116,14 +119,26 @@ class MarketController extends Controller
      */
     public function history(Request $request, string $symbol, GetPriceHistoryAction $action): JsonResponse
     {
-        $limit = (int) $request->query('limit', 50);
-        $limit = min($limit, 100);
+        $from = $request->query('from');
+        $to = $request->query('to');
 
-        $history = $action->execute(
-            userId: $request->user()->id,
-            symbol: strtoupper($symbol),
-            limit: $limit,
-        );
+        if ($from && $to) {
+            $history = $action->execute(
+                userId: $request->user()->id,
+                symbol: strtoupper($symbol),
+                from: $from,
+                to: $to,
+            );
+        } else {
+            $limit = (int) $request->query('limit', 50);
+            $limit = min($limit, 100);
+
+            $history = $action->execute(
+                userId: $request->user()->id,
+                symbol: strtoupper($symbol),
+                limit: $limit,
+            );
+        }
 
         return response()->json([
             'data' => array_map(fn($s) => [
@@ -183,5 +198,92 @@ class MarketController extends Controller
         return response()->json([
             'data' => $result,
         ]);
+    }
+
+    /**
+     * Export market price history as CSV or JSON.
+     */
+    public function export(Request $request, ExportMarketHistoryAction $action): StreamedResponse|JsonResponse
+    {
+        $format = $request->query('format', 'csv');
+        $from = $request->query('from');
+        $to = $request->query('to');
+
+        $rows = $action->execute($request->user()->id, $from, $to);
+
+        if ($format === 'json') {
+            return response()->json(['data' => $rows]);
+        }
+
+        return $this->streamCsv($rows, 'market-history.csv', ['symbol', 'price', 'change', 'change_percent', 'fetched_at']);
+    }
+
+    /**
+     * Import market price history from CSV file.
+     */
+    public function import(Request $request, ImportMarketHistoryAction $action): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
+        ]);
+
+        $rows = $this->parseCsv($request->file('file'));
+
+        $count = $action->execute($request->user()->id, $rows);
+
+        return response()->json([
+            'message' => "Berhasil mengimpor {$count} data riwayat harga.",
+            'data' => ['imported' => $count],
+        ]);
+    }
+
+    /**
+     * Download CSV import template.
+     */
+    public function template(): StreamedResponse
+    {
+        $sample = [
+            ['symbol' => 'USD/IDR', 'price' => '16250.50', 'change' => '50.25', 'change_percent' => '0.31', 'fetched_at' => '2026-01-01 10:00:00'],
+            ['symbol' => 'BTC/USD', 'price' => '67500.00', 'change' => '1200.00', 'change_percent' => '1.81', 'fetched_at' => '2026-01-01 10:00:00'],
+        ];
+
+        return $this->streamCsv($sample, 'market-import-template.csv', ['symbol', 'price', 'change', 'change_percent', 'fetched_at']);
+    }
+
+    private function streamCsv(array $rows, string $filename, array $headers): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($rows, $headers) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $headers);
+
+            foreach ($rows as $row) {
+                fputcsv($handle, array_map(fn($h) => $row[$h] ?? '', $headers));
+            }
+
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    private function parseCsv(\Illuminate\Http\UploadedFile $file): array
+    {
+        $rows = [];
+        $handle = fopen($file->getRealPath(), 'r');
+
+        $header = fgetcsv($handle);
+        $header = array_map(fn($h) => strtolower(trim($h)), $header);
+
+        while (($line = fgetcsv($handle)) !== false) {
+            if (count($line) !== count($header)) {
+                continue;
+            }
+
+            $rows[] = array_combine($header, $line);
+        }
+
+        fclose($handle);
+
+        return $rows;
     }
 }

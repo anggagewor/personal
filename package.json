@@ -18,6 +18,7 @@
     "@purdia/ui": "file:packages/ui",
     "@purdia/utils": "file:packages/utils",
     "pinia": "^3.0.4",
+    "puppeteer": "^25.4.0",
     "vue": "^3.5.38",
     "vue-router": "^5.1.0"
   },

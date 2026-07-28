@@ -47,6 +47,7 @@ return [
 
     'antam' => [
         'api_url' => env('ANTAM_API_URL'),
+        'captcha_url' => env('ANTAM_CAPTCHA_URL'),
     ],
 
 ];

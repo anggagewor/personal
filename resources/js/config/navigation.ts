@@ -114,7 +114,7 @@ export const navigation: NavGroup[] = [
       },
       {
         id: 'gold',
-        label: 'Emas Antam',
+        label: 'Emas',
         icon: 'Coins',
         to: '/gold',
       },

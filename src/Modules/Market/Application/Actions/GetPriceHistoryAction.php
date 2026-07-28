@@ -16,8 +16,12 @@ class GetPriceHistoryAction
      *
      * @return PriceSnapshot[]
      */
-    public function execute(int $userId, string $symbol, int $limit = 50): array
+    public function execute(int $userId, string $symbol, int $limit = 50, ?string $from = null, ?string $to = null): array
     {
+        if ($from && $to) {
+            return $this->repository->getHistoryByRange($userId, $symbol, $from, $to);
+        }
+
         return $this->repository->getHistory($userId, $symbol, $limit);
     }
 }

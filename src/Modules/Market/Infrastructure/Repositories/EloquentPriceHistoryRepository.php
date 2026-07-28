@@ -72,6 +72,39 @@ class EloquentPriceHistoryRepository implements PriceHistoryRepositoryInterface
             ->all();
     }
 
+    public function getHistoryByRange(int $userId, string $symbol, string $from, string $to): array
+    {
+        return PriceHistoryModel::where('user_id', $userId)
+            ->where('symbol', $symbol)
+            ->whereBetween('fetched_at', [$from, $to])
+            ->orderBy('fetched_at')
+            ->get()
+            ->map(fn($m) => $this->toEntity($m))
+            ->values()
+            ->all();
+    }
+
+    public function getHistoryAllSymbols(int $userId): array
+    {
+        return PriceHistoryModel::where('user_id', $userId)
+            ->orderBy('fetched_at')
+            ->get()
+            ->map(fn($m) => $this->toEntity($m))
+            ->values()
+            ->all();
+    }
+
+    public function getHistoryAllSymbolsByRange(int $userId, string $from, string $to): array
+    {
+        return PriceHistoryModel::where('user_id', $userId)
+            ->whereBetween('fetched_at', [$from, $to])
+            ->orderBy('fetched_at')
+            ->get()
+            ->map(fn($m) => $this->toEntity($m))
+            ->values()
+            ->all();
+    }
+
     public function getSparklines(int $userId, int $points = 20): array
     {
         // Get all symbols for user

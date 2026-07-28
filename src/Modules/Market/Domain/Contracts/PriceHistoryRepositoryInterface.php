@@ -33,6 +33,27 @@ interface PriceHistoryRepositoryInterface
     public function getHistory(int $userId, string $symbol, int $limit = 50): array;
 
     /**
+     * Get price history for a symbol within a date range.
+     *
+     * @return PriceSnapshot[]
+     */
+    public function getHistoryByRange(int $userId, string $symbol, string $from, string $to): array;
+
+    /**
+     * Get all price history for a user (all symbols).
+     *
+     * @return PriceSnapshot[]
+     */
+    public function getHistoryAllSymbols(int $userId): array;
+
+    /**
+     * Get all price history for a user within a date range (all symbols).
+     *
+     * @return PriceSnapshot[]
+     */
+    public function getHistoryAllSymbolsByRange(int $userId, string $from, string $to): array;
+
+    /**
      * Get mini sparkline data for all symbols (last N price points each).
      *
      * @return array<string, float[]> Keyed by symbol, value is array of prices (oldest first)

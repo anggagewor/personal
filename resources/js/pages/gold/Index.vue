@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { get } from '@purdia/http'
+import { get, upload } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
+import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSkeleton from '@purdia/ui/src/components/BaseSkeleton.vue'
 import { LineChart } from '@purdia/charts'
-import { TrendingUp, TrendingDown, Coins } from '@lucide/vue'
+import { TrendingUp, TrendingDown, Coins, Download, Upload, FileDown } from '@lucide/vue'
+
+const { success, error: showError } = useToast()
 
 // --- Types ---
 interface GoldHistory {
@@ -27,6 +30,8 @@ const history = ref<GoldHistory[]>([])
 const loading = ref(true)
 const period = ref<string>('1y')
 const chartLoading = ref(false)
+const importing = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 const periods = [
   { value: '1m', label: '1 Bulan' },
@@ -129,6 +134,65 @@ async function changePeriod(p: string) {
   }
 }
 
+// --- Export / Import ---
+async function handleExport(format: 'csv' | 'json') {
+  try {
+    const res = await get<Blob>('/gold/export', {
+      params: { format },
+      responseType: 'blob',
+    } as any)
+
+    const blob = new Blob([res as any], { type: format === 'csv' ? 'text/csv' : 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `gold-prices.${format}`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    showError('Gagal mengekspor data.')
+  }
+}
+
+async function downloadTemplate() {
+  try {
+    const res = await get<Blob>('/gold/import/template', { responseType: 'blob' } as any)
+    const blob = new Blob([res as any], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'gold-import-template.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    showError('Gagal mengunduh template.')
+  }
+}
+
+function triggerImport() {
+  fileInput.value?.click()
+}
+
+async function handleImport(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  importing.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await upload<{ imported: number }>('/gold/import', formData)
+    success(res.data.message ?? `Berhasil mengimpor ${res.data.data?.imported ?? 0} data.`)
+    await fetchAll()
+  } catch {
+    showError('Gagal mengimpor data. Pastikan format CSV sesuai template.')
+  } finally {
+    importing.value = false
+    target.value = ''
+  }
+}
+
 onMounted(fetchAll)
 </script>
 
@@ -139,7 +203,15 @@ onMounted(fetchAll)
         <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Emas Antam</h1>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Pantau harga emas Antam per gram.</p>
       </div>
+      <div class="flex items-center gap-2">
+        <BaseButton variant="secondary" size="sm" :icon="FileDown" @click="downloadTemplate">Template</BaseButton>
+        <BaseButton variant="secondary" size="sm" :icon="Upload" :disabled="importing" @click="triggerImport">
+          {{ importing ? 'Mengimpor...' : 'Import' }}
+        </BaseButton>
+        <BaseButton variant="secondary" size="sm" :icon="Download" @click="handleExport('csv')">Export</BaseButton>
+      </div>
     </div>
+    <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="handleImport" />
 
     <!-- Loading -->
     <div v-if="loading" class="mt-6 space-y-4">

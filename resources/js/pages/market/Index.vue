@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { get } from '@purdia/http'
+import { get, upload } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
+import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSkeleton from '@purdia/ui/src/components/BaseSkeleton.vue'
 import { LineChart } from '@purdia/charts'
-import { TrendingUp, TrendingDown, RefreshCw, Settings } from '@lucide/vue'
+import { TrendingUp, TrendingDown, RefreshCw, Settings, Download, Upload, FileDown } from '@lucide/vue'
+
+const { success, error: showError } = useToast()
 
 // --- Types ---
 interface WatchlistItem {
@@ -42,7 +45,39 @@ const refreshing = ref(false)
 const allHistory = ref<Record<string, HistoryPoint[]>>({})
 const chartLoading = ref(false)
 
+// --- Date range ---
+type RangeKey = '1h' | '6h' | '12h' | '1d' | '7d' | '30d'
+const activeRange = ref<RangeKey>('1d')
+
+const rangeOptions: { key: RangeKey; label: string }[] = [
+  { key: '1h', label: '1J' },
+  { key: '6h', label: '6J' },
+  { key: '12h', label: '12J' },
+  { key: '1d', label: '1H' },
+  { key: '7d', label: '7H' },
+  { key: '30d', label: '30H' },
+]
+
+function getRangeFromTo(range: RangeKey): { from: string; to: string } {
+  const now = new Date()
+  const to = now.toISOString().slice(0, 19).replace('T', ' ')
+  const from = new Date(now)
+
+  switch (range) {
+    case '1h': from.setHours(from.getHours() - 1); break
+    case '6h': from.setHours(from.getHours() - 6); break
+    case '12h': from.setHours(from.getHours() - 12); break
+    case '1d': from.setDate(from.getDate() - 1); break
+    case '7d': from.setDate(from.getDate() - 7); break
+    case '30d': from.setDate(from.getDate() - 30); break
+  }
+
+  return { from: from.toISOString().slice(0, 19).replace('T', ' '), to }
+}
+
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
+const importing = ref(false)
+const fileInput = ref<HTMLInputElement | null>(null)
 
 // --- Helpers ---
 function getPrice(symbol: string): PriceData | null {
@@ -179,9 +214,11 @@ async function loadAllHistory() {
   if (!items.value.length) return
   chartLoading.value = true
 
+  const { from, to } = getRangeFromTo(activeRange.value)
+
   const results = await Promise.allSettled(
     items.value.map(item =>
-      get<HistoryPoint[]>(`/market/history/${item.symbol}`, { params: { limit: 50 } })
+      get<HistoryPoint[]>(`/market/history/${item.symbol}`, { params: { from, to } })
     )
   )
 
@@ -194,6 +231,11 @@ async function loadAllHistory() {
 
   allHistory.value = historyMap
   chartLoading.value = false
+}
+
+async function changeRange(range: RangeKey) {
+  activeRange.value = range
+  await loadAllHistory()
 }
 
 async function refreshPrices() {
@@ -211,6 +253,65 @@ async function refreshPrices() {
 function startAutoRefresh() {
   if (autoRefreshTimer) clearInterval(autoRefreshTimer)
   autoRefreshTimer = setInterval(refreshPrices, refreshInterval.value * 60 * 1000)
+}
+
+// --- Export / Import ---
+async function handleExport(format: 'csv' | 'json') {
+  try {
+    const res = await get<Blob>('/market/export', {
+      params: { format },
+      responseType: 'blob',
+    } as any)
+
+    const blob = new Blob([res as any], { type: format === 'csv' ? 'text/csv' : 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `market-history.${format}`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    showError('Gagal mengekspor data.')
+  }
+}
+
+async function downloadTemplate() {
+  try {
+    const res = await get<Blob>('/market/import/template', { responseType: 'blob' } as any)
+    const blob = new Blob([res as any], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'market-import-template.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    showError('Gagal mengunduh template.')
+  }
+}
+
+function triggerImport() {
+  fileInput.value?.click()
+}
+
+async function handleImport(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  importing.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await upload<{ imported: number }>('/market/import', formData)
+    success(res.data.message ?? `Berhasil mengimpor ${res.data.data?.imported ?? 0} data.`)
+    await loadAllHistory()
+  } catch {
+    showError('Gagal mengimpor data. Pastikan format CSV sesuai template.')
+  } finally {
+    importing.value = false
+    target.value = ''
+  }
 }
 
 onMounted(async () => {
@@ -231,6 +332,11 @@ onUnmounted(() => {
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Pantau harga aset secara real-time.</p>
       </div>
       <div class="flex items-center gap-2">
+        <BaseButton variant="secondary" size="sm" :icon="FileDown" @click="downloadTemplate">Template</BaseButton>
+        <BaseButton variant="secondary" size="sm" :icon="Upload" :disabled="importing" @click="triggerImport">
+          {{ importing ? 'Mengimpor...' : 'Import' }}
+        </BaseButton>
+        <BaseButton variant="secondary" size="sm" :icon="Download" @click="handleExport('csv')">Export</BaseButton>
         <BaseButton variant="secondary" size="sm" :icon="RefreshCw" :disabled="refreshing" @click="refreshPrices">
           {{ refreshing ? 'Memperbarui...' : 'Refresh' }}
         </BaseButton>
@@ -239,6 +345,7 @@ onUnmounted(() => {
         </router-link>
       </div>
     </div>
+    <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="handleImport" />
 
     <!-- Loading skeleton -->
     <div v-if="loading" class="mt-6 space-y-4">
@@ -311,7 +418,19 @@ onUnmounted(() => {
         <div class="mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
           <div class="flex items-center justify-between">
             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Performa (%)</h2>
-            <p class="text-xs text-gray-400">Perubahan relatif dari data awal</p>
+            <div class="flex items-center gap-1">
+              <button
+                v-for="opt in rangeOptions"
+                :key="opt.key"
+                class="rounded px-2 py-1 text-xs font-medium transition-colors"
+                :class="activeRange === opt.key
+                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
+                @click="changeRange(opt.key)"
+              >
+                {{ opt.label }}
+              </button>
+            </div>
           </div>
 
           <div v-if="chartLoading" class="mt-4 flex items-center justify-center py-16">
