@@ -14,6 +14,12 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/auth/Register.vue'),
     meta: { guest: true },
   },
+  // ---------- OAuth Callback (standalone) ----------
+  {
+    path: '/drive/callback',
+    name: 'drive.callback',
+    component: () => import('@/pages/drive/Callback.vue'),
+  },
 
   // ---------- Dashboard (protected) ----------
   {
@@ -36,6 +42,11 @@ export const routes: RouteRecordRaw[] = [
         path: 'tasks',
         name: 'tasks',
         component: () => import('@/pages/tasks/Index.vue'),
+      },
+      {
+        path: 'tasks/kanban',
+        name: 'tasks.kanban',
+        component: () => import('@/pages/tasks/Kanban.vue'),
       },
       // Bookmarks
       {
@@ -72,6 +83,24 @@ export const routes: RouteRecordRaw[] = [
         path: 'finance',
         name: 'finance',
         component: () => import('@/pages/finance/Index.vue'),
+      },
+      // Budget
+      {
+        path: 'budget',
+        name: 'budget',
+        component: () => import('@/pages/budget/Index.vue'),
+      },
+      // Vault
+      {
+        path: 'vault',
+        name: 'vault',
+        component: () => import('@/pages/vault/Index.vue'),
+      },
+      // Google Drive
+      {
+        path: 'drive',
+        name: 'drive',
+        component: () => import('@/pages/drive/Index.vue'),
       },
       // Reading List
       {

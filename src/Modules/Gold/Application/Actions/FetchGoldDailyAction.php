@@ -14,7 +14,7 @@ class FetchGoldDailyAction
     ) {}
 
     /**
-     * Fetch today's gold price, calculate change, and persist.
+     * Fetch today's gold price, calculate change from yesterday, and persist.
      *
      * @throws \RuntimeException when price cannot be fetched or parsed.
      */
@@ -27,9 +27,11 @@ class FetchGoldDailyAction
         }
 
         $today = today()->toDateString();
+        $yesterday = today()->subDay()->toDateString();
 
-        $latest = $this->repository->getLatest();
-        $prevPrice = $latest?->price ?? 0;
+        // Ambil harga kemarin sebagai acuan change, bukan data terakhir
+        $prevDay = $this->repository->getByDate($yesterday);
+        $prevPrice = $prevDay?->price ?? 0;
 
         $change = $prevPrice > 0 ? $price - $prevPrice : 0;
         $changePercent = $prevPrice > 0

@@ -45,7 +45,10 @@ export const navigation: NavGroup[] = [
         id: 'tasks',
         label: 'Tugas',
         icon: 'ListTodo',
-        to: '/tasks',
+        children: [
+          { label: 'List', icon: 'List', to: '/tasks' },
+          { label: 'Kanban', icon: 'Columns3', to: '/tasks/kanban' },
+        ],
       },
       {
         id: 'pomodoro',
@@ -107,6 +110,12 @@ export const navigation: NavGroup[] = [
         to: '/finance',
       },
       {
+        id: 'budget',
+        label: 'Budget',
+        icon: 'PiggyBank',
+        to: '/budget',
+      },
+      {
         id: 'market',
         label: 'Market',
         icon: 'TrendingUp',
@@ -129,6 +138,18 @@ export const navigation: NavGroup[] = [
         label: 'Wishlist',
         icon: 'Heart',
         to: '/wishlist',
+      },
+      {
+        id: 'vault',
+        label: 'Password Vault',
+        icon: 'Lock',
+        to: '/vault',
+      },
+      {
+        id: 'drive',
+        label: 'Google Drive',
+        icon: 'HardDrive',
+        to: '/drive',
       },
     ],
   },

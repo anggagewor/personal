@@ -320,6 +320,88 @@
 
 ---
 
+## 23. Quick Command (Cmd+K)
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Keyboard Shortcut | `Cmd+K` / `Ctrl+K` membuka command palette |
+| Navigasi Cepat | Cari dan jump ke semua halaman di dashboard |
+| Dynamic Search | Ketik 2+ karakter → search notes, tasks, bookmarks via API |
+| Keyboard Navigation | Arrow up/down + Enter untuk pilih |
+| Debounced | API call di-debounce 300ms agar tidak spam |
+
+---
+
+## 24. Budget Planning
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| CRUD | Buat, edit, hapus budget per kategori per bulan |
+| Upsert | Satu kategori/bulan hanya boleh satu budget (auto-update jika sudah ada) |
+| Summary | Total budget, total terpakai, sisa budget |
+| Progress Bar | Visual bar per kategori (hijau/amber/merah) |
+| Alert Near Limit | Warning saat spending ≥80% budget |
+| Alert Exceeded | Alert saat spending melebihi budget |
+| Integration Finance | Spending dihitung otomatis dari data Finance module |
+
+**Endpoints:** `/api/budgets`, `/api/budgets/summary`
+
+---
+
+## 25. Password Vault
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| CRUD | Tambah, edit, hapus credential |
+| Client-side Encryption | Password dienkripsi di browser sebelum dikirim ke server |
+| @purdia/crypto | Menggunakan AES-GCM via Web Crypto API |
+| Toggle Show | Lihat/sembunyikan password (decrypt on-demand) |
+| Copy to Clipboard | Salin password tanpa harus lihat |
+| Search | Cari berdasarkan nama, username, URL |
+| Category | Organisasi credential per kategori |
+| URL Link | Buka URL langsung dari vault |
+
+**Endpoints:** `/api/vault`, `/api/vault/categories`
+
+---
+
+## 26. Kanban Board
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| 3 Kolom | To Do, In Progress, Selesai |
+| Drag & Drop | HTML5 native drag & drop antar kolom |
+| Optimistic Update | Status langsung berubah, API call di background |
+| Priority Badge | Warna badge sesuai priority (low/medium/high) |
+| Due Date | Tampil di setiap card |
+| Link ke List | Tombol kembali ke view list biasa |
+
+**Route:** `/tasks/kanban`
+
+---
+
+## 27. Google Drive Integration
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| OAuth Connect | Hubungkan akun Google via OAuth 2.0 popup |
+| Disconnect | Putuskan koneksi kapan saja |
+| File Manager | Browse file & folder, navigasi masuk/keluar folder |
+| Upload | Upload file ke Drive (max 10MB) |
+| Download | Download file dari Drive |
+| Create Folder | Buat folder baru |
+| Delete | Hapus file/folder |
+| Backup All Data | Export semua data sebagai JSON ke folder "Purdia Backups" |
+| Sync Notes | Upload semua catatan sebagai HTML ke folder "Purdia Notes" |
+| Auto Refresh Token | Token expired otomatis di-refresh |
+| Encrypted Storage | Token disimpan terenkripsi di database |
+
+**Endpoints:** `/api/drive/status`, `/api/drive/auth-url`, `/api/drive/callback`, `/api/drive/disconnect`, `/api/drive/files`, `/api/drive/files/upload`, `/api/drive/files/{id}/download`, `/api/drive/files/{id}`, `/api/drive/folders`, `/api/drive/backup`, `/api/drive/sync-notes`
+
+**Setup:** Lihat `docs/google-drive-setup.md`
+
+---
+
 ## Frontend Pages
 
 | Halaman | Route |
@@ -330,11 +412,15 @@
 | Notes | `/notes` |
 | Bookmarks | `/bookmarks` |
 | Tasks | `/tasks` |
+| Kanban Board | `/tasks/kanban` |
 | Calendar | `/calendar` |
 | Pomodoro | `/pomodoro` |
 | Scratchpads | `/scratchpads` |
 | Habits | `/habits` |
 | Finance | `/finance` |
+| Budget | `/budget` |
+| Password Vault | `/vault` |
+| Google Drive | `/drive` |
 | Market | `/market` |
 | Emas Antam | `/gold` |
 | Reading List | `/reading-list` |

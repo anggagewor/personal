@@ -25,5 +25,8 @@ return [
     Modules\Trash\Infrastructure\Providers\TrashServiceProvider::class,
     Modules\Market\Infrastructure\Providers\MarketServiceProvider::class,
     Modules\Gold\Infrastructure\Providers\GoldServiceProvider::class,
+    Modules\Budget\Infrastructure\Providers\BudgetServiceProvider::class,
+    Modules\Vault\Infrastructure\Providers\VaultServiceProvider::class,
+    Modules\GoogleDrive\Infrastructure\Providers\GoogleDriveServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
 ];
