@@ -17,6 +17,7 @@
     "@purdia/toast": "file:packages/toast",
     "@purdia/ui": "file:packages/ui",
     "@purdia/utils": "file:packages/utils",
+    "lightweight-charts": "^4.2.3",
     "pinia": "^3.0.4",
     "puppeteer": "^25.4.0",
     "vue": "^3.5.38",

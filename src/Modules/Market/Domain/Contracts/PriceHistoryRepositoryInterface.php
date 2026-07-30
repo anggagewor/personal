@@ -61,6 +61,14 @@ interface PriceHistoryRepositoryInterface
     public function getSparklines(int $userId, int $points = 20): array;
 
     /**
+     * Get OHLC (candlestick) data aggregated by interval.
+     *
+     * @param string $interval One of: '1h', '4h', '1d'
+     * @return array<int, array{time: string, open: float, high: float, low: float, close: float}>
+     */
+    public function getOhlcHistory(int $userId, string $symbol, string $from, string $to, string $interval = '1d'): array;
+
+    /**
      * Clean up old history (keep last N days).
      */
     public function pruneOlderThan(int $days = 30): int;

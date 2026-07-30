@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { formatCurrency } from '@purdia/utils'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSkeleton from '@purdia/ui/src/components/BaseSkeleton.vue'
-import { LineChart } from '@purdia/charts'
+import { CandlestickChart } from '@purdia/charts'
+import type { CandlestickItem } from '@purdia/charts'
 import { TrendingUp, TrendingDown, RefreshCw, Settings, Download, Upload, FileDown } from '@lucide/vue'
-import type { WatchlistItem, PriceData, HistoryPoint } from '@/types/market'
+import type { WatchlistItem, PriceData, OhlcPoint } from '@/types/market'
 import * as marketApi from '@/api/market'
 
 const { success, error: showError } = useToast()
@@ -18,21 +18,18 @@ const refreshInterval = ref(15)
 const loading = ref(true)
 const refreshing = ref(false)
 
-// All history data per symbol
-const allHistory = ref<Record<string, HistoryPoint[]>>({})
+// OHLC data per symbol
+const allOhlc = ref<Record<string, CandlestickItem[]>>({})
 const chartLoading = ref(false)
 
 // --- Date range ---
-type RangeKey = '1h' | '6h' | '12h' | '1d' | '7d' | '30d'
-const activeRange = ref<RangeKey>('1d')
+type RangeKey = '1d' | '7d' | '30d'
+const activeRange = ref<RangeKey>('7d')
 
-const rangeOptions: { key: RangeKey; label: string }[] = [
-  { key: '1h', label: '1J' },
-  { key: '6h', label: '6J' },
-  { key: '12h', label: '12J' },
-  { key: '1d', label: '1H' },
-  { key: '7d', label: '7H' },
-  { key: '30d', label: '30H' },
+const rangeOptions: { key: RangeKey; label: string; interval: string }[] = [
+  { key: '1d', label: '1H', interval: '1h' },
+  { key: '7d', label: '7H', interval: '4h' },
+  { key: '30d', label: '30H', interval: '1d' },
 ]
 
 function getRangeFromTo(range: RangeKey): { from: string; to: string } {
@@ -41,15 +38,16 @@ function getRangeFromTo(range: RangeKey): { from: string; to: string } {
   const from = new Date(now)
 
   switch (range) {
-    case '1h': from.setHours(from.getHours() - 1); break
-    case '6h': from.setHours(from.getHours() - 6); break
-    case '12h': from.setHours(from.getHours() - 12); break
     case '1d': from.setDate(from.getDate() - 1); break
     case '7d': from.setDate(from.getDate() - 7); break
     case '30d': from.setDate(from.getDate() - 30); break
   }
 
   return { from: from.toISOString().slice(0, 19).replace('T', ' '), to }
+}
+
+function getInterval(range: RangeKey): string {
+  return rangeOptions.find(o => o.key === range)?.interval ?? '1d'
 }
 
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
@@ -70,97 +68,14 @@ function formatPrice(price: number, symbol: string): string {
   return price.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
 }
 
-// --- Chart colors per type ---
-const typeColors: Record<string, string> = {
-  forex: '#3b82f6',
-  crypto: '#f59e0b',
-  stock: '#8b5cf6',
-  commodity: '#10b981',
-}
-
-const lineColors = [
-  '#3b82f6', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444',
-  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
-]
-
-// --- Chart data: one dataset per symbol ---
-const chartData = computed(() => {
-  const symbolsWithData = items.value.filter(item => allHistory.value[item.symbol]?.length >= 2)
-  if (!symbolsWithData.length) return null
-
-  // Use the longest history for labels (time axis)
-  const longestHistory = symbolsWithData.reduce((longest, item) => {
-    const h = allHistory.value[item.symbol] ?? []
-    return h.length > longest.length ? h : longest
-  }, [] as HistoryPoint[])
-
-  const labels = longestHistory.map(h => {
-    const d = new Date(h.fetched_at)
-    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-  })
-
-  const datasets = symbolsWithData.map((item, index) => {
-    const history = allHistory.value[item.symbol] ?? []
-    // Normalize: percentage change from first data point (so all lines comparable)
-    const basePrice = history[0]?.price ?? 1
-    const normalizedData = history.map(h => ((h.price - basePrice) / basePrice) * 100)
-
-    return {
-      label: item.label || item.symbol,
-      data: normalizedData,
-      borderColor: lineColors[index % lineColors.length],
-      backgroundColor: 'transparent',
-      tension: 0.3,
-      pointRadius: 0,
-      borderWidth: 2,
-    }
-  })
-
-  return { labels, datasets }
-})
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  interaction: {
-    mode: 'index' as const,
-    intersect: false,
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'bottom' as const,
-      labels: {
-        boxWidth: 12,
-        boxHeight: 2,
-        usePointStyle: false,
-        padding: 16,
-        font: { size: 11 },
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (ctx: { dataset: { label: string }; parsed: { y: number } }) => {
-          return `${ctx.dataset.label}: ${ctx.parsed.y >= 0 ? '+' : ''}${ctx.parsed.y.toFixed(2)}%`
-        },
-      },
-    },
-  },
-  scales: {
-    x: {
-      display: true,
-      grid: { display: false },
-      ticks: { maxTicksLimit: 10, font: { size: 10 } },
-    },
-    y: {
-      display: true,
-      grid: { color: 'rgba(156, 163, 175, 0.1)' },
-      ticks: {
-        font: { size: 10 },
-        callback: (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`,
-      },
-    },
-  },
+function toCandles(ohlcData: OhlcPoint[]): CandlestickItem[] {
+  return ohlcData.map(p => ({
+    time: p.time.includes(' ') ? p.time.split(' ')[0] : p.time,
+    open: p.open,
+    high: p.high,
+    low: p.low,
+    close: p.close,
+  }))
 }
 
 // --- Actions ---
@@ -183,36 +98,36 @@ async function fetchAll() {
     loading.value = false
   }
 
-  // Load history for all symbols
-  await loadAllHistory()
+  await loadAllOhlc()
 }
 
-async function loadAllHistory() {
+async function loadAllOhlc() {
   if (!items.value.length) return
   chartLoading.value = true
 
   const { from, to } = getRangeFromTo(activeRange.value)
+  const interval = getInterval(activeRange.value)
 
   const results = await Promise.allSettled(
     items.value.map(item =>
-      marketApi.fetchHistory(item.symbol, { from, to })
+      marketApi.fetchOhlc(item.symbol, { from, to, interval })
     )
   )
 
-  const historyMap: Record<string, HistoryPoint[]> = {}
+  const ohlcMap: Record<string, CandlestickItem[]> = {}
   results.forEach((res, idx) => {
-    if (res.status === 'fulfilled') {
-      historyMap[items.value[idx].symbol] = res.value.data
+    if (res.status === 'fulfilled' && res.value.data.length > 0) {
+      ohlcMap[items.value[idx].symbol] = toCandles(res.value.data)
     }
   })
 
-  allHistory.value = historyMap
+  allOhlc.value = ohlcMap
   chartLoading.value = false
 }
 
 async function changeRange(range: RangeKey) {
   activeRange.value = range
-  await loadAllHistory()
+  await loadAllOhlc()
 }
 
 async function refreshPrices() {
@@ -280,7 +195,7 @@ async function handleImport(event: Event) {
     formData.append('file', file)
     const res = await marketApi.importData(formData)
     success(res.data.message ?? `Berhasil mengimpor ${res.data.data?.imported ?? 0} data.`)
-    await loadAllHistory()
+    await loadAllOhlc()
   } catch {
     showError('Gagal mengimpor data. Pastikan format CSV sesuai template.')
   } finally {
@@ -389,40 +304,60 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Combined chart for all symbols -->
-        <div class="mt-6 rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Performa (%)</h2>
-            <div class="flex items-center gap-1">
-              <button
-                v-for="opt in rangeOptions"
-                :key="opt.key"
-                class="rounded px-2 py-1 text-xs font-medium transition-colors"
-                :class="activeRange === opt.key
-                  ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
-                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
-                @click="changeRange(opt.key)"
-              >
-                {{ opt.label }}
-              </button>
-            </div>
+        <!-- Range selector -->
+        <div class="mt-6 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Grafik Candlestick</h2>
+          <div class="flex items-center gap-1">
+            <button
+              v-for="opt in rangeOptions"
+              :key="opt.key"
+              class="rounded px-2 py-1 text-xs font-medium transition-colors"
+              :class="activeRange === opt.key
+                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'"
+              @click="changeRange(opt.key)"
+            >
+              {{ opt.label }}
+            </button>
           </div>
+        </div>
 
-          <div v-if="chartLoading" class="mt-4 flex items-center justify-center py-16">
-            <RefreshCw :size="20" class="animate-spin text-gray-400" />
+        <!-- Per-symbol candlestick charts -->
+        <div v-if="chartLoading" class="mt-4 flex items-center justify-center py-16">
+          <RefreshCw :size="20" class="animate-spin text-gray-400" />
+        </div>
+
+        <div v-else-if="Object.keys(allOhlc).length > 0" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div
+            v-for="item in items.filter(i => allOhlc[i.symbol]?.length >= 2)"
+            :key="'chart-' + item.id"
+            class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+          >
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ item.symbol }}</p>
+                <span v-if="item.label" class="text-xs text-gray-500 dark:text-gray-400">{{ item.label }}</span>
+              </div>
+              <span
+                v-if="getPrice(item.symbol)"
+                class="text-xs font-medium"
+                :class="getPrice(item.symbol)!.change_percent >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'"
+              >
+                {{ getPrice(item.symbol)!.change_percent >= 0 ? '+' : '' }}{{ getPrice(item.symbol)!.change_percent.toFixed(2) }}%
+              </span>
+            </div>
+            <CandlestickChart :data="allOhlc[item.symbol]" :height="250" />
           </div>
-          <div v-else-if="chartData" class="mt-4 h-72">
-            <LineChart :data="chartData" :options="chartOptions" />
-          </div>
-          <div v-else class="mt-4 flex flex-col items-center py-16 text-center">
-            <TrendingUp :size="32" class="text-gray-300 dark:text-gray-600" />
-            <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">
-              Belum ada riwayat harga.
-            </p>
-            <p class="mt-1 text-xs text-gray-400 dark:text-gray-600">
-              Data akan terkumpul seiring waktu setelah cron aktif.
-            </p>
-          </div>
+        </div>
+
+        <div v-else class="mt-4 flex flex-col items-center rounded-xl border border-gray-200 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-800">
+          <TrendingUp :size="32" class="text-gray-300 dark:text-gray-600" />
+          <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">
+            Belum ada riwayat harga.
+          </p>
+          <p class="mt-1 text-xs text-gray-400 dark:text-gray-600">
+            Data akan terkumpul seiring waktu setelah cron aktif.
+          </p>
         </div>
 
         <!-- Auto refresh info -->

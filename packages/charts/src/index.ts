@@ -1,3 +1,5 @@
 export { default as LineChart } from './components/LineChart.vue'
 export { default as BarChart } from './components/BarChart.vue'
 export { default as DoughnutChart } from './components/DoughnutChart.vue'
+export { default as CandlestickChart } from './components/CandlestickChart.vue'
+export type { CandlestickItem } from './components/CandlestickChart.vue'

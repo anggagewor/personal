@@ -8,6 +8,7 @@ use Illuminate\Routing\Controller;
 use Modules\Market\Application\Actions\AddWatchlistItemAction;
 use Modules\Market\Application\Actions\ExportMarketHistoryAction;
 use Modules\Market\Application\Actions\FetchMarketPricesAction;
+use Modules\Market\Application\Actions\GetOhlcHistoryAction;
 use Modules\Market\Application\Actions\GetPriceHistoryAction;
 use Modules\Market\Application\Actions\ImportMarketHistoryAction;
 use Modules\Market\Application\Actions\RemoveWatchlistItemAction;
@@ -248,6 +249,34 @@ class MarketController extends Controller
         ];
 
         return $this->streamCsv($sample, 'market-import-template.csv', ['symbol', 'price', 'change', 'change_percent', 'fetched_at']);
+    }
+
+    /**
+     * Get OHLC (candlestick) data for a specific symbol.
+     */
+    public function ohlc(Request $request, string $symbol, GetOhlcHistoryAction $action): JsonResponse
+    {
+        $from = $request->query('from');
+        $to = $request->query('to');
+        $interval = $request->query('interval', '1d');
+
+        if (!$from || !$to) {
+            // Default to last 30 days
+            $to = now()->format('Y-m-d H:i:s');
+            $from = now()->subDays(30)->format('Y-m-d H:i:s');
+        }
+
+        $data = $action->execute(
+            userId: $request->user()->id,
+            symbol: strtoupper($symbol),
+            from: $from,
+            to: $to,
+            interval: $interval,
+        );
+
+        return response()->json([
+            'data' => $data,
+        ]);
     }
 
     private function streamCsv(array $rows, string $filename, array $headers): StreamedResponse

@@ -115,11 +115,6 @@ async function connectDrive() {
     connecting.value = false
   }
 }
-    // Error handled globally
-  } finally {
-    connecting.value = false
-  }
-}
 
 async function disconnectDrive() {
   try {

@@ -1,5 +1,5 @@
 import { get, upload } from '@purdia/http'
-import type { WatchlistItem, PriceData, HistoryPoint } from '@/types/market'
+import type { WatchlistItem, PriceData, HistoryPoint, OhlcPoint } from '@/types/market'
 
 export function fetchWatchlist() {
   return get<WatchlistItem[]>('/market/watchlist')
@@ -11,6 +11,10 @@ export function fetchPrices() {
 
 export function fetchHistory(symbol: string, params: { from: string; to: string }) {
   return get<HistoryPoint[]>(`/market/history/${symbol}`, { params })
+}
+
+export function fetchOhlc(symbol: string, params: { from: string; to: string; interval?: string }) {
+  return get<OhlcPoint[]>(`/market/ohlc/${symbol}`, { params })
 }
 
 export function exportData(params: { format: 'csv' | 'json' }) {

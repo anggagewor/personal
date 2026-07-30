@@ -20,3 +20,11 @@ export interface HistoryPoint {
   change_percent: number
   fetched_at: string
 }
+
+export interface OhlcPoint {
+  time: string
+  open: number
+  high: number
+  low: number
+  close: number
+}

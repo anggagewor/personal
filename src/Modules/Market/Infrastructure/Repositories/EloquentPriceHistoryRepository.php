@@ -136,6 +136,50 @@ class EloquentPriceHistoryRepository implements PriceHistoryRepositoryInterface
         return PriceHistoryModel::where('fetched_at', '<', now()->subDays($days))->delete();
     }
 
+    public function getOhlcHistory(int $userId, string $symbol, string $from, string $to, string $interval = '1d'): array
+    {
+        // Fetch raw tick data and aggregate to OHLC in PHP (MariaDB-friendly)
+        $rows = PriceHistoryModel::where('user_id', $userId)
+            ->where('symbol', $symbol)
+            ->whereBetween('fetched_at', [$from, $to])
+            ->orderBy('fetched_at')
+            ->get(['price', 'fetched_at']);
+
+        if ($rows->isEmpty()) {
+            return [];
+        }
+
+        // Group by period
+        $grouped = [];
+        foreach ($rows as $row) {
+            $period = $this->getPeriodKey($row->fetched_at, $interval);
+            $grouped[$period][] = (float) $row->price;
+        }
+
+        // Build OHLC candles
+        $candles = [];
+        foreach ($grouped as $period => $prices) {
+            $candles[] = [
+                'time' => $period,
+                'open' => $prices[0],
+                'high' => max($prices),
+                'low' => min($prices),
+                'close' => end($prices),
+            ];
+        }
+
+        return $candles;
+    }
+
+    private function getPeriodKey(\Illuminate\Support\Carbon $date, string $interval): string
+    {
+        return match ($interval) {
+            '1h' => $date->format('Y-m-d H:00:00'),
+            '4h' => $date->format('Y-m-d') . ' ' . str_pad((string) (intdiv((int) $date->format('H'), 4) * 4), 2, '0', STR_PAD_LEFT) . ':00:00',
+            default => $date->format('Y-m-d'),
+        };
+    }
+
     private function toEntity(PriceHistoryModel $model): PriceSnapshot
     {
         return new PriceSnapshot(
