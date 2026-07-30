@@ -1,19 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { Plus, Trash2, ExternalLink, Bookmark } from '@lucide/vue'
+import type { BookmarkItem } from '@/types/bookmark'
+import * as bookmarksApi from '@/api/bookmarks'
 
 const toast = useToast()
-
-interface BookmarkItem {
-  id: number
-  title: string
-  url: string
-  description: string | null
-  category: string | null
-  created_at: string
-}
 
 const grouped = ref<Record<string, BookmarkItem[]>>({})
 const loading = ref(false)
@@ -25,7 +17,7 @@ const form = ref({ title: '', url: '', description: '', category: '' })
 async function fetchBookmarks() {
   loading.value = true
   try {
-    const response = await get<Record<string, BookmarkItem[]>>('/bookmarks')
+    const response = await bookmarksApi.fetchBookmarks()
     grouped.value = response.data
   } catch {
     // Error toast handled globally by @purdia/http onError
@@ -39,10 +31,10 @@ async function saveBookmark() {
 
   try {
     if (editingBookmark.value) {
-      await put(`/bookmarks/${editingBookmark.value.id}`, payload)
+      await bookmarksApi.updateBookmark(editingBookmark.value.id, payload)
       toast.success('Bookmark berhasil diperbarui.')
     } else {
-      await post('/bookmarks', payload)
+      await bookmarksApi.createBookmark(payload)
       toast.success('Bookmark berhasil ditambahkan.')
     }
     closeForm()
@@ -54,7 +46,7 @@ async function saveBookmark() {
 
 async function deleteBookmark(bookmark: BookmarkItem) {
   try {
-    await del(`/bookmarks/${bookmark.id}`)
+    await bookmarksApi.deleteBookmark(bookmark.id)
     toast.success('Bookmark berhasil dihapus.')
     fetchBookmarks()
   } catch {

@@ -1,21 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get, post, del } from '@purdia/http'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Trash2, ExternalLink, Check, Star, BookOpen } from '@lucide/vue'
-
-interface ReadingItem {
-  id: number
-  title: string
-  url: string
-  description: string | null
-  domain: string | null
-  is_read: boolean
-  is_favorite: boolean
-  created_at: string
-}
+import type { ReadingItem } from '@/types/reading-list'
+import * as readingListApi from '@/api/reading-list'
 
 const items = ref<ReadingItem[]>([])
 const showForm = ref(false)
@@ -28,31 +18,31 @@ async function fetchItems() {
   if (filter.value === 'favorite') params.favorite = '1'
 
   try {
-    const res = await get<ReadingItem[]>('/reading-list', { params })
+    const res = await readingListApi.fetchReadingList(params)
     items.value = res.data
   } catch { /* */ }
 }
 
 async function addItem() {
   if (!form.value.url.trim()) return
-  await post('/reading-list', form.value)
+  await readingListApi.createReadingItem(form.value)
   form.value = { url: '', title: '', description: '' }
   showForm.value = false
   fetchItems()
 }
 
 async function toggleRead(item: ReadingItem) {
-  await post(`/reading-list/${item.id}/toggle-read`)
+  await readingListApi.toggleRead(item.id)
   item.is_read = !item.is_read
 }
 
 async function toggleFavorite(item: ReadingItem) {
-  await post(`/reading-list/${item.id}/toggle-favorite`)
+  await readingListApi.toggleFavorite(item.id)
   item.is_favorite = !item.is_favorite
 }
 
 async function deleteItem(item: ReadingItem) {
-  await del(`/reading-list/${item.id}`)
+  await readingListApi.deleteReadingItem(item.id)
   items.value = items.value.filter((i) => i.id !== item.id)
 }
 

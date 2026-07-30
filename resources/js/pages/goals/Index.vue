@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -8,23 +7,8 @@ import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseProgress from '@purdia/ui/src/components/BaseProgress.vue'
 import BaseTextarea from '@purdia/ui/src/components/BaseTextarea.vue'
 import { Plus, Trash2, Check, Target } from '@lucide/vue'
-
-interface Milestone {
-  id: number
-  title: string
-  is_completed: boolean
-  position: number
-}
-
-interface Goal {
-  id: number
-  title: string
-  description: string | null
-  target_date: string | null
-  status: string
-  progress: number
-  milestones: Milestone[]
-}
+import type { Goal, Milestone } from '@/types/goal'
+import * as goalsApi from '@/api/goals'
 
 const goals = ref<Goal[]>([])
 const showForm = ref(false)
@@ -33,7 +17,7 @@ const newMilestone = ref<Record<number, string>>({})
 
 async function fetchGoals() {
   try {
-    const res = await get<Goal[]>('/goals')
+    const res = await goalsApi.fetchGoals()
     goals.value = res.data
   } catch { /* */ }
 }
@@ -50,7 +34,7 @@ async function createGoal() {
     target_date: form.value.target_date || null,
     milestones: form.value.milestones.filter((m) => m.title.trim()),
   }
-  await post('/goals', payload)
+  await goalsApi.createGoal(payload)
   showForm.value = false
   form.value = { title: '', description: '', target_date: '', milestones: [{ title: '' }] }
   fetchGoals()
@@ -58,7 +42,7 @@ async function createGoal() {
 
 async function toggleMilestone(milestone: Milestone) {
   try {
-    const res = await post<Goal>(`/milestones/${milestone.id}/toggle`)
+    const res = await goalsApi.toggleMilestone(milestone.id)
     const idx = goals.value.findIndex((g) => g.milestones.some((m) => m.id === milestone.id))
     if (idx >= 0) goals.value[idx] = res.data
   } catch { /* */ }
@@ -67,13 +51,13 @@ async function toggleMilestone(milestone: Milestone) {
 async function addMilestoneToGoal(goal: Goal) {
   const title = newMilestone.value[goal.id]
   if (!title?.trim()) return
-  await post(`/goals/${goal.id}/milestones`, { title })
+  await goalsApi.addMilestone(goal.id, { title })
   newMilestone.value[goal.id] = ''
   fetchGoals()
 }
 
 async function deleteGoal(goal: Goal) {
-  await del(`/goals/${goal.id}`)
+  await goalsApi.deleteGoal(goal.id)
   goals.value = goals.value.filter((g) => g.id !== goal.id)
 }
 

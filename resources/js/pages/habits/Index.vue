@@ -1,23 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Trash2, Flame, Check } from '@lucide/vue'
+import type { Habit } from '@/types/habit'
+import * as habitsApi from '@/api/habits'
 
 const toast = useToast()
-
-interface Habit {
-  id: number
-  name: string
-  icon: string | null
-  color: string | null
-  frequency: string
-  completed_today: boolean
-  streak: number
-}
 
 const habits = ref<Habit[]>([])
 const showForm = ref(false)
@@ -25,7 +16,7 @@ const form = ref({ name: '', color: '' })
 
 async function fetchHabits() {
   try {
-    const res = await get<Habit[]>('/habits')
+    const res = await habitsApi.fetchHabits()
     habits.value = res.data
   } catch {
     // Error toast handled globally by @purdia/http onError
@@ -35,7 +26,7 @@ async function fetchHabits() {
 async function addHabit() {
   if (!form.value.name.trim()) return
   try {
-    await post('/habits', { name: form.value.name, color: form.value.color || null })
+    await habitsApi.createHabit({ name: form.value.name, color: form.value.color || null })
     toast.success('Habit berhasil ditambahkan.')
     form.value = { name: '', color: '' }
     showForm.value = false
@@ -47,7 +38,7 @@ async function addHabit() {
 
 async function toggleHabit(habit: Habit) {
   try {
-    const res = await post<{ completed: boolean; streak: number }>(`/habits/${habit.id}/toggle`)
+    const res = await habitsApi.toggleHabit(habit.id)
     habit.completed_today = res.data.completed
     habit.streak = res.data.streak
   } catch {
@@ -57,7 +48,7 @@ async function toggleHabit(habit: Habit) {
 
 async function deleteHabit(habit: Habit) {
   try {
-    await del(`/habits/${habit.id}`)
+    await habitsApi.deleteHabit(habit.id)
     habits.value = habits.value.filter((h) => h.id !== habit.id)
     toast.success('Habit berhasil dihapus.')
   } catch {

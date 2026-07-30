@@ -28,5 +28,7 @@ return [
     Modules\Budget\Infrastructure\Providers\BudgetServiceProvider::class,
     Modules\Vault\Infrastructure\Providers\VaultServiceProvider::class,
     Modules\GoogleDrive\Infrastructure\Providers\GoogleDriveServiceProvider::class,
+    Modules\Converter\Infrastructure\Providers\ConverterServiceProvider::class,
+    Modules\Accounting\Infrastructure\Providers\AccountingServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
 ];

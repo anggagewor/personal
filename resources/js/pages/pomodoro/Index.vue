@@ -1,24 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeUnmount } from 'vue'
-import { get, post } from '@purdia/http'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import { Play, Square, RotateCcw, Coffee } from '@lucide/vue'
-
-interface PomodoroSession {
-  id: number
-  task_id: number | null
-  duration: number
-  status: string
-  started_at: string
-  finished_at: string | null
-}
-
-interface PomodoroStats {
-  today: number
-  week: number
-  total_minutes_week: number
-}
+import type { PomodoroSession, PomodoroStats } from '@/types/pomodoro'
+import * as pomodoroApi from '@/api/pomodoro'
 
 const stats = ref<PomodoroStats>({ today: 0, week: 0, total_minutes_week: 0 })
 const activeSession = ref<PomodoroSession | null>(null)
@@ -41,7 +27,7 @@ const progress = computed(() => {
 
 async function startPomodoro() {
   try {
-    const res = await post<PomodoroSession>('/pomodoros', { duration: duration.value })
+    const res = await pomodoroApi.startSession(duration.value)
     activeSession.value = res.data
     timeLeft.value = duration.value * 60
     isRunning.value = true
@@ -71,7 +57,7 @@ function startTimer() {
 async function completePomodoro() {
   if (!activeSession.value) return
   try {
-    await post(`/pomodoros/${activeSession.value.id}/complete`)
+    await pomodoroApi.completeSession(activeSession.value.id)
     activeSession.value = null
     fetchStats()
     // Start break
@@ -87,7 +73,7 @@ async function cancelPomodoro() {
   timer = null
   isRunning.value = false
   if (activeSession.value) {
-    await post(`/pomodoros/${activeSession.value.id}/cancel`)
+    await pomodoroApi.cancelSession(activeSession.value.id)
     activeSession.value = null
   }
   timeLeft.value = duration.value * 60
@@ -105,7 +91,7 @@ function reset() {
 
 async function fetchStats() {
   try {
-    const res = await get<PomodoroStats>('/pomodoros/stats')
+    const res = await pomodoroApi.fetchStats()
     stats.value = res.data
   } catch { /* */ }
 }

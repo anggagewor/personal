@@ -1,21 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { formatDate } from '@purdia/utils'
 import BaseEditor from '@purdia/ui/src/components/BaseEditor.vue'
 import { Plus, Pin, Search, Trash2, FileText } from '@lucide/vue'
+import type { Note } from '@/types/note'
+import * as notesApi from '@/api/notes'
 
 const toast = useToast()
-
-interface Note {
-  id: number
-  title: string
-  content: string
-  is_pinned: boolean
-  created_at: string
-  updated_at: string
-}
 
 const notes = ref<Note[]>([])
 const search = ref('')
@@ -28,8 +20,8 @@ const form = ref({ title: '', content: '' })
 async function fetchNotes() {
   loading.value = true
   try {
-    const params = search.value ? { search: search.value } : {}
-    const response = await get<Note[]>('/notes', { params })
+    const params = search.value ? { search: search.value } : undefined
+    const response = await notesApi.fetchNotes(params)
     notes.value = response.data
   } catch {
     // Error toast handled globally by @purdia/http onError
@@ -42,12 +34,12 @@ async function saveNote() {
 
   try {
     if (editingNote.value) {
-      const response = await put<Note>(`/notes/${editingNote.value.id}`, form.value)
+      const response = await notesApi.updateNote(editingNote.value.id, form.value)
       const idx = notes.value.findIndex((n) => n.id === editingNote.value!.id)
       if (idx >= 0) notes.value[idx] = response.data
       toast.success('Catatan berhasil diperbarui.')
     } else {
-      const response = await post<Note>('/notes', form.value)
+      const response = await notesApi.createNote(form.value)
       notes.value.unshift(response.data)
       toast.success('Catatan berhasil dibuat.')
     }
@@ -59,7 +51,7 @@ async function saveNote() {
 
 async function togglePin(note: Note) {
   try {
-    await post<Note>(`/notes/${note.id}/toggle-pin`)
+    await notesApi.toggleNotePin(note.id)
     note.is_pinned = !note.is_pinned
   } catch {
     // Error toast handled globally by @purdia/http onError
@@ -68,7 +60,7 @@ async function togglePin(note: Note) {
 
 async function deleteNote(note: Note) {
   try {
-    await del(`/notes/${note.id}`)
+    await notesApi.deleteNote(note.id)
     notes.value = notes.value.filter((n) => n.id !== note.id)
     toast.success('Catatan berhasil dihapus.')
   } catch {

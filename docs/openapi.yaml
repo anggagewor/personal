@@ -1,0 +1,4003 @@
+openapi: 3.0.3
+info:
+  title: Purdia Dashboard API
+  description: Personal productivity dashboard API — auth, notes, tasks, calendar, finance, habits, and more.
+  version: 1.0.0
+  contact:
+    name: Purdia
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: Authentication (login, register, refresh, logout)
+  - name: Profile
+    description: User profile management
+  - name: Preferences
+    description: User preferences (theme, locale, etc.)
+  - name: Notes
+    description: Notes CRUD + pin toggle
+  - name: Tasks
+    description: Task management + reorder
+  - name: Bookmarks
+    description: Bookmark URLs
+  - name: Calendar
+    description: Calendar events & holidays
+  - name: Finance
+    description: Personal income/expense tracking
+  - name: Habits
+    description: Habit tracking + toggle
+  - name: Pomodoro
+    description: Pomodoro timer sessions
+  - name: Scratchpad
+    description: Quick scratch notes
+  - name: Journal
+    description: Daily journal entries + mood
+  - name: Goals
+    description: Goal setting & milestones
+  - name: Tags
+    description: Tagging system
+  - name: Quotes
+    description: Motivational quotes
+  - name: Wishlist
+    description: Wishlist items
+  - name: ReadingList
+    description: Reading list management
+  - name: Market
+    description: Market watchlist & price history
+  - name: Gold
+    description: Emas Antam (harga harian)
+  - name: Budget
+    description: Monthly budgets
+  - name: Vault
+    description: Password vault
+  - name: Converter
+    description: Custom unit converter
+  - name: Accounting
+    description: Double-entry accounting
+  - name: GoogleDrive
+    description: Google Drive integration
+  - name: Trash
+    description: Soft-delete restore
+  - name: Activity
+    description: Activity logs
+  - name: Dashboard
+    description: Dashboard & weather
+
+paths:
+  # ─── AUTH ─────────────────────────────────────────────────────────────────────
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 8
+                password_confirmation:
+                  type: string
+      responses:
+        '201':
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh token
+      responses:
+        '200':
+          description: Token baru
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      refresh_token:
+                        type: string
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (revoke all tokens)
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      responses:
+        '200':
+          description: Current user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserBasic'
+
+  # ─── PROFILE ──────────────────────────────────────────────────────────────────
+  /profile:
+    get:
+      tags: [Profile]
+      summary: Get profile
+      responses:
+        '200':
+          description: Profile data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Profile'
+    put:
+      tags: [Profile]
+      summary: Update profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+      responses:
+        '200':
+          description: Profil berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Profile'
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/password:
+    put:
+      tags: [Profile]
+      summary: Update password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [current_password, password, password_confirmation]
+              properties:
+                current_password:
+                  type: string
+                password:
+                  type: string
+                  minLength: 8
+                password_confirmation:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /profile/avatar:
+    post:
+      tags: [Profile]
+      summary: Upload avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Image file (jpg, jpeg, png, webp). Max 2MB.
+      responses:
+        '200':
+          description: Avatar berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      avatar:
+                        type: string
+                        format: uri
+                  message:
+                    type: string
+    delete:
+      tags: [Profile]
+      summary: Remove avatar
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── PREFERENCES ──────────────────────────────────────────────────────────────
+  /preferences:
+    get:
+      tags: [Preferences]
+      summary: Get preferences
+      responses:
+        '200':
+          description: Preferences data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Preferences'
+    put:
+      tags: [Preferences]
+      summary: Update preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Preferences'
+      responses:
+        '200':
+          description: Preferensi berhasil disimpan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Preferences'
+                  message:
+                    type: string
+
+  # ─── NOTES ────────────────────────────────────────────────────────────────────
+  /notes:
+    get:
+      tags: [Notes]
+      summary: List notes (paginated)
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Paginated notes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Note'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+    post:
+      tags: [Notes]
+      summary: Create note
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, content]
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                content:
+                  type: string
+                is_pinned:
+                  type: boolean
+      responses:
+        '201':
+          description: Catatan berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Note'
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /notes/{id}:
+    get:
+      tags: [Notes]
+      summary: Get single note
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Note detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Note'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Notes]
+      summary: Update note
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                content:
+                  type: string
+                is_pinned:
+                  type: boolean
+      responses:
+        '200':
+          description: Catatan berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Note'
+                  message:
+                    type: string
+    delete:
+      tags: [Notes]
+      summary: Delete note
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /notes/{id}/toggle-pin:
+    post:
+      tags: [Notes]
+      summary: Toggle pin status
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Pin status toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Note'
+                  message:
+                    type: string
+
+  # ─── TASKS ────────────────────────────────────────────────────────────────────
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks (paginated)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+        - name: priority
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaskPriority'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Paginated tasks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Task'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+    post:
+      tags: [Tasks]
+      summary: Create task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '201':
+          description: Task berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Task'
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /tasks/{id}:
+    get:
+      tags: [Tasks]
+      summary: Get single task
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Task detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Task'
+    put:
+      tags: [Tasks]
+      summary: Update task
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '200':
+          description: Task berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Task'
+                  message:
+                    type: string
+    delete:
+      tags: [Tasks]
+      summary: Delete task
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /tasks/reorder:
+    post:
+      tags: [Tasks]
+      summary: Reorder tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ordered_ids]
+              properties:
+                ordered_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── BOOKMARKS ────────────────────────────────────────────────────────────────
+  /bookmarks:
+    get:
+      tags: [Bookmarks]
+      summary: List bookmarks
+      responses:
+        '200':
+          description: All bookmarks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Bookmark'
+    post:
+      tags: [Bookmarks]
+      summary: Create bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookmarkInput'
+      responses:
+        '201':
+          description: Bookmark berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Bookmark'
+                  message:
+                    type: string
+
+  /bookmarks/{id}:
+    put:
+      tags: [Bookmarks]
+      summary: Update bookmark
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookmarkInput'
+      responses:
+        '200':
+          description: Bookmark berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Bookmark'
+                  message:
+                    type: string
+    delete:
+      tags: [Bookmarks]
+      summary: Delete bookmark
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── CALENDAR ─────────────────────────────────────────────────────────────────
+  /calendar-events:
+    get:
+      tags: [Calendar]
+      summary: List calendar events
+      responses:
+        '200':
+          description: All events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalendarEvent'
+    post:
+      tags: [Calendar]
+      summary: Create calendar event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarEventInput'
+      responses:
+        '201':
+          description: Event berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CalendarEvent'
+                  message:
+                    type: string
+
+  /calendar-events/{id}:
+    get:
+      tags: [Calendar]
+      summary: Get single event
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Event detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CalendarEvent'
+    put:
+      tags: [Calendar]
+      summary: Update event
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarEventInput'
+      responses:
+        '200':
+          description: Event berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CalendarEvent'
+                  message:
+                    type: string
+    delete:
+      tags: [Calendar]
+      summary: Delete event
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /holidays:
+    get:
+      tags: [Calendar]
+      summary: List holidays (authenticated)
+      responses:
+        '200':
+          description: Holidays list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Holiday'
+
+  /public/holidays:
+    get:
+      tags: [Calendar]
+      summary: List holidays (public, no auth)
+      security: []
+      responses:
+        '200':
+          description: Holidays list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Holiday'
+
+  # ─── FINANCE ──────────────────────────────────────────────────────────────────
+  /finances:
+    get:
+      tags: [Finance]
+      summary: List finances
+      responses:
+        '200':
+          description: Finance records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Finance'
+    post:
+      tags: [Finance]
+      summary: Create finance record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceInput'
+      responses:
+        '201':
+          description: Finance record created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Finance'
+                  message:
+                    type: string
+
+  /finances/{id}:
+    put:
+      tags: [Finance]
+      summary: Update finance record
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinanceInput'
+      responses:
+        '200':
+          description: Finance record updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Finance'
+                  message:
+                    type: string
+    delete:
+      tags: [Finance]
+      summary: Delete finance record
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /finances/summary:
+    get:
+      tags: [Finance]
+      summary: Get finance summary
+      responses:
+        '200':
+          description: Summary (income, expense, balance)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  # ─── HABITS ───────────────────────────────────────────────────────────────────
+  /habits:
+    get:
+      tags: [Habits]
+      summary: List habits
+      responses:
+        '200':
+          description: All habits
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Habit'
+    post:
+      tags: [Habits]
+      summary: Create habit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                frequency:
+                  type: string
+                  enum: [daily, weekly]
+      responses:
+        '201':
+          description: Habit berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Habit'
+                  message:
+                    type: string
+
+  /habits/{id}:
+    put:
+      tags: [Habits]
+      summary: Update habit
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                frequency:
+                  type: string
+                  enum: [daily, weekly]
+      responses:
+        '200':
+          description: Habit berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Habit'
+                  message:
+                    type: string
+    delete:
+      tags: [Habits]
+      summary: Delete habit
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /habits/{id}/toggle:
+    post:
+      tags: [Habits]
+      summary: Toggle habit completion for today
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Habit toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Habit'
+                  message:
+                    type: string
+
+  # ─── POMODORO ─────────────────────────────────────────────────────────────────
+  /pomodoros:
+    get:
+      tags: [Pomodoro]
+      summary: List pomodoros
+      responses:
+        '200':
+          description: Pomodoro sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pomodoro'
+    post:
+      tags: [Pomodoro]
+      summary: Start pomodoro session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                task_id:
+                  type: integer
+                  nullable: true
+                duration:
+                  type: integer
+                  minimum: 1
+                  maximum: 120
+                  description: Duration in minutes
+      responses:
+        '201':
+          description: Pomodoro session started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pomodoro'
+                  message:
+                    type: string
+
+  /pomodoros/{id}/complete:
+    post:
+      tags: [Pomodoro]
+      summary: Complete pomodoro session
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Pomodoro completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Pomodoro'
+                  message:
+                    type: string
+
+  /pomodoros/{id}/cancel:
+    post:
+      tags: [Pomodoro]
+      summary: Cancel pomodoro session
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /pomodoros/stats:
+    get:
+      tags: [Pomodoro]
+      summary: Get pomodoro statistics
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  # ─── SCRATCHPAD ───────────────────────────────────────────────────────────────
+  /scratchpads:
+    get:
+      tags: [Scratchpad]
+      summary: List scratchpads
+      responses:
+        '200':
+          description: All scratchpads
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Scratchpad'
+    post:
+      tags: [Scratchpad]
+      summary: Create scratchpad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  nullable: true
+                color:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+                position:
+                  type: integer
+      responses:
+        '201':
+          description: Scratchpad berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Scratchpad'
+                  message:
+                    type: string
+
+  /scratchpads/{id}:
+    put:
+      tags: [Scratchpad]
+      summary: Update scratchpad
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  nullable: true
+                color:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+                position:
+                  type: integer
+      responses:
+        '200':
+          description: Scratchpad berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Scratchpad'
+                  message:
+                    type: string
+    delete:
+      tags: [Scratchpad]
+      summary: Delete scratchpad
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── JOURNAL ──────────────────────────────────────────────────────────────────
+  /journals:
+    get:
+      tags: [Journal]
+      summary: List journals
+      responses:
+        '200':
+          description: Journal entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Journal'
+    post:
+      tags: [Journal]
+      summary: Create journal entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                mood:
+                  $ref: '#/components/schemas/JournalMood'
+                date:
+                  type: string
+                  format: date
+                  nullable: true
+      responses:
+        '201':
+          description: Journal entry created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Journal'
+                  message:
+                    type: string
+
+  /journals/moods:
+    get:
+      tags: [Journal]
+      summary: List available moods
+      responses:
+        '200':
+          description: Mood options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+
+  /journals/{dateOrId}:
+    get:
+      tags: [Journal]
+      summary: Get journal by date
+      parameters:
+        - name: dateOrId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Date (YYYY-MM-DD) to fetch journal entry
+      responses:
+        '200':
+          description: Journal entry for date
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Journal'
+    delete:
+      tags: [Journal]
+      summary: Delete journal entry
+      parameters:
+        - name: dateOrId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Journal entry ID
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── GOALS ────────────────────────────────────────────────────────────────────
+  /goals:
+    get:
+      tags: [Goals]
+      summary: List goals
+      responses:
+        '200':
+          description: All goals
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Goal'
+    post:
+      tags: [Goals]
+      summary: Create goal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalInput'
+      responses:
+        '201':
+          description: Goal berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Goal'
+                  message:
+                    type: string
+
+  /goals/{id}:
+    put:
+      tags: [Goals]
+      summary: Update goal
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalInput'
+      responses:
+        '200':
+          description: Goal berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Goal'
+                  message:
+                    type: string
+    delete:
+      tags: [Goals]
+      summary: Delete goal
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /goals/{id}/milestones:
+    post:
+      tags: [Goals]
+      summary: Add milestone to goal
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+      responses:
+        '201':
+          description: Milestone berhasil ditambahkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Goal'
+                  message:
+                    type: string
+
+  /goals/{id}/milestones/{milestoneId}/toggle:
+    post:
+      tags: [Goals]
+      summary: Toggle milestone completion
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - name: milestoneId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Milestone toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Goal'
+                  message:
+                    type: string
+
+  # ─── TAGS ─────────────────────────────────────────────────────────────────────
+  /tags:
+    get:
+      tags: [Tags]
+      summary: List tags
+      responses:
+        '200':
+          description: All tags
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tag'
+    post:
+      tags: [Tags]
+      summary: Create tag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                color:
+                  type: string
+                  maxLength: 20
+                  nullable: true
+      responses:
+        '201':
+          description: Tag berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+                  message:
+                    type: string
+
+  /tags/{id}:
+    put:
+      tags: [Tags]
+      summary: Update tag
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 50
+                color:
+                  type: string
+                  maxLength: 20
+                  nullable: true
+      responses:
+        '200':
+          description: Tag berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Tag'
+                  message:
+                    type: string
+    delete:
+      tags: [Tags]
+      summary: Delete tag
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /tags/{id}/attach:
+    post:
+      tags: [Tags]
+      summary: Attach tag to resource
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taggable_type, taggable_id]
+              properties:
+                taggable_type:
+                  type: string
+                  description: "Resource type (e.g. note, task)"
+                taggable_id:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /tags/{id}/detach:
+    post:
+      tags: [Tags]
+      summary: Detach tag from resource
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taggable_type, taggable_id]
+              properties:
+                taggable_type:
+                  type: string
+                taggable_id:
+                  type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── QUOTES ───────────────────────────────────────────────────────────────────
+  /quotes:
+    get:
+      tags: [Quotes]
+      summary: List quotes
+      responses:
+        '200':
+          description: All quotes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Quote'
+    post:
+      tags: [Quotes]
+      summary: Create quote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  maxLength: 1000
+                author:
+                  type: string
+                  maxLength: 255
+                  nullable: true
+      responses:
+        '201':
+          description: Quote berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Quote'
+                  message:
+                    type: string
+
+  /quotes/today:
+    get:
+      tags: [Quotes]
+      summary: Get today's quote
+      responses:
+        '200':
+          description: Daily quote
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Quote'
+
+  /quotes/{id}:
+    delete:
+      tags: [Quotes]
+      summary: Delete quote
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── WISHLIST ─────────────────────────────────────────────────────────────────
+  /wishlists:
+    get:
+      tags: [Wishlist]
+      summary: List wishlist items
+      responses:
+        '200':
+          description: All wishlist items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WishlistItem'
+    post:
+      tags: [Wishlist]
+      summary: Create wishlist item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                description:
+                  type: string
+                  nullable: true
+                category:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+      responses:
+        '201':
+          description: Wishlist item created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WishlistItem'
+                  message:
+                    type: string
+
+  /wishlists/{id}:
+    put:
+      tags: [Wishlist]
+      summary: Update wishlist item
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                description:
+                  type: string
+                  nullable: true
+                category:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+      responses:
+        '200':
+          description: Wishlist item updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WishlistItem'
+                  message:
+                    type: string
+    delete:
+      tags: [Wishlist]
+      summary: Delete wishlist item
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /wishlists/{id}/toggle:
+    post:
+      tags: [Wishlist]
+      summary: Toggle wishlist purchased status
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Wishlist toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WishlistItem'
+                  message:
+                    type: string
+
+  # ─── READING LIST ─────────────────────────────────────────────────────────────
+  /reading-list:
+    get:
+      tags: [ReadingList]
+      summary: List reading items
+      responses:
+        '200':
+          description: All reading items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReadingItem'
+    post:
+      tags: [ReadingList]
+      summary: Add reading item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                  nullable: true
+                url:
+                  type: string
+                  format: uri
+                  maxLength: 2048
+      responses:
+        '201':
+          description: Reading item added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ReadingItem'
+                  message:
+                    type: string
+
+  /reading-list/{id}:
+    delete:
+      tags: [ReadingList]
+      summary: Delete reading item
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /reading-list/{id}/toggle-read:
+    post:
+      tags: [ReadingList]
+      summary: Toggle read status
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Read status toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ReadingItem'
+                  message:
+                    type: string
+
+  /reading-list/{id}/toggle-favorite:
+    post:
+      tags: [ReadingList]
+      summary: Toggle favorite status
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Favorite status toggled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ReadingItem'
+                  message:
+                    type: string
+
+  # ─── MARKET ───────────────────────────────────────────────────────────────────
+  /market/watchlist:
+    get:
+      tags: [Market]
+      summary: List watchlist items
+      responses:
+        '200':
+          description: Watchlist symbols
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WatchlistItem'
+    post:
+      tags: [Market]
+      summary: Add symbol to watchlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [symbol, type]
+              properties:
+                symbol:
+                  type: string
+                  maxLength: 20
+                type:
+                  type: string
+                  enum: [forex, crypto, stock, commodity]
+                label:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+                position:
+                  type: integer
+                  minimum: 0
+                  nullable: true
+      responses:
+        '201':
+          description: Symbol added to watchlist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WatchlistItem'
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /market/watchlist/{id}:
+    delete:
+      tags: [Market]
+      summary: Remove symbol from watchlist
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /market/prices:
+    get:
+      tags: [Market]
+      summary: Get latest prices for watchlist
+      responses:
+        '200':
+          description: Latest prices from DB
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    additionalProperties:
+                      $ref: '#/components/schemas/PriceSnapshot'
+                  meta:
+                    type: object
+                    properties:
+                      refresh_interval:
+                        type: integer
+
+  /market/dashboard:
+    get:
+      tags: [Market]
+      summary: Market dashboard (watchlist + prices + sparkline)
+      responses:
+        '200':
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MarketDashboardItem'
+
+  /market/history/{symbol}:
+    get:
+      tags: [Market]
+      summary: Get price history for symbol
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Price history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PriceSnapshot'
+
+  /market/config:
+    get:
+      tags: [Market]
+      summary: Get market config
+      responses:
+        '200':
+          description: Market configuration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      refresh_interval:
+                        type: integer
+                      max_symbols:
+                        type: integer
+                      api_configured:
+                        type: boolean
+
+  /market/export:
+    get:
+      tags: [Market]
+      summary: Export market price history
+      parameters:
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [csv, json]
+            default: csv
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: CSV file download or JSON data
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+  /market/import:
+    post:
+      tags: [Market]
+      summary: Import market price history from CSV
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file (max 5MB)
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      imported:
+                        type: integer
+
+  /market/import/template:
+    get:
+      tags: [Market]
+      summary: Download CSV import template
+      responses:
+        '200':
+          description: CSV template file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  # ─── GOLD ─────────────────────────────────────────────────────────────────────
+  /gold/dashboard:
+    get:
+      tags: [Gold]
+      summary: Gold price dashboard
+      responses:
+        '200':
+          description: Gold dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /gold/history:
+    get:
+      tags: [Gold]
+      summary: Gold price history
+      responses:
+        '200':
+          description: Historical gold prices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+  /gold/export:
+    get:
+      tags: [Gold]
+      summary: Export gold price history
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  /gold/import:
+    post:
+      tags: [Gold]
+      summary: Import gold price history
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      imported:
+                        type: integer
+
+  /gold/import/template:
+    get:
+      tags: [Gold]
+      summary: Download gold CSV import template
+      responses:
+        '200':
+          description: CSV template
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+
+  # ─── BUDGET ───────────────────────────────────────────────────────────────────
+  /budgets:
+    get:
+      tags: [Budget]
+      summary: List budgets
+      responses:
+        '200':
+          description: All budgets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Budget'
+    post:
+      tags: [Budget]
+      summary: Create budget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category, amount, month]
+              properties:
+                category:
+                  type: string
+                  maxLength: 100
+                amount:
+                  type: number
+                  minimum: 0
+                month:
+                  type: string
+                  pattern: '^\d{4}-\d{2}$'
+                  description: Format YYYY-MM
+      responses:
+        '201':
+          description: Budget created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Budget'
+                  message:
+                    type: string
+
+  /budgets/{id}:
+    put:
+      tags: [Budget]
+      summary: Update budget
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                  maxLength: 100
+                amount:
+                  type: number
+                  minimum: 0
+                month:
+                  type: string
+                  pattern: '^\d{4}-\d{2}$'
+      responses:
+        '200':
+          description: Budget updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Budget'
+                  message:
+                    type: string
+    delete:
+      tags: [Budget]
+      summary: Delete budget
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /budgets/summary:
+    get:
+      tags: [Budget]
+      summary: Get budget summary
+      responses:
+        '200':
+          description: Budget summary data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  # ─── VAULT ────────────────────────────────────────────────────────────────────
+  /vault:
+    get:
+      tags: [Vault]
+      summary: List vault entries
+      responses:
+        '200':
+          description: All vault entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VaultEntry'
+    post:
+      tags: [Vault]
+      summary: Create vault entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultEntryInput'
+      responses:
+        '201':
+          description: Vault entry created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultEntry'
+                  message:
+                    type: string
+
+  /vault/{id}:
+    put:
+      tags: [Vault]
+      summary: Update vault entry
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VaultEntryInput'
+      responses:
+        '200':
+          description: Vault entry updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/VaultEntry'
+                  message:
+                    type: string
+    delete:
+      tags: [Vault]
+      summary: Delete vault entry
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /vault/categories:
+    get:
+      tags: [Vault]
+      summary: List vault categories
+      responses:
+        '200':
+          description: Available categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+
+  # ─── CONVERTER ────────────────────────────────────────────────────────────────
+  /converter/categories:
+    get:
+      tags: [Converter]
+      summary: List custom categories
+      responses:
+        '200':
+          description: Custom converter categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConverterCategory'
+    post:
+      tags: [Converter]
+      summary: Create custom category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 255
+                  nullable: true
+                icon:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ConverterCategory'
+                  message:
+                    type: string
+
+  /converter/categories/{id}:
+    put:
+      tags: [Converter]
+      summary: Update custom category
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 255
+                  nullable: true
+                icon:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ConverterCategory'
+                  message:
+                    type: string
+    delete:
+      tags: [Converter]
+      summary: Delete custom category
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /converter/units:
+    post:
+      tags: [Converter]
+      summary: Create custom unit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category_id, name, symbol, to_base]
+              properties:
+                category_id:
+                  type: integer
+                name:
+                  type: string
+                  maxLength: 100
+                symbol:
+                  type: string
+                  maxLength: 20
+                to_base:
+                  type: number
+                  exclusiveMinimum: true
+                  minimum: 0
+                is_base:
+                  type: boolean
+      responses:
+        '201':
+          description: Unit created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ConverterUnit'
+                  message:
+                    type: string
+
+  /converter/units/{id}:
+    put:
+      tags: [Converter]
+      summary: Update custom unit
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                symbol:
+                  type: string
+                  maxLength: 20
+                to_base:
+                  type: number
+                  exclusiveMinimum: true
+                  minimum: 0
+                is_base:
+                  type: boolean
+      responses:
+        '200':
+          description: Unit updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ConverterUnit'
+                  message:
+                    type: string
+    delete:
+      tags: [Converter]
+      summary: Delete custom unit
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── ACCOUNTING ───────────────────────────────────────────────────────────────
+  /accounting/accounts:
+    get:
+      tags: [Accounting]
+      summary: List accounts (grouped by type, auto-provisions defaults)
+      responses:
+        '200':
+          description: Accounts grouped by type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      asset:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Account'
+                      liability:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Account'
+                      equity:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Account'
+                      revenue:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Account'
+                      expense:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Account'
+    post:
+      tags: [Accounting]
+      summary: Create account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInput'
+      responses:
+        '201':
+          description: Akun berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Account'
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /accounting/accounts/{id}:
+    put:
+      tags: [Accounting]
+      summary: Update account
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                parent_id:
+                  type: integer
+                  nullable: true
+      responses:
+        '200':
+          description: Akun berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Account'
+                  message:
+                    type: string
+    delete:
+      tags: [Accounting]
+      summary: Delete account
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+        '409':
+          description: Account is in use
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /accounting/journal-entries:
+    get:
+      tags: [Accounting]
+      summary: List journal entries
+      responses:
+        '200':
+          description: Journal entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JournalEntry'
+    post:
+      tags: [Accounting]
+      summary: Create journal entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntryInput'
+      responses:
+        '201':
+          description: Journal entry created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/JournalEntry'
+                  message:
+                    type: string
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /accounting/journal-entries/{id}:
+    get:
+      tags: [Accounting]
+      summary: Get journal entry detail
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Journal entry detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/JournalEntry'
+    put:
+      tags: [Accounting]
+      summary: Update journal entry
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JournalEntryInput'
+      responses:
+        '200':
+          description: Journal entry updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/JournalEntry'
+                  message:
+                    type: string
+    delete:
+      tags: [Accounting]
+      summary: Delete journal entry
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /accounting/ledger/{accountId}:
+    get:
+      tags: [Accounting]
+      summary: Get ledger for account
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ledger data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /accounting/reports/trial-balance:
+    get:
+      tags: [Accounting]
+      summary: Trial balance report
+      responses:
+        '200':
+          description: Trial balance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /accounting/reports/income-statement:
+    get:
+      tags: [Accounting]
+      summary: Income statement report
+      responses:
+        '200':
+          description: Income statement
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /accounting/reports/balance-sheet:
+    get:
+      tags: [Accounting]
+      summary: Balance sheet report
+      responses:
+        '200':
+          description: Balance sheet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /accounting/reset/journal:
+    post:
+      tags: [Accounting]
+      summary: Reset all journal entries
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /accounting/reset/all:
+    post:
+      tags: [Accounting]
+      summary: Reset all accounting data
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /accounting/sample-data:
+    post:
+      tags: [Accounting]
+      summary: Load sample accounting data
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── GOOGLE DRIVE ─────────────────────────────────────────────────────────────
+  /drive/status:
+    get:
+      tags: [GoogleDrive]
+      summary: Check Drive connection status
+      responses:
+        '200':
+          description: Connection status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      connected:
+                        type: boolean
+                      email:
+                        type: string
+                        nullable: true
+
+  /drive/auth-url:
+    get:
+      tags: [GoogleDrive]
+      summary: Get Google OAuth URL
+      responses:
+        '200':
+          description: Auth URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      url:
+                        type: string
+                        format: uri
+
+  /drive/callback:
+    post:
+      tags: [GoogleDrive]
+      summary: Handle OAuth callback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /drive/disconnect:
+    delete:
+      tags: [GoogleDrive]
+      summary: Disconnect Google Drive
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /drive/files:
+    get:
+      tags: [GoogleDrive]
+      summary: List Drive files
+      responses:
+        '200':
+          description: Files list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+  /drive/files/upload:
+    post:
+      tags: [GoogleDrive]
+      summary: Upload file to Drive
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                folder_id:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+
+  /drive/files/{fileId}/download:
+    get:
+      tags: [GoogleDrive]
+      summary: Download file from Drive
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: File download
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /drive/files/{fileId}:
+    delete:
+      tags: [GoogleDrive]
+      summary: Delete file from Drive
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /drive/folders:
+    post:
+      tags: [GoogleDrive]
+      summary: Create folder in Drive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                parent_id:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Folder created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  message:
+                    type: string
+
+  /drive/backup:
+    post:
+      tags: [GoogleDrive]
+      summary: Backup data to Drive
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /drive/sync-notes:
+    post:
+      tags: [GoogleDrive]
+      summary: Sync notes to Drive
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── TRASH ────────────────────────────────────────────────────────────────────
+  /trash:
+    get:
+      tags: [Trash]
+      summary: List trashed items
+      responses:
+        '200':
+          description: Trashed items grouped by type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+
+  /trash/{type}/{id}/restore:
+    post:
+      tags: [Trash]
+      summary: Restore trashed item
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            description: "Resource type (note, task, bookmark, etc.)"
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  /trash/{type}/{id}:
+    delete:
+      tags: [Trash]
+      summary: Permanently delete trashed item
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          $ref: '#/components/responses/MessageOnly'
+
+  # ─── ACTIVITY ─────────────────────────────────────────────────────────────────
+  /activity-logs:
+    get:
+      tags: [Activity]
+      summary: List activity logs
+      responses:
+        '200':
+          description: Activity log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActivityLog'
+
+  /activities:
+    get:
+      tags: [Activity]
+      summary: List activity logs (alias)
+      responses:
+        '200':
+          description: Activity log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActivityLog'
+
+  # ─── DASHBOARD & WEATHER ──────────────────────────────────────────────────────
+  /weather/current:
+    get:
+      tags: [Dashboard]
+      summary: Get current weather
+      responses:
+        '200':
+          description: Current weather data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+  /dashboard/weekly-summary:
+    get:
+      tags: [Dashboard]
+      summary: Get weekly summary
+      responses:
+        '200':
+          description: Weekly summary stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum Token
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    PerPage:
+      name: per_page
+      in: query
+      schema:
+        type: integer
+        default: 15
+
+  responses:
+    MessageOnly:
+      description: Success message
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+
+  schemas:
+    # ─── Enums ────────────────────────────────────────────────────────────────────
+    TaskStatus:
+      type: string
+      enum: [pending, in_progress, completed]
+
+    TaskPriority:
+      type: string
+      enum: [low, medium, high]
+
+    FinanceType:
+      type: string
+      enum: [income, expense]
+
+    GoalStatus:
+      type: string
+      enum: [active, completed, abandoned]
+
+    JournalMood:
+      type: string
+      enum: [happy, neutral, sad, excited, anxious]
+      nullable: true
+
+    PomodoroStatus:
+      type: string
+      enum: [running, completed, cancelled]
+
+    MarketType:
+      type: string
+      enum: [forex, crypto, stock, commodity]
+
+    AccountType:
+      type: string
+      enum: [asset, liability, equity, revenue, expense]
+
+    # ─── Auth & User ──────────────────────────────────────────────────────────────
+    AuthResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/UserBasic'
+            token:
+              type: string
+            refresh_token:
+              type: string
+
+    UserBasic:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        email_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    Preferences:
+      type: object
+      properties:
+        theme:
+          type: string
+          enum: [light, dark, system]
+        primary_color:
+          type: string
+          enum: [indigo, blue, emerald, rose, amber, teal, violet, slate]
+        locale:
+          type: string
+          enum: [id, en]
+        sidebar_collapsed:
+          type: boolean
+        timezones:
+          type: array
+          maxItems: 10
+          items:
+            type: object
+            properties:
+              label:
+                type: string
+                maxLength: 50
+              timezone:
+                type: string
+
+    # ─── Note ─────────────────────────────────────────────────────────────────────
+    Note:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        is_pinned:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ─── Task ─────────────────────────────────────────────────────────────────────
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        position:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TaskInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          $ref: '#/components/schemas/TaskPriority'
+        due_date:
+          type: string
+          format: date
+          nullable: true
+        position:
+          type: integer
+          minimum: 0
+
+    # ─── Bookmark ─────────────────────────────────────────────────────────────────
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        icon:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    BookmarkInput:
+      type: object
+      required: [title, url]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        url:
+          type: string
+          format: uri
+          maxLength: 2048
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+        category:
+          type: string
+          maxLength: 100
+          nullable: true
+        icon:
+          type: string
+          maxLength: 255
+          nullable: true
+
+    # ─── Calendar ─────────────────────────────────────────────────────────────────
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        all_day:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CalendarEventInput:
+      type: object
+      required: [title, start_at]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        start_at:
+          type: string
+          format: date-time
+        end_at:
+          type: string
+          format: date-time
+          nullable: true
+        color:
+          type: string
+          maxLength: 20
+          nullable: true
+        all_day:
+          type: boolean
+
+    Holiday:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+
+    # ─── Finance ──────────────────────────────────────────────────────────────────
+    Finance:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          $ref: '#/components/schemas/FinanceType'
+        amount:
+          type: number
+        category:
+          type: string
+        description:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+
+    FinanceInput:
+      type: object
+      required: [type, amount, category, date]
+      properties:
+        type:
+          $ref: '#/components/schemas/FinanceType'
+        amount:
+          type: number
+          minimum: 0
+        category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        date:
+          type: string
+          format: date
+
+    # ─── Habit ────────────────────────────────────────────────────────────────────
+    Habit:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        frequency:
+          type: string
+          enum: [daily, weekly]
+        streak:
+          type: integer
+        completed_today:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Pomodoro ─────────────────────────────────────────────────────────────────
+    Pomodoro:
+      type: object
+      properties:
+        id:
+          type: integer
+        task_id:
+          type: integer
+          nullable: true
+        duration:
+          type: integer
+        status:
+          $ref: '#/components/schemas/PomodoroStatus'
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    # ─── Scratchpad ───────────────────────────────────────────────────────────────
+    Scratchpad:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        position:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # ─── Journal ──────────────────────────────────────────────────────────────────
+    Journal:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        mood:
+          $ref: '#/components/schemas/JournalMood'
+        date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Goal ─────────────────────────────────────────────────────────────────────
+    Goal:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/GoalStatus'
+        milestones:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              title:
+                type: string
+              completed:
+                type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    GoalInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        status:
+          $ref: '#/components/schemas/GoalStatus'
+        milestones:
+          type: array
+          items:
+            type: object
+            required: [title]
+            properties:
+              title:
+                type: string
+                maxLength: 255
+
+    # ─── Tag ──────────────────────────────────────────────────────────────────────
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        color:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Quote ────────────────────────────────────────────────────────────────────
+    Quote:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        author:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Wishlist ─────────────────────────────────────────────────────────────────
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        purchased:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Reading List ─────────────────────────────────────────────────────────────
+    ReadingItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+          nullable: true
+        url:
+          type: string
+          format: uri
+        is_read:
+          type: boolean
+        is_favorite:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Market ───────────────────────────────────────────────────────────────────
+    WatchlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        symbol:
+          type: string
+        type:
+          $ref: '#/components/schemas/MarketType'
+        label:
+          type: string
+          nullable: true
+        position:
+          type: integer
+
+    PriceSnapshot:
+      type: object
+      properties:
+        symbol:
+          type: string
+        price:
+          type: number
+        change:
+          type: number
+        change_percent:
+          type: number
+        previous_close:
+          type: number
+          nullable: true
+        fetched_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    MarketDashboardItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        symbol:
+          type: string
+        type:
+          $ref: '#/components/schemas/MarketType'
+        label:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        change:
+          type: number
+          nullable: true
+        change_percent:
+          type: number
+          nullable: true
+        previous_close:
+          type: number
+          nullable: true
+        sparkline:
+          type: array
+          items:
+            type: number
+
+    # ─── Budget ───────────────────────────────────────────────────────────────────
+    Budget:
+      type: object
+      properties:
+        id:
+          type: integer
+        category:
+          type: string
+        amount:
+          type: number
+        month:
+          type: string
+          description: Format YYYY-MM
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Vault ────────────────────────────────────────────────────────────────────
+    VaultEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        username:
+          type: string
+          nullable: true
+        encrypted_password:
+          type: string
+        url:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    VaultEntryInput:
+      type: object
+      required: [name, encrypted_password]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        username:
+          type: string
+          maxLength: 255
+          nullable: true
+        encrypted_password:
+          type: string
+        url:
+          type: string
+          maxLength: 500
+          nullable: true
+        notes:
+          type: string
+          maxLength: 1000
+          nullable: true
+        category:
+          type: string
+          maxLength: 100
+          nullable: true
+
+    # ─── Converter ────────────────────────────────────────────────────────────────
+    ConverterCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        icon:
+          type: string
+          nullable: true
+        units:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConverterUnit'
+
+    ConverterUnit:
+      type: object
+      properties:
+        id:
+          type: integer
+        category_id:
+          type: integer
+        name:
+          type: string
+        symbol:
+          type: string
+        to_base:
+          type: number
+        is_base:
+          type: boolean
+
+    # ─── Accounting ───────────────────────────────────────────────────────────────
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/AccountType'
+        parent_id:
+          type: integer
+          nullable: true
+        balance:
+          type: number
+
+    AccountInput:
+      type: object
+      required: [code, name, type]
+      properties:
+        code:
+          type: string
+          maxLength: 10
+          pattern: '^[a-zA-Z0-9]+$'
+        name:
+          type: string
+          maxLength: 100
+        type:
+          $ref: '#/components/schemas/AccountType'
+        parent_id:
+          type: integer
+          nullable: true
+
+    JournalEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              account_id:
+                type: integer
+              account_name:
+                type: string
+              debit:
+                type: number
+              credit:
+                type: number
+        created_at:
+          type: string
+          format: date-time
+
+    JournalEntryInput:
+      type: object
+      required: [date, description, lines]
+      properties:
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+          maxLength: 255
+        lines:
+          type: array
+          minItems: 2
+          maxItems: 20
+          items:
+            type: object
+            required: [account_id, debit, credit]
+            properties:
+              account_id:
+                type: integer
+              debit:
+                type: number
+                minimum: 0
+              credit:
+                type: number
+                minimum: 0
+
+    # ─── Activity ─────────────────────────────────────────────────────────────────
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        subject_type:
+          type: string
+        subject_id:
+          type: integer
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    # ─── Pagination ───────────────────────────────────────────────────────────────
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer

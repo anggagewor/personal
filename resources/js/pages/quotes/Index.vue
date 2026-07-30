@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { debounce } from '@purdia/utils'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -8,21 +7,10 @@ import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BasePagination from '@purdia/ui/src/components/BasePagination.vue'
 import { Quote, Search, RefreshCw, Plus, Trash2 } from '@lucide/vue'
+import type { QuoteItem, QuoteMeta } from '@/types/quote'
+import * as quotesApi from '@/api/quotes'
 
 const toast = useToast()
-
-interface QuoteItem {
-  id: number
-  content: string
-  author: string | null
-}
-
-interface QuoteMeta {
-  current_page: number
-  last_page: number
-  per_page: number
-  total: number
-}
 
 const quotes = ref<QuoteItem[]>([])
 const todayQuote = ref<QuoteItem | null>(null)
@@ -34,7 +22,7 @@ const form = ref({ content: '', author: '' })
 
 async function fetchToday() {
   try {
-    const res = await get<QuoteItem | null>('/quotes/today')
+    const res = await quotesApi.fetchTodayQuote()
     todayQuote.value = res.data
   } catch {
     // Error toast handled globally
@@ -46,7 +34,7 @@ async function fetchQuotes(page = 1) {
   try {
     const params: Record<string, unknown> = { page, per_page: 10 }
     if (search.value) params.search = search.value
-    const res = await get<QuoteItem[]>('/quotes', { params })
+    const res = await quotesApi.fetchQuotes(params as any)
     quotes.value = res.data
     if (res.meta) meta.value = res.meta
   } catch {
@@ -58,7 +46,7 @@ async function fetchQuotes(page = 1) {
 async function addQuote() {
   if (!form.value.content.trim()) return
   try {
-    await post('/quotes', { content: form.value.content, author: form.value.author || null })
+    await quotesApi.createQuote({ content: form.value.content, author: form.value.author || null })
     toast.success('Quote berhasil ditambahkan.')
     form.value = { content: '', author: '' }
     showForm.value = false
@@ -70,7 +58,7 @@ async function addQuote() {
 
 async function deleteQuote(quote: QuoteItem) {
   try {
-    await del(`/quotes/${quote.id}`)
+    await quotesApi.deleteQuote(quote.id)
     toast.success('Quote berhasil dihapus.')
     quotes.value = quotes.value.filter((q) => q.id !== quote.id)
   } catch {

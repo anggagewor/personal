@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, del, upload as httpUpload } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
@@ -24,26 +23,10 @@ import {
   CloudOff,
   Loader2,
 } from '@lucide/vue'
+import type { DriveFile, ConnectionStatus } from '@/types/drive'
+import * as driveApi from '@/api/drive'
 
 const toast = useToast()
-
-interface DriveFile {
-  id: string
-  name: string
-  mimeType: string
-  size: number | null
-  iconLink: string | null
-  webViewLink: string | null
-  createdTime: string | null
-  modifiedTime: string | null
-  parentId: string | null
-}
-
-interface ConnectionStatus {
-  connected: boolean
-  email?: string
-  connected_at?: string
-}
 
 const files = ref<DriveFile[]>([])
 const connectionStatus = ref<ConnectionStatus>({ connected: false })
@@ -62,7 +45,7 @@ const currentFolderId = computed(() => {
 
 async function checkConnection() {
   try {
-    const res = await get<ConnectionStatus>('/drive/status')
+    const res = await driveApi.fetchStatus()
     connectionStatus.value = res.data
     if (res.data.connected) {
       fetchFiles()
@@ -77,7 +60,7 @@ async function checkConnection() {
 async function connectDrive() {
   connecting.value = true
   try {
-    const res = await get<{ url: string }>('/drive/auth-url')
+    const res = await driveApi.fetchAuthUrl()
     // Open OAuth popup
     const popup = window.open(res.data.url, 'google-oauth', 'width=600,height=700,left=200,top=100')
 
@@ -91,7 +74,7 @@ async function connectDrive() {
         popup?.close()
 
         try {
-          await post('/drive/callback', { code: event.data.code })
+          await driveApi.submitCallback(event.data.code)
           toast.success('Google Drive berhasil terhubung!')
           connectionStatus.value.connected = true
           fetchFiles()
@@ -140,7 +123,7 @@ async function connectDrive() {
 
 async function disconnectDrive() {
   try {
-    await del('/drive/disconnect')
+    await driveApi.disconnect()
     connectionStatus.value = { connected: false }
     files.value = []
     folderStack.value = []
@@ -156,7 +139,7 @@ async function fetchFiles() {
     const params: Record<string, string> = {}
     if (currentFolderId.value) params.folder_id = currentFolderId.value
 
-    const res = await get<DriveFile[]>('/drive/files', { params })
+    const res = await driveApi.fetchFiles(params)
     files.value = res.data
   } catch {
     // Error handled globally
@@ -191,7 +174,7 @@ async function uploadFile(event: Event) {
     formData.append('file', file)
     if (currentFolderId.value) formData.append('folder_id', currentFolderId.value)
 
-    await httpUpload('/drive/files/upload', formData)
+    await driveApi.uploadFile(formData)
     toast.success('File berhasil diupload.')
     fetchFiles()
   } catch {
@@ -204,7 +187,7 @@ async function uploadFile(event: Event) {
 
 async function downloadFile(file: DriveFile) {
   try {
-    const response = await get(`/drive/files/${file.id}/download`, { responseType: 'blob' as never })
+    const response = await driveApi.downloadFile(file.id)
     const blob = new Blob([response.data as unknown as BlobPart])
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -220,7 +203,7 @@ async function downloadFile(file: DriveFile) {
 
 async function deleteFile(file: DriveFile) {
   try {
-    await del(`/drive/files/${file.id}`)
+    await driveApi.deleteFile(file.id)
     files.value = files.value.filter((f) => f.id !== file.id)
     toast.success('File berhasil dihapus.')
   } catch {
@@ -231,7 +214,7 @@ async function deleteFile(file: DriveFile) {
 async function createFolder() {
   if (!newFolderName.value.trim()) return
   try {
-    await post('/drive/folders', {
+    await driveApi.createFolder({
       name: newFolderName.value.trim(),
       parent_id: currentFolderId.value,
     })

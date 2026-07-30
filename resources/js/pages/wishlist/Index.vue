@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
@@ -9,16 +8,8 @@ import BaseTextarea from '@purdia/ui/src/components/BaseTextarea.vue'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import BaseEmptyState from '@purdia/ui/src/components/BaseEmptyState.vue'
 import { Heart, Plus, Trash2, Check } from '@lucide/vue'
-
-interface WishlistItem {
-  id: number
-  title: string
-  description: string | null
-  category: string | null
-  is_completed: boolean
-  completed_at: string | null
-  created_at: string
-}
+import type { WishlistItem } from '@/types/wishlist'
+import * as wishlistsApi from '@/api/wishlists'
 
 type FilterType = 'all' | 'active' | 'completed'
 
@@ -41,7 +32,7 @@ const filtered = computed(() => {
 
 async function fetchItems() {
   try {
-    const res = await get('/wishlists')
+    const res = await wishlistsApi.fetchWishlists()
     items.value = res.data?.data || []
   } catch {
     // handle error
@@ -53,7 +44,7 @@ async function fetchItems() {
 async function addItem() {
   if (!form.value.title.trim()) return
   try {
-    const res = await post('/wishlists', {
+    const res = await wishlistsApi.createWishlist({
       title: form.value.title,
       description: form.value.description || null,
       category: form.value.category || null,
@@ -68,7 +59,7 @@ async function addItem() {
 
 async function toggleComplete(item: WishlistItem) {
   try {
-    const res = await put(`/wishlists/${item.id}`, {
+    const res = await wishlistsApi.updateWishlist(item.id, {
       is_completed: !item.is_completed,
     })
     const idx = items.value.findIndex((i) => i.id === item.id)
@@ -80,7 +71,7 @@ async function toggleComplete(item: WishlistItem) {
 
 async function deleteItem(item: WishlistItem) {
   try {
-    await del(`/wishlists/${item.id}`)
+    await wishlistsApi.deleteWishlist(item.id)
     items.value = items.value.filter((i) => i.id !== item.id)
   } catch {
     // handle error

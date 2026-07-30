@@ -1,26 +1,16 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { formatDate } from '@purdia/utils'
 import { Plus, Trash2, ListTodo, Check } from '@lucide/vue'
+import type { Task, TaskStatus } from '@/types/task'
+import * as tasksApi from '@/api/tasks'
 
 const toast = useToast()
 
-interface Task {
-  id: number
-  title: string
-  description: string | null
-  status: 'pending' | 'in_progress' | 'completed'
-  priority: 'low' | 'medium' | 'high'
-  due_date: string | null
-  position: number
-  created_at: string
-}
-
 const tasks = ref<Task[]>([])
 const loading = ref(false)
-const filter = ref<'all' | 'pending' | 'in_progress' | 'completed'>('all')
+const filter = ref<'all' | TaskStatus>('all')
 const showForm = ref(false)
 const editingTask = ref<Task | null>(null)
 
@@ -43,7 +33,7 @@ async function fetchTasks() {
   const params: Record<string, string> = {}
   if (filter.value !== 'all') params.status = filter.value
   try {
-    const response = await get<Task[]>('/tasks', { params })
+    const response = await tasksApi.fetchTasks(params)
     tasks.value = response.data
   } catch {
     // Error toast handled globally by @purdia/http onError
@@ -57,12 +47,12 @@ async function saveTask() {
 
   try {
     if (editingTask.value) {
-      const response = await put<Task>(`/tasks/${editingTask.value.id}`, payload)
+      const response = await tasksApi.updateTask(editingTask.value.id, payload)
       const idx = tasks.value.findIndex((t) => t.id === editingTask.value!.id)
       if (idx >= 0) tasks.value[idx] = response.data
       toast.success('Task berhasil diperbarui.')
     } else {
-      const response = await post<Task>('/tasks', payload)
+      const response = await tasksApi.createTask(payload)
       tasks.value.unshift(response.data)
       toast.success('Task berhasil dibuat.')
     }
@@ -72,9 +62,9 @@ async function saveTask() {
   }
 }
 
-async function updateStatus(task: Task, status: Task['status']) {
+async function updateStatus(task: Task, status: TaskStatus) {
   try {
-    await put<Task>(`/tasks/${task.id}`, { status })
+    await tasksApi.updateTask(task.id, { status })
     task.status = status
   } catch {
     // Error toast handled globally by @purdia/http onError
@@ -83,7 +73,7 @@ async function updateStatus(task: Task, status: Task['status']) {
 
 async function deleteTask(task: Task) {
   try {
-    await del(`/tasks/${task.id}`)
+    await tasksApi.deleteTask(task.id)
     tasks.value = tasks.value.filter((t) => t.id !== task.id)
     toast.success('Task berhasil dihapus.')
   } catch {

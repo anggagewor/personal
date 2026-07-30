@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get } from '@purdia/http'
 import { formatDate } from '@purdia/utils'
 import { Activity, Clock } from '@lucide/vue'
+import type { ActivityLog } from '@/types/activity'
+import * as activityApi from '@/api/activity'
 
-interface Log {
-  id: number
-  action: string
-  description: string
-  metadata: Record<string, unknown> | null
-  created_at: string
-}
-
-const logs = ref<Log[]>([])
+const logs = ref<ActivityLog[]>([])
 const loading = ref(false)
 const page = ref(1)
 const lastPage = ref(1)
@@ -20,7 +13,7 @@ const lastPage = ref(1)
 async function fetchLogs() {
   loading.value = true
   try {
-    const response = await get<Log[]>('/activity-logs', { params: { page: page.value, per_page: 20 } })
+    const response = await activityApi.fetchActivityLogs({ page: page.value, per_page: 20 })
     logs.value = response.data
     if (response.meta) {
       lastPage.value = response.meta.last_page

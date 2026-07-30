@@ -151,3 +151,60 @@ Domain ← Application ← Infrastructure
 | Wishlist | Wishlist items |
 | Trash | Soft-delete / restore |
 | Shared | Cross-module traits, contracts, weather, dashboard |
+
+## Scaffold Module Baru
+
+Gunakan script scaffold untuk generate full-stack module (backend DDD + frontend) dalam satu command:
+
+```bash
+./scripts/scaffold-module.sh NamaModule
+```
+
+### Contoh
+
+```bash
+./scripts/scaffold-module.sh Expense
+```
+
+### Yang Di-Generate
+
+**Backend (`src/Modules/Expense/`):**
+
+| Layer | File |
+|-------|------|
+| Domain | `Entities/Expense.php`, `Contracts/ExpenseRepositoryInterface.php` |
+| Application | `Actions/CreateExpenseAction.php`, `UpdateExpenseAction.php`, `DeleteExpenseAction.php`, `DTO/ExpenseData.php` |
+| Infrastructure | `Controllers/ExpenseController.php`, `Requests/StoreExpenseRequest.php`, `UpdateExpenseRequest.php`, `Models/ExpenseModel.php`, `Repositories/EloquentExpenseRepository.php`, `Resources/ExpenseResource.php`, `Providers/ExpenseServiceProvider.php`, `Routes/api.php` |
+
+**Frontend:**
+
+| File | Keterangan |
+|------|------------|
+| `resources/js/types/expense.ts` | Interface & payload types |
+| `resources/js/api/expense.ts` | API call functions (fetchAll, create, update, remove) |
+| `resources/js/pages/expense/Index.vue` | Page component dengan CRUD skeleton |
+
+### Setelah Scaffold
+
+1. **Register provider** di `bootstrap/providers.php`:
+   ```php
+   Modules\Expense\Infrastructure\Providers\ExpenseServiceProvider::class,
+   ```
+
+2. **Tambah route** di `resources/js/router/index.ts`:
+   ```ts
+   { path: '/expenses', component: () => import('@/pages/expense/Index.vue') }
+   ```
+
+3. **Buat migration**:
+   ```bash
+   php artisan make:migration create_expenses_table
+   ```
+
+4. **Isi TODO** di semua file — entity fields, DTO mapping, validation rules, model fillable, dll.
+
+5. **Build & test**:
+   ```bash
+   npm run build
+   php artisan test
+   ```

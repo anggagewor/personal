@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { get, post, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -9,27 +8,13 @@ import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { formatCurrency, formatDate } from '@purdia/utils'
 import { Plus, Trash2, TrendingUp, TrendingDown, Wallet } from '@lucide/vue'
 import { SummaryCardsSkeleton, ListSkeleton } from '@/components/skeletons'
+import type { FinanceItem, FinanceSummary } from '@/types/finance'
+import * as financeApi from '@/api/finance'
 
 const toast = useToast()
 
-interface FinanceItem {
-  id: number
-  type: string
-  category: string
-  amount: number
-  description: string | null
-  date: string
-}
-
-interface Summary {
-  income: number
-  expense: number
-  balance: number
-  by_category: Array<{ category: string; total: number }>
-}
-
 const transactions = ref<FinanceItem[]>([])
-const summary = ref<Summary>({ income: 0, expense: 0, balance: 0, by_category: [] })
+const summary = ref<FinanceSummary>({ income: 0, expense: 0, balance: 0, by_category: [] })
 const currentMonth = ref(new Date().toISOString().slice(0, 7))
 const showForm = ref(false)
 const loading = ref(true)
@@ -44,8 +29,8 @@ async function fetchData() {
   loading.value = true
   try {
     const [txRes, sumRes] = await Promise.all([
-      get<FinanceItem[]>('/finances', { params: { month: currentMonth.value, per_page: 50 } }),
-      get<Summary>('/finances/summary', { params: { month: currentMonth.value } }),
+      financeApi.fetchTransactions({ month: currentMonth.value, per_page: 50 }),
+      financeApi.fetchSummary({ month: currentMonth.value }),
     ])
     transactions.value = txRes.data
     summary.value = sumRes.data
@@ -59,7 +44,7 @@ async function fetchData() {
 async function addTransaction() {
   if (!form.value.category || !form.value.amount) return
   try {
-    await post('/finances', { ...form.value, amount: parseFloat(form.value.amount) })
+    await financeApi.createTransaction({ ...form.value, amount: parseFloat(form.value.amount), description: form.value.description || null })
     toast.success('Transaksi berhasil ditambahkan.')
     showForm.value = false
     form.value = { type: 'expense', category: '', amount: '', description: '', date: new Date().toISOString().slice(0, 10) }
@@ -71,7 +56,7 @@ async function addTransaction() {
 
 async function deleteTransaction(item: FinanceItem) {
   try {
-    await del(`/finances/${item.id}`)
+    await financeApi.deleteTransaction(item.id)
     toast.success('Transaksi berhasil dihapus.')
     fetchData()
   } catch {

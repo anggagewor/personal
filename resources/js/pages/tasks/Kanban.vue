@@ -1,26 +1,17 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, put } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import { ArrowLeft, GripVertical } from '@lucide/vue'
 import { useRouter } from 'vue-router'
+import type { Task, TaskStatus } from '@/types/task'
+import * as tasksApi from '@/api/tasks'
 
 const router = useRouter()
 const toast = useToast()
 
-interface Task {
-  id: number
-  title: string
-  description: string | null
-  status: 'pending' | 'in_progress' | 'completed'
-  priority: 'low' | 'medium' | 'high'
-  due_date: string | null
-  position: number
-}
-
-type ColumnStatus = 'pending' | 'in_progress' | 'completed'
+type ColumnStatus = TaskStatus
 
 interface Column {
   id: ColumnStatus
@@ -61,7 +52,7 @@ const priorityLabels: Record<string, string> = { low: 'Low', medium: 'Medium', h
 async function fetchTasks() {
   loading.value = true
   try {
-    const res = await get<Task[]>('/tasks')
+    const res = await tasksApi.fetchTasks()
     tasks.value = res.data
   } catch {
     // Error handled globally
@@ -77,7 +68,7 @@ async function moveTask(task: Task, newStatus: ColumnStatus) {
   task.status = newStatus // Optimistic update
 
   try {
-    await put(`/tasks/${task.id}`, { status: newStatus })
+    await tasksApi.updateTask(task.id, { status: newStatus })
     toast.success(`Task dipindah ke ${columns.find((c) => c.id === newStatus)?.label}.`)
   } catch {
     task.status = oldStatus // Revert on error

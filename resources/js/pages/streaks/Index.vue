@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { get } from '@purdia/http'
 import { formatDate } from '@purdia/utils'
 import { Flame } from '@lucide/vue'
+import * as streaksApi from '@/api/streaks'
 
 interface HabitLog {
   date: string
@@ -95,8 +95,8 @@ const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
 onMounted(async () => {
   try {
     const [habitsRes, pomodorosRes] = await Promise.all([
-      get('/habits'),
-      get('/pomodoros/stats'),
+      streaksApi.fetchHabitsData(),
+      streaksApi.fetchPomodorosStats(),
     ])
     habits.value = habitsRes.data?.data || []
     pomodoros.value = pomodorosRes.data?.data || []
