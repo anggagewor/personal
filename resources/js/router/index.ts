@@ -102,6 +102,37 @@ export const routes: RouteRecordRaw[] = [
         name: 'drive',
         component: () => import('@/pages/drive/Index.vue'),
       },
+      // Accounting
+      {
+        path: 'accounting',
+        name: 'accounting',
+        component: () => import('@/pages/accounting/Index.vue'),
+      },
+      {
+        path: 'accounting/journal',
+        name: 'accounting.journal',
+        component: () => import('@/pages/accounting/Journal.vue'),
+      },
+      {
+        path: 'accounting/ledger',
+        name: 'accounting.ledger',
+        component: () => import('@/pages/accounting/Ledger.vue'),
+      },
+      {
+        path: 'accounting/reports/trial-balance',
+        name: 'accounting.reports.trial-balance',
+        component: () => import('@/pages/accounting/reports/TrialBalance.vue'),
+      },
+      {
+        path: 'accounting/reports/income-statement',
+        name: 'accounting.reports.income-statement',
+        component: () => import('@/pages/accounting/reports/IncomeStatement.vue'),
+      },
+      {
+        path: 'accounting/reports/balance-sheet',
+        name: 'accounting.reports.balance-sheet',
+        component: () => import('@/pages/accounting/reports/BalanceSheet.vue'),
+      },
       // Reading List
       {
         path: 'reading-list',
@@ -161,6 +192,57 @@ export const routes: RouteRecordRaw[] = [
         path: 'gold',
         name: 'gold',
         component: () => import('@/pages/gold/Index.vue'),
+      },
+      // Converter
+      {
+        path: 'converter',
+        name: 'converter',
+        component: () => import('@/pages/converter/Index.vue'),
+      },
+      {
+        path: 'converter/length',
+        name: 'converter.length',
+        component: () => import('@/pages/converter/Length.vue'),
+      },
+      {
+        path: 'converter/weight',
+        name: 'converter.weight',
+        component: () => import('@/pages/converter/Weight.vue'),
+      },
+      {
+        path: 'converter/temperature',
+        name: 'converter.temperature',
+        component: () => import('@/pages/converter/Temperature.vue'),
+      },
+      {
+        path: 'converter/area',
+        name: 'converter.area',
+        component: () => import('@/pages/converter/Area.vue'),
+      },
+      {
+        path: 'converter/volume',
+        name: 'converter.volume',
+        component: () => import('@/pages/converter/Volume.vue'),
+      },
+      {
+        path: 'converter/speed',
+        name: 'converter.speed',
+        component: () => import('@/pages/converter/Speed.vue'),
+      },
+      {
+        path: 'converter/time',
+        name: 'converter.time',
+        component: () => import('@/pages/converter/Time.vue'),
+      },
+      {
+        path: 'converter/data',
+        name: 'converter.data',
+        component: () => import('@/pages/converter/Data.vue'),
+      },
+      {
+        path: 'converter/custom',
+        name: 'converter.custom',
+        component: () => import('@/pages/converter/Custom.vue'),
       },
       // Settings
       {

@@ -22,6 +22,12 @@ Lihat dokumentasi lengkap di [docs/backend.md](docs/backend.md).
 
 Lihat dokumentasi lengkap di [docs/frontend.md](docs/frontend.md).
 
+### Modal Rules
+
+- `BaseModal` selalu pakai `v-model` (bukan `:show` atau prop lain).
+- Untuk form modal (create/edit), selalu pakai `persistent` prop agar tidak tertutup saat klik di luar modal. Ini mencegah kehilangan data yang sudah diisi.
+- Contoh: `<BaseModal v-model="showForm" size="md" persistent>`
+
 ## Testing
 
 Lihat dokumentasi lengkap di [docs/testing.md](docs/testing.md).
