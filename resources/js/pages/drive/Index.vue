@@ -81,9 +81,12 @@ async function connectDrive() {
     // Open OAuth popup
     const popup = window.open(res.data.url, 'google-oauth', 'width=600,height=700,left=200,top=100')
 
-    // Listen for callback
+    let resolved = false
+
+    // Listen for callback via postMessage
     const handleMessage = async (event: MessageEvent) => {
       if (event.data?.type === 'google-oauth-callback' && event.data?.code) {
+        resolved = true
         window.removeEventListener('message', handleMessage)
         popup?.close()
 
@@ -94,21 +97,41 @@ async function connectDrive() {
           fetchFiles()
         } catch {
           // Error handled globally
+        } finally {
+          connecting.value = false
         }
       }
     }
 
     window.addEventListener('message', handleMessage)
 
-    // Fallback: check if popup closed without auth
-    const checkClosed = setInterval(() => {
+    // Fallback: when popup closes, re-check connection status from server
+    const checkClosed = setInterval(async () => {
       if (popup?.closed) {
         clearInterval(checkClosed)
-        connecting.value = false
         window.removeEventListener('message', handleMessage)
+
+        if (!resolved) {
+          // Popup closed — maybe postMessage didn't fire. Check server status.
+          try {
+            const statusRes = await get<ConnectionStatus>('/drive/status')
+            if (statusRes.data.connected) {
+              connectionStatus.value = statusRes.data
+              toast.success('Google Drive berhasil terhubung!')
+              fetchFiles()
+            }
+          } catch {
+            // ignore
+          }
+          connecting.value = false
+        }
       }
-    }, 1000)
+    }, 500)
   } catch {
+    // Error handled globally
+    connecting.value = false
+  }
+}
     // Error handled globally
   } finally {
     connecting.value = false

@@ -19,6 +19,7 @@ export const routes: RouteRecordRaw[] = [
     path: '/drive/callback',
     name: 'drive.callback',
     component: () => import('@/pages/drive/Callback.vue'),
+    meta: { public: true },
   },
 
   // ---------- Dashboard (protected) ----------
