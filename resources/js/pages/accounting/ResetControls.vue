@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { post } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { RotateCcw, Trash2, Database } from '@lucide/vue'
+import * as accountingApi from '@/api/accounting'
 
 const emit = defineEmits<{
   refreshData: []
@@ -21,7 +21,7 @@ const loadingSample = ref(false)
 async function loadSampleData() {
   loadingSample.value = true
   try {
-    const res = await post<{ message: string; count: number }>('/accounting/sample-data')
+    const res = await accountingApi.loadSampleData()
     toast.success(`Berhasil memuat ${res.data.count} jurnal contoh.`)
     emit('refreshData')
   } catch {
@@ -34,7 +34,7 @@ async function loadSampleData() {
 async function resetJournal() {
   loadingJournal.value = true
   try {
-    const res = await post<{ message: string; count: number }>('/accounting/reset/journal', { confirm: true })
+    const res = await accountingApi.resetJournal()
     toast.success(`${res.data.count} jurnal berhasil dihapus.`)
     showResetJournalModal.value = false
     emit('refreshData')
@@ -48,7 +48,7 @@ async function resetJournal() {
 async function resetAll() {
   loadingAll.value = true
   try {
-    await post<{ message: string }>('/accounting/reset/all', { confirm: true })
+    await accountingApi.resetAll()
     toast.success('Semua data akuntansi berhasil direset.')
     showResetAllModal.value = false
     emit('refreshData')

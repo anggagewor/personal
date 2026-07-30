@@ -22,6 +22,13 @@ Lihat dokumentasi lengkap di [docs/backend.md](docs/backend.md).
 
 Lihat dokumentasi lengkap di [docs/frontend.md](docs/frontend.md).
 
+### Types & API Layer
+
+- Interfaces → `resources/js/types/<module>.ts`
+- API calls → `resources/js/api/<module>.ts`
+- Di page, import: `import type { Note } from '@/types/note'` dan `import * as notesApi from '@/api/notes'`
+- JANGAN tulis inline `interface` atau raw `get`/`post` langsung di page components.
+
 ### Modal Rules
 
 - `BaseModal` selalu pakai `v-model` (bukan `:show` atau prop lain).

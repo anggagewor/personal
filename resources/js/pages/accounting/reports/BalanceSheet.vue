@@ -1,27 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { get } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import BaseSpinner from '@purdia/ui/src/components/BaseSpinner.vue'
-
-interface ReportAccount {
-  account_id: number
-  code: string
-  name: string
-  balance: number
-}
-
-interface BalanceSheetData {
-  assets: ReportAccount[]
-  liabilities: ReportAccount[]
-  equity: ReportAccount[]
-  net_income: number
-  total_assets: number
-  total_liabilities: number
-  total_equity: number
-  is_balanced: boolean
-}
+import type { BalanceSheetData } from '@/types/accounting'
+import * as accountingApi from '@/api/accounting'
 
 function getToday(): string {
   const now = new Date()
@@ -35,9 +18,7 @@ const loading = ref(true)
 async function fetchReport() {
   loading.value = true
   try {
-    const res = await get<BalanceSheetData>('/accounting/reports/balance-sheet', {
-      params: { date: selectedDate.value },
-    })
+    const res = await accountingApi.fetchBalanceSheet({ date: selectedDate.value })
     data.value = res.data
   } catch {
     // Error handled by @purdia/http onError

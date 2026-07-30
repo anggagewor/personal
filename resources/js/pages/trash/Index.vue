@@ -1,25 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { get, post, del } from '@purdia/http'
 import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import BaseEmptyState from '@purdia/ui/src/components/BaseEmptyState.vue'
 import { Trash2, RotateCcw } from '@lucide/vue'
-
-interface TrashedItem {
-  id: number
-  type: 'note' | 'task'
-  title: string
-  deleted_at: string
-}
+import type { TrashedItem } from '@/types/trash'
+import * as trashApi from '@/api/trash'
 
 const items = ref<TrashedItem[]>([])
 const loading = ref(true)
 
 async function fetchItems() {
   try {
-    const res = await get('/trash')
+    const res = await trashApi.fetchTrashedItems()
     items.value = res.data?.data || []
   } catch {
     // handle error
@@ -30,7 +24,7 @@ async function fetchItems() {
 
 async function restoreItem(item: TrashedItem) {
   try {
-    await post(`/trash/${item.type}/${item.id}/restore`)
+    await trashApi.restoreItem(item.type, item.id)
     items.value = items.value.filter((i) => !(i.id === item.id && i.type === item.type))
   } catch {
     // handle error
@@ -39,7 +33,7 @@ async function restoreItem(item: TrashedItem) {
 
 async function permanentDelete(item: TrashedItem) {
   try {
-    await del(`/trash/${item.type}/${item.id}`)
+    await trashApi.permanentDelete(item.type, item.id)
     items.value = items.value.filter((i) => !(i.id === item.id && i.type === item.type))
   } catch {
     // handle error

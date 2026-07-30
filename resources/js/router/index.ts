@@ -244,6 +244,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'converter.custom',
         component: () => import('@/pages/converter/Custom.vue'),
       },
+      // Tools
+      {
+        path: 'tools/sql-generator',
+        name: 'tools.sql-generator',
+        component: () => import('@/pages/tools/SqlGenerator.vue'),
+      },
       // Settings
       {
         path: 'settings/general',

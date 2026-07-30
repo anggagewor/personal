@@ -103,6 +103,16 @@ resources/js/
 ├── App.vue              → Root component + ToastContainer
 ├── env.d.ts             → Vite env type declarations
 ├── router/index.ts      → Route definitions (lazy loaded)
+├── types/               → Interface & type definitions per-module
+│   ├── note.ts
+│   ├── task.ts
+│   ├── bookmark.ts
+│   └── ...
+├── api/                 → API call functions per-module
+│   ├── notes.ts
+│   ├── tasks.ts
+│   ├── bookmarks.ts
+│   └── ...
 ├── layouts/
 │   └── DashboardLayout.vue  → Layout utama (sidebar + topbar + content)
 ├── pages/               → Route-level components
@@ -143,7 +153,7 @@ resources/js/
 3. Icon import dari `@lucide/vue` — import spesifik per-icon yang dipakai.
 4. Styling pakai Tailwind classes — no custom CSS kecuali animasi/transition.
 5. State management: Pinia stores per-domain kalau perlu.
-6. API calls di page langsung atau composable — jangan di store kecuali shared state.
+6. API calls di `api/<module>.ts` — import di page via `import * as notesApi from '@/api/notes'`. Interfaces di `types/<module>.ts`.
 7. TypeScript strict — no `any`, define interfaces untuk API response.
 8. Component naming: PascalCase, prefix `Base` untuk generic, prefix `The` untuk singleton.
 9. Error handling: `catch` block wajib ada di setiap async function. Error toast otomatis dari `@purdia/http` onError. Success toast manual via `useToast().success()`.
@@ -164,3 +174,84 @@ User ubah → POST /api/preferences → update localStorage + UI (optimistic)
 |---------|--------|
 | `@purdia/eslint-config` | Shared ESLint config |
 | `@purdia/tsconfig` | Shared TypeScript config |
+
+## Types & API Layer
+
+Semua interface dan API calls disimpan di file terpisah per-module:
+
+### `types/<module>.ts` — Interface definitions
+
+```ts
+// resources/js/types/note.ts
+export interface Note {
+  id: number
+  title: string
+  content: string
+  is_pinned: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface NotePayload {
+  title: string
+  content: string
+}
+```
+
+### `api/<module>.ts` — API call functions
+
+```ts
+// resources/js/api/notes.ts
+import { get, post, put, del } from '@purdia/http'
+import type { Note, NotePayload } from '@/types/note'
+
+export function fetchNotes(params?: { search?: string }) {
+  return get<Note[]>('/notes', { params })
+}
+
+export function createNote(payload: NotePayload) {
+  return post<Note>('/notes', payload)
+}
+
+export function updateNote(id: number, payload: NotePayload) {
+  return put<Note>(`/notes/${id}`, payload)
+}
+
+export function deleteNote(id: number) {
+  return del(`/notes/${id}`)
+}
+```
+
+### Penggunaan di Page
+
+```ts
+import type { Note } from '@/types/note'
+import * as notesApi from '@/api/notes'
+
+const notes = ref<Note[]>([])
+
+async function fetchNotes() {
+  const res = await notesApi.fetchNotes()
+  notes.value = res.data
+}
+```
+
+### Konvensi Penamaan
+
+| Jenis | Format | Contoh |
+|-------|--------|--------|
+| File types | kebab-case | `types/reading-list.ts` |
+| File api | kebab-case | `api/reading-list.ts` |
+| Interface | PascalCase | `ReadingItem`, `NotePayload` |
+| API function | camelCase deskriptif | `fetchNotes`, `createNote`, `deleteNote`, `toggleNotePin` |
+| Import di page | namespace import | `import * as notesApi from '@/api/notes'` |
+
+### Scaffold Module Baru
+
+Gunakan script untuk generate types, api, dan page sekaligus:
+
+```bash
+./scripts/scaffold-module.sh NamaModule
+```
+
+Lihat [docs/backend.md](./backend.md#scaffold-module-baru) untuk detail lengkap.

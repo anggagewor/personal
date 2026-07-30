@@ -1,35 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { get } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { formatCurrency } from '@purdia/utils'
 import { useFiscalPeriod } from '@/composables/useFiscalPeriod'
 import { BookOpen } from '@lucide/vue'
-
-interface Account {
-  id: number
-  code: string
-  name: string
-  type: string
-  normal_balance: string
-}
-
-interface LedgerLine {
-  date: string
-  entry_number: number
-  description: string
-  debit: number
-  credit: number
-  balance: number
-}
-
-interface LedgerResponse {
-  account: Account
-  opening_balance: number
-  lines: LedgerLine[]
-}
+import type { Account, LedgerResponse } from '@/types/accounting'
+import * as accountingApi from '@/api/accounting'
 
 const toast = useToast()
 const { startDate, endDate } = useFiscalPeriod()
@@ -65,8 +43,7 @@ const hasDateFilter = computed(() => {
 async function fetchAccounts() {
   loadingAccounts.value = true
   try {
-    const res = await get<Record<string, Account[]>>('/accounting/accounts')
-    // Flatten grouped accounts into a single list
+    const res = await accountingApi.fetchAccounts()
     const grouped = res.data
     const flat: Account[] = []
     for (const type of Object.keys(grouped)) {
@@ -94,7 +71,7 @@ async function fetchLedger() {
     if (startDate.value) params.start_date = startDate.value
     if (endDate.value) params.end_date = endDate.value
 
-    const res = await get<LedgerResponse>(`/accounting/ledger/${selectedAccountId.value}`, { params })
+    const res = await accountingApi.fetchLedger(Number(selectedAccountId.value), params)
     ledgerData.value = res.data
   } catch {
     // Error toast handled globally by @purdia/http onError

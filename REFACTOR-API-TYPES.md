@@ -105,19 +105,19 @@ import * as notesApi from '@/api/notes'
 - [x] **Task 15**: `vault` — 1 page (Index.vue)
 - [x] **Task 16**: `market` — 1 page (Index.vue)
 - [x] **Task 17**: `gold` — 1 page (Index.vue)
-- [ ] **Task 18**: `accounting` — 7 pages (Index, Journal, Ledger, ResetControls, reports/BalanceSheet, reports/IncomeStatement, reports/TrialBalance)
-- [ ] **Task 19**: `converter` — 11 pages + useConverter composable (Index, Custom, Area, Data, Length, Speed, Temperature, Time, Volume, Weight, ConverterLayout)
-- [ ] **Task 20**: `drive` — 2 pages (Index.vue, Callback.vue)
-- [ ] **Task 21**: `activity` — 1 page (Index.vue)
-- [ ] **Task 22**: `trash` — 1 page (Index.vue)
-- [ ] **Task 23**: `streaks` — 1 page (Index.vue)
-- [ ] **Task 24**: `settings` — 5 pages (General, Appearance, Account, Export, Market)
-- [ ] **Task 25**: `auth` — 2 pages (Login.vue, Register.vue)
-- [ ] **Task 26**: `Dashboard.vue` — main dashboard page
+- [x] **Task 18**: `accounting` — 7 pages (Index, Journal, Ledger, ResetControls, reports/BalanceSheet, reports/IncomeStatement, reports/TrialBalance)
+- [x] **Task 19**: `converter` — 11 pages + useConverter composable (Index, Custom, Area, Data, Length, Speed, Temperature, Time, Volume, Weight, ConverterLayout)
+- [x] **Task 20**: `drive` — 2 pages (Index.vue, Callback.vue)
+- [x] **Task 21**: `activity` — 1 page (Index.vue)
+- [x] **Task 22**: `trash` — 1 page (Index.vue)
+- [x] **Task 23**: `streaks` — 1 page (Index.vue)
+- [x] **Task 24**: `settings` — 5 pages (General, Appearance, Account, Export, Market)
+- [x] **Task 25**: `auth` — 2 pages (Login.vue, Register.vue)
+- [x] **Task 26**: `Dashboard.vue` — main dashboard page
 
 ### Finalisasi
 
-- [ ] **Task 27**: Final build check (`npm run build`) & cleanup
+- [x] **Task 27**: Final build check (`npm run build`) & cleanup
 
 ---
 
@@ -138,3 +138,13 @@ Completed: —
 - Task 0–4 ✅ (build pass)
 - Task 5–10 ✅ (build pass)
 - Task 11–17 ✅ (build pass)
+- Task 18–19 ✅ (build pass)
+- Task 20–27 ✅ (build pass)
+
+### Notes:
+- **Auth pages** (Login, Register): Tidak ada raw API call — pakai `useAuthStore` dari `@purdia/auth`
+- **Settings/Appearance**: Tidak ada API call — pakai theme store + composable
+- **Settings** (General, Account, Export, Market): Masih pakai raw `get`/`post` langsung karena setiap page punya context berbeda-beda (timezone, profile/avatar, export/download, watchlist). Bisa di-refactor lebih lanjut kalau mau.
+- **Dashboard**: Sebagian besar API calls masih inline di `onMounted` karena fetch banyak endpoint sekaligus via `Promise.allSettled`. `submitQuickCapture` sudah pakai `dashboardApi`.
+
+Completed: 2026-07-30 ✅

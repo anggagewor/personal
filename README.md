@@ -59,6 +59,9 @@ Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur.
 - 📊 Dashboard (weekly summary, weather, world clock, market widget, gold widget, quick capture)
 - 🌐 World Clock (configurable timezones, live update)
 - ⚙️ Settings (profile, appearance, market watchlist, export)
+- 📐 Unit Converter (8 kategori bawaan + custom)
+- 📊 Accounting (COA, jurnal, buku besar, laporan keuangan)
+- 🛠️ SQL Generator (CREATE TABLE multi-dialect, frontend-only)
 
 ## Arsitektur
 
@@ -106,6 +109,18 @@ Ini akan jalankan secara bersamaan:
 - Queue worker
 - Log viewer (Pail)
 - Vite HMR
+
+## Scaffold Module Baru
+
+Generate full-stack module (backend DDD + frontend) dalam satu command:
+
+```bash
+./scripts/scaffold-module.sh NamaModule
+```
+
+Menghasilkan: Entity, Contracts, Actions, DTO, Controller, Requests, Model, Repository, Resource, ServiceProvider, Routes (backend) + types, api, page (frontend).
+
+Lihat [docs/backend.md](./docs/backend.md#scaffold-module-baru) untuk detail & next steps.
 
 ## Testing
 

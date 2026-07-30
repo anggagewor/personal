@@ -13,6 +13,7 @@ import WorldClock from '@/components/WorldClock.vue'
 import MarketWidget from '@/components/MarketWidget.vue'
 import GoldWidget from '@/components/GoldWidget.vue'
 import type { TimezoneEntry } from '@/composables/usePreferences'
+import * as dashboardApi from '@/api/dashboard'
 
 const auth = useAuthStore()
 const toast = useToast()
@@ -63,7 +64,7 @@ async function submitQuickCapture() {
   if (!quickNote.value.trim() || quickSaving.value) return
   quickSaving.value = true
   try {
-    await post('/scratchpads', { content: quickNote.value.trim() })
+    await dashboardApi.createQuickScratchpad({ content: quickNote.value.trim() })
     quickNote.value = ''
     toast.success('Catatan cepat disimpan.')
   } catch {

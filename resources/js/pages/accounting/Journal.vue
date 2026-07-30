@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -9,34 +8,12 @@ import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BasePagination from '@purdia/ui/src/components/BasePagination.vue'
 import { formatCurrency, formatDate } from '@purdia/utils'
 import { Plus, Pencil, Trash2, RefreshCw, AlertCircle } from '@lucide/vue'
+import type { Account, JournalLine, JournalEntry } from '@/types/accounting'
+import * as accountingApi from '@/api/accounting'
 
 const toast = useToast()
 
 // --- Interfaces ---
-
-interface JournalLine {
-  id?: number
-  account_id: number | ''
-  debit: number | ''
-  credit: number | ''
-}
-
-interface JournalEntry {
-  id: number
-  entry_number: number
-  date: string
-  description: string
-  total_debit: number
-  lines: JournalLine[]
-  created_at: string
-}
-
-interface Account {
-  id: number
-  code: string
-  name: string
-  type: string
-}
 
 interface PaginationMeta {
   current_page: number
@@ -99,9 +76,7 @@ const isEditing = computed(() => editingId.value !== null)
 async function fetchEntries(page = 1) {
   loading.value = true
   try {
-    const res = await get<JournalEntry[]>('/accounting/journal-entries', {
-      params: { page, per_page: 15 },
-    })
+    const res = await accountingApi.fetchJournalEntries({ page, per_page: 15 })
     entries.value = res.data
     if (res.meta) meta.value = res.meta as PaginationMeta
   } catch {
@@ -113,8 +88,7 @@ async function fetchEntries(page = 1) {
 
 async function fetchAccounts() {
   try {
-    const res = await get<Record<string, Account[]>>('/accounting/accounts')
-    // API returns accounts grouped by type — flatten into a single list
+    const res = await accountingApi.fetchAccounts()
     const grouped = res.data
     const flat: Account[] = []
     for (const type of Object.keys(grouped)) {
@@ -144,10 +118,10 @@ async function submitEntry() {
 
   try {
     if (isEditing.value) {
-      await put(`/accounting/journal-entries/${editingId.value}`, payload)
+      await accountingApi.updateJournalEntry(editingId.value!, payload)
       toast.success('Jurnal berhasil diperbarui.')
     } else {
-      await post('/accounting/journal-entries', payload)
+      await accountingApi.createJournalEntry(payload)
       toast.success('Jurnal berhasil dibuat.')
     }
     closeModal()
@@ -165,7 +139,7 @@ async function submitEntry() {
 async function deleteEntry(entry: JournalEntry) {
   if (!confirm(`Hapus jurnal #${entry.entry_number}?`)) return
   try {
-    await del(`/accounting/journal-entries/${entry.id}`)
+    await accountingApi.deleteJournalEntry(entry.id)
     toast.success('Jurnal berhasil dihapus.')
     fetchEntries(meta.value.current_page)
   } catch {
@@ -175,7 +149,7 @@ async function deleteEntry(entry: JournalEntry) {
 
 async function editEntry(entry: JournalEntry) {
   try {
-    const res = await get<JournalEntry>(`/accounting/journal-entries/${entry.id}`)
+    const res = await accountingApi.fetchJournalEntry(entry.id)
     const data = res.data
     editingId.value = data.id
     form.value.date = data.date

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -8,23 +7,8 @@ import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseEmptyState from '@purdia/ui/src/components/BaseEmptyState.vue'
 import { Plus, Trash2, Pencil, ArrowLeftRight, ArrowLeft } from '@lucide/vue'
-
-interface CustomUnit {
-  id: number
-  category_id: number
-  name: string
-  symbol: string
-  to_base: number
-  is_base: boolean
-}
-
-interface CustomCategory {
-  id: number
-  name: string
-  description: string | null
-  icon: string | null
-  units: CustomUnit[]
-}
+import type { CustomUnit, CustomCategory } from '@/types/converter'
+import * as converterApi from '@/api/converter'
 
 const toast = useToast()
 const categories = ref<CustomCategory[]>([])
@@ -69,7 +53,7 @@ const unitOptions = computed(() => {
 async function fetchCategories() {
   loading.value = true
   try {
-    const res = await get<CustomCategory[]>('/converter/categories')
+    const res = await converterApi.fetchCategories()
     categories.value = res.data
   } catch { /* */ }
   loading.value = false
@@ -88,10 +72,10 @@ function openCategoryModal(cat?: CustomCategory) {
 async function saveCategory() {
   try {
     if (editingCategory.value) {
-      await put(`/converter/categories/${editingCategory.value.id}`, categoryForm.value)
+      await converterApi.updateCategory(editingCategory.value.id, categoryForm.value)
       toast.success('Kategori berhasil diperbarui.')
     } else {
-      await post('/converter/categories', categoryForm.value)
+      await converterApi.createCategory(categoryForm.value)
       toast.success('Kategori berhasil dibuat.')
     }
     showCategoryModal.value = false
@@ -102,7 +86,7 @@ async function saveCategory() {
 async function deleteCategory(cat: CustomCategory) {
   if (!confirm(`Hapus kategori "${cat.name}" beserta semua satuan di dalamnya?`)) return
   try {
-    await del(`/converter/categories/${cat.id}`)
+    await converterApi.deleteCategory(cat.id)
     toast.success('Kategori berhasil dihapus.')
     if (activeCategory.value?.id === cat.id) activeCategory.value = null
     fetchCategories()
@@ -128,10 +112,10 @@ async function saveUnit() {
       to_base: parseFloat(unitForm.value.to_base),
     }
     if (editingUnit.value) {
-      await put(`/converter/units/${editingUnit.value.id}`, payload)
+      await converterApi.updateUnit(editingUnit.value.id, payload)
       toast.success('Satuan berhasil diperbarui.')
     } else {
-      await post('/converter/units', payload)
+      await converterApi.createUnit(payload)
       toast.success('Satuan berhasil ditambahkan.')
     }
     showUnitModal.value = false
@@ -142,7 +126,7 @@ async function saveUnit() {
 async function deleteUnit(unit: CustomUnit) {
   if (!confirm(`Hapus satuan "${unit.name}"?`)) return
   try {
-    await del(`/converter/units/${unit.id}`)
+    await converterApi.deleteUnit(unit.id)
     toast.success('Satuan berhasil dihapus.')
     fetchCategories()
   } catch { /* */ }

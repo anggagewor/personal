@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -8,22 +7,10 @@ import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Pencil, Trash2, ChevronDown, ChevronRight } from '@lucide/vue'
 import ResetControls from './ResetControls.vue'
+import type { Account, GroupedAccounts } from '@/types/accounting'
+import * as accountingApi from '@/api/accounting'
 
 const toast = useToast()
-
-interface Account {
-  id: number
-  code: string
-  name: string
-  type: string
-  normal_balance: string
-  parent_id: number | null
-  depth: number
-}
-
-interface GroupedAccounts {
-  [type: string]: Account[]
-}
 
 const typeLabels: Record<string, string> = {
   asset: 'Aset',
@@ -85,7 +72,7 @@ function toggleSection(type: string) {
 async function fetchData() {
   loading.value = true
   try {
-    const res = await get<GroupedAccounts>('/accounting/accounts')
+    const res = await accountingApi.fetchAccounts()
     accounts.value = res.data
   } catch {
     // Error handled by @purdia/http onError
@@ -103,7 +90,7 @@ async function createAccount() {
   if (!createForm.value.code || !createForm.value.name) return
   submitting.value = true
   try {
-    await post('/accounting/accounts', {
+    await accountingApi.createAccount({
       code: createForm.value.code,
       name: createForm.value.name,
       type: createForm.value.type,
@@ -134,7 +121,7 @@ async function updateAccount() {
   if (!editForm.value.name) return
   submitting.value = true
   try {
-    await put(`/accounting/accounts/${editForm.value.id}`, {
+    await accountingApi.updateAccount(editForm.value.id, {
       name: editForm.value.name,
       parent_id: editForm.value.parent_id || null,
     })
@@ -157,7 +144,7 @@ async function deleteAccount() {
   if (!deleteTarget.value) return
   submitting.value = true
   try {
-    await del(`/accounting/accounts/${deleteTarget.value.id}`)
+    await accountingApi.deleteAccount(deleteTarget.value.id)
     toast.success('Akun berhasil dihapus.')
     showDeleteModal.value = false
     deleteTarget.value = null

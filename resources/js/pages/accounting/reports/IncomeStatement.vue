@@ -1,29 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { get } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
 import { useFiscalPeriod } from '@/composables/useFiscalPeriod'
 import BaseSpinner from '@purdia/ui/src/components/BaseSpinner.vue'
-
-interface ReportAccount {
-  account_id: number
-  code: string
-  name: string
-  balance: number
-}
-
-interface IncomeStatementData {
-  revenue: {
-    accounts: ReportAccount[]
-    total: number
-  }
-  expense: {
-    accounts: ReportAccount[]
-    total: number
-  }
-  net_income: number
-  label: string
-}
+import type { IncomeStatementData } from '@/types/accounting'
+import * as accountingApi from '@/api/accounting'
 
 const { startDate, endDate } = useFiscalPeriod()
 
@@ -39,9 +20,7 @@ function netIncomeColor(value: number): string {
 async function fetchReport() {
   loading.value = true
   try {
-    const res = await get<IncomeStatementData>('/accounting/reports/income-statement', {
-      params: { start_date: startDate.value, end_date: endDate.value },
-    })
+    const res = await accountingApi.fetchIncomeStatement({ start_date: startDate.value, end_date: endDate.value })
     data.value = res.data
   } catch {
     // Error handled by @purdia/http onError

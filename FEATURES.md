@@ -402,6 +402,57 @@
 
 ---
 
+## 28. Accounting (Double-Entry Bookkeeping)
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Chart of Accounts | Daftar akun terstruktur (aset, kewajiban, ekuitas, pendapatan, beban) |
+| Jurnal Umum | CRUD jurnal dengan multi-line debit/kredit (harus seimbang) |
+| Buku Besar | Ledger per akun dengan saldo berjalan + filter tanggal |
+| Trial Balance | Neraca saldo per periode |
+| Laba Rugi | Income statement (pendapatan - beban) |
+| Neraca | Balance sheet dengan persamaan akuntansi |
+| Sample Data | Load data contoh untuk belajar |
+| Reset | Reset jurnal saja atau reset semua data akuntansi |
+
+**Endpoints:** `/api/accounting/accounts`, `/api/accounting/journal-entries`, `/api/accounting/ledger/{id}`, `/api/accounting/reports/*`, `/api/accounting/sample-data`, `/api/accounting/reset/*`
+
+---
+
+## 29. Unit Converter
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| 8 Kategori Bawaan | Panjang, berat, suhu, luas, volume, kecepatan, waktu, data digital |
+| Custom Converter | Buat kategori & satuan konversi sendiri (CRUD) |
+| Live Calculation | Hasil konversi langsung tampil saat input berubah |
+| Swap | Tukar unit from ↔ to |
+| Non-linear | Suhu pakai formula khusus (bukan faktor linear) |
+
+**Endpoints:** `/api/converter/categories`, `/api/converter/units`
+
+---
+
+## 30. SQL Generator (Tools)
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Form-based | Input nama tabel, kolom, tipe data, constraint via form |
+| Multi-dialect | MySQL/MariaDB, PostgreSQL, SQLite |
+| Column Options | Primary key, auto increment, nullable, unique, index, default value |
+| Searchable Types | Dropdown tipe data bisa di-search (BaseSelect) |
+| Timestamps | Otomatis tambah created_at/updated_at |
+| Soft Deletes | Otomatis tambah deleted_at |
+| IF NOT EXISTS | Toggle opsional |
+| Index Generation | CREATE INDEX statement terpisah |
+| Copy to Clipboard | Satu klik salin hasil SQL |
+| Reset | Bersihkan form ke default |
+| Frontend-only | Tidak membutuhkan backend/API |
+
+**Route:** `/tools/sql-generator`
+
+---
+
 ## Frontend Pages
 
 | Halaman | Route |
@@ -421,8 +472,10 @@
 | Budget | `/budget` |
 | Password Vault | `/vault` |
 | Google Drive | `/drive` |
+| Accounting | `/accounting`, `/accounting/journal`, `/accounting/ledger`, `/accounting/reports/*` |
 | Market | `/market` |
 | Emas Antam | `/gold` |
+| Unit Converter | `/converter`, `/converter/*` |
 | Reading List | `/reading-list` |
 | Journal | `/journal` |
 | Goals | `/goals` |
@@ -431,4 +484,5 @@
 | Streaks | `/streaks` |
 | Activity | `/activity` |
 | Trash | `/trash` |
+| SQL Generator | `/tools/sql-generator` |
 | Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/market`, `/settings/export` |

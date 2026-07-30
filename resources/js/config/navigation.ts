@@ -157,6 +157,14 @@ export const navigation: NavGroup[] = [
         ],
       },
       {
+        id: 'tools',
+        label: 'Tools',
+        icon: 'Wrench',
+        children: [
+          { label: 'SQL Generator', icon: 'Database', to: '/tools/sql-generator' },
+        ],
+      },
+      {
         id: 'vault',
         label: 'Password Vault',
         icon: 'Lock',

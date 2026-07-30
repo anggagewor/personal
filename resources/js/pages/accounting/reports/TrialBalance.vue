@@ -1,25 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { get } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
 import { useFiscalPeriod } from '@/composables/useFiscalPeriod'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import BaseSpinner from '@purdia/ui/src/components/BaseSpinner.vue'
-
-interface TrialBalanceAccount {
-  account_id: number
-  code: string
-  name: string
-  debit: number
-  credit: number
-}
-
-interface TrialBalanceData {
-  accounts: TrialBalanceAccount[]
-  total_debit: number
-  total_credit: number
-  is_balanced: boolean
-}
+import type { TrialBalanceData } from '@/types/accounting'
+import * as accountingApi from '@/api/accounting'
 
 const { startDate, endDate } = useFiscalPeriod()
 
@@ -29,9 +15,7 @@ const loading = ref(true)
 async function fetchReport() {
   loading.value = true
   try {
-    const res = await get<TrialBalanceData>('/accounting/reports/trial-balance', {
-      params: { start_date: startDate.value, end_date: endDate.value },
-    })
+    const res = await accountingApi.fetchTrialBalance({ start_date: startDate.value, end_date: endDate.value })
     data.value = res.data
   } catch {
     // Error handled by @purdia/http onError
