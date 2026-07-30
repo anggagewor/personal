@@ -1,24 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { secureSet, secureGet, secureRemove } from '@purdia/crypto'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Trash2, Lock, Eye, EyeOff, Copy, ExternalLink, Search } from '@lucide/vue'
+import type { VaultEntry } from '@/types/vault'
+import * as vaultApi from '@/api/vault'
 
 const toast = useToast()
-
-interface VaultEntry {
-  id: number
-  name: string
-  username: string | null
-  encryptedPassword: string
-  url: string | null
-  notes: string | null
-  category: string | null
-}
 
 const entries = ref<VaultEntry[]>([])
 const loading = ref(true)
@@ -41,7 +32,7 @@ const filteredEntries = computed(() => {
 async function fetchEntries() {
   loading.value = true
   try {
-    const res = await get<VaultEntry[]>('/vault')
+    const res = await vaultApi.fetchVaultEntries()
     entries.value = res.data
   } catch {
     // Error handled globally
@@ -70,10 +61,10 @@ async function saveEntry() {
 
   try {
     if (editingEntry.value) {
-      await put(`/vault/${editingEntry.value.id}`, payload)
+      await vaultApi.updateVaultEntry(editingEntry.value.id, payload)
       toast.success('Password berhasil diperbarui.')
     } else {
-      await post('/vault', payload)
+      await vaultApi.createVaultEntry(payload)
       toast.success('Password berhasil disimpan.')
     }
     closeForm()
@@ -85,7 +76,7 @@ async function saveEntry() {
 
 async function deleteEntry(entry: VaultEntry) {
   try {
-    await del(`/vault/${entry.id}`)
+    await vaultApi.deleteVaultEntry(entry.id)
     toast.success('Password berhasil dihapus.')
     entries.value = entries.value.filter((e) => e.id !== entry.id)
   } catch {

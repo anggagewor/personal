@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import BaseCalendar from '@purdia/ui/src/components/BaseCalendar.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
@@ -12,26 +11,10 @@ import CalendarDayView from '@/components/calendar/CalendarDayView.vue'
 import CalendarWeekView from '@/components/calendar/CalendarWeekView.vue'
 import CalendarYearView from '@/components/calendar/CalendarYearView.vue'
 import { Plus, Trash2, Clock, Calendar, X, ChevronLeft, ChevronRight } from '@lucide/vue'
+import type { CalendarEvent, HolidayItem } from '@/types/calendar'
+import * as calendarApi from '@/api/calendar'
 
 type ViewMode = 'day' | 'week' | 'month' | 'year'
-
-interface CalendarEvent {
-  id: number
-  title: string
-  description: string | null
-  start_at: string
-  end_at: string | null
-  all_day: boolean
-  color: string | null
-}
-
-interface HolidayItem {
-  id: number
-  date: string
-  summary: string
-  description: string | null
-  is_national_holiday: boolean
-}
 
 const events = ref<CalendarEvent[]>([])
 const holidays = ref<HolidayItem[]>([])
@@ -229,8 +212,8 @@ async function fetchEvents() {
 
   try {
     const [eventsRes, holidaysRes] = await Promise.all([
-      get<CalendarEvent[]>('/calendar-events', { params: { start, end } }),
-      get<HolidayItem[]>('/holidays', { params: { start, end } }),
+      calendarApi.fetchCalendarEvents({ start, end }),
+      calendarApi.fetchHolidays({ start, end }),
     ])
     events.value = eventsRes.data
     holidays.value = holidaysRes.data
@@ -298,9 +281,9 @@ async function saveEvent() {
   }
 
   if (editingEvent.value) {
-    await put(`/calendar-events/${editingEvent.value.id}`, payload)
+    await calendarApi.updateCalendarEvent(editingEvent.value.id, payload)
   } else {
-    await post('/calendar-events', payload)
+    await calendarApi.createCalendarEvent(payload)
   }
   showForm.value = false
   editingEvent.value = null
@@ -310,7 +293,7 @@ async function saveEvent() {
 async function deleteEvent(event?: CalendarEvent) {
   const target = event ?? editingEvent.value
   if (!target) return
-  await del(`/calendar-events/${target.id}`)
+  await calendarApi.deleteCalendarEvent(target.id)
   if (!event) {
     showForm.value = false
     editingEvent.value = null

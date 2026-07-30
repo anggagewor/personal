@@ -1,38 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { get, upload } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSkeleton from '@purdia/ui/src/components/BaseSkeleton.vue'
 import { LineChart } from '@purdia/charts'
 import { TrendingUp, TrendingDown, RefreshCw, Settings, Download, Upload, FileDown } from '@lucide/vue'
+import type { WatchlistItem, PriceData, HistoryPoint } from '@/types/market'
+import * as marketApi from '@/api/market'
 
 const { success, error: showError } = useToast()
-
-// --- Types ---
-interface WatchlistItem {
-  id: number
-  symbol: string
-  type: string
-  label: string | null
-  position: number
-}
-
-interface PriceData {
-  symbol: string
-  price: number
-  change: number
-  change_percent: number
-  previous_close: number | null
-}
-
-interface HistoryPoint {
-  price: number
-  change: number
-  change_percent: number
-  fetched_at: string
-}
 
 // --- State ---
 const items = ref<WatchlistItem[]>([])
@@ -191,8 +168,8 @@ async function fetchAll() {
   loading.value = true
   try {
     const [itemsRes, pricesRes] = await Promise.allSettled([
-      get<WatchlistItem[]>('/market/watchlist'),
-      get<Record<string, PriceData>>('/market/prices'),
+      marketApi.fetchWatchlist(),
+      marketApi.fetchPrices(),
     ])
 
     if (itemsRes.status === 'fulfilled') items.value = itemsRes.value.data
@@ -218,7 +195,7 @@ async function loadAllHistory() {
 
   const results = await Promise.allSettled(
     items.value.map(item =>
-      get<HistoryPoint[]>(`/market/history/${item.symbol}`, { params: { from, to } })
+      marketApi.fetchHistory(item.symbol, { from, to })
     )
   )
 
@@ -241,7 +218,7 @@ async function changeRange(range: RangeKey) {
 async function refreshPrices() {
   refreshing.value = true
   try {
-    const res = await get<Record<string, PriceData>>('/market/prices')
+    const res = await marketApi.fetchPrices()
     prices.value = res.data
   } catch {
     // handled globally
@@ -258,10 +235,7 @@ function startAutoRefresh() {
 // --- Export / Import ---
 async function handleExport(format: 'csv' | 'json') {
   try {
-    const res = await get<Blob>('/market/export', {
-      params: { format },
-      responseType: 'blob',
-    } as any)
+    const res = await marketApi.exportData({ format })
 
     const blob = new Blob([res as any], { type: format === 'csv' ? 'text/csv' : 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -277,7 +251,8 @@ async function handleExport(format: 'csv' | 'json') {
 
 async function downloadTemplate() {
   try {
-    const res = await get<Blob>('/market/import/template', { responseType: 'blob' } as any)
+    const res = await marketApi.downloadTemplate()
+
     const blob = new Blob([res as any], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -303,7 +278,7 @@ async function handleImport(event: Event) {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await upload<{ imported: number }>('/market/import', formData)
+    const res = await marketApi.importData(formData)
     success(res.data.message ?? `Berhasil mengimpor ${res.data.data?.imported ?? 0} data.`)
     await loadAllHistory()
   } catch {

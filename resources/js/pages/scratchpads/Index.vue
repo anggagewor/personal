@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get, post, put, del } from '@purdia/http'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import { Plus, Trash2 } from '@lucide/vue'
-
-interface Scratchpad {
-  id: number
-  content: string
-  color: string | null
-  position: number
-}
+import type { Scratchpad } from '@/types/scratchpad'
+import * as scratchpadsApi from '@/api/scratchpads'
 
 const pads = ref<Scratchpad[]>([])
 const loading = ref(false)
@@ -24,7 +18,7 @@ function getColorClass(color: string | null, index: number): string {
 async function fetchPads() {
   loading.value = true
   try {
-    const res = await get<Scratchpad[]>('/scratchpads')
+    const res = await scratchpadsApi.fetchScratchpads()
     pads.value = res.data
   } catch { /* */ }
   loading.value = false
@@ -32,7 +26,7 @@ async function fetchPads() {
 
 async function addPad() {
   try {
-    const res = await post<Scratchpad>('/scratchpads', { content: '' })
+    const res = await scratchpadsApi.createScratchpad({ content: '' })
     pads.value.push(res.data)
   } catch { /* */ }
 }
@@ -41,12 +35,12 @@ let saveTimer: ReturnType<typeof setTimeout> | null = null
 function onInput(pad: Scratchpad) {
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = setTimeout(() => {
-    put(`/scratchpads/${pad.id}`, { content: pad.content })
+    scratchpadsApi.updateScratchpad(pad.id, { content: pad.content })
   }, 500)
 }
 
 async function deletePad(pad: Scratchpad) {
-  await del(`/scratchpads/${pad.id}`)
+  await scratchpadsApi.deleteScratchpad(pad.id)
   pads.value = pads.value.filter((p) => p.id !== pad.id)
 }
 

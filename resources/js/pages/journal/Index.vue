@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { get, post, del } from '@purdia/http'
 import { formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseEditor from '@purdia/ui/src/components/BaseEditor.vue'
 import { ChevronLeft, ChevronRight, Smile, Meh, Frown, Zap, Battery } from '@lucide/vue'
-
-interface JournalEntry {
-  id: number
-  date: string
-  content: string
-  mood: string | null
-}
+import type { JournalEntry } from '@/types/journal'
+import * as journalApi from '@/api/journal'
 
 const today = new Date()
 const selectedDate = ref(today.toISOString().slice(0, 10))
@@ -30,7 +24,7 @@ const moods = [
 
 async function fetchEntry() {
   try {
-    const res = await get<JournalEntry | null>(`/journals/${selectedDate.value}`)
+    const res = await journalApi.fetchJournalEntry(selectedDate.value)
     entry.value = res.data
     content.value = res.data?.content ?? ''
     mood.value = res.data?.mood ?? null
@@ -45,7 +39,7 @@ async function saveEntry() {
   if (!content.value.trim()) return
   saving.value = true
   try {
-    await post('/journals', { date: selectedDate.value, content: content.value, mood: mood.value })
+    await journalApi.saveJournalEntry({ date: selectedDate.value, content: content.value, mood: mood.value })
     fetchEntry()
   } catch { /* */ }
   saving.value = false

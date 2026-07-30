@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { get, post, del } from '@purdia/http'
 import { useToast } from '@purdia/toast'
 import { formatCurrency } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
@@ -9,26 +8,10 @@ import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseProgress from '@purdia/ui/src/components/BaseProgress.vue'
 import { Plus, Trash2, PiggyBank, AlertTriangle } from '@lucide/vue'
+import type { BudgetItem, BudgetSummary } from '@/types/budget'
+import * as budgetsApi from '@/api/budgets'
 
 const toast = useToast()
-
-interface BudgetItem {
-  id: number
-  category: string
-  amount: number
-  spent: number
-  remaining: number
-  percent_used: number
-  is_exceeded: boolean
-  is_near_limit: boolean
-}
-
-interface BudgetSummary {
-  budgets: BudgetItem[]
-  total_budget: number
-  total_spent: number
-  total_remaining: number
-}
 
 const summary = ref<BudgetSummary>({ budgets: [], total_budget: 0, total_spent: 0, total_remaining: 0 })
 const currentMonth = ref(new Date().toISOString().slice(0, 7))
@@ -41,7 +24,7 @@ const expenseCategories = ['Makanan', 'Transport', 'Hiburan', 'Belanja', 'Tagiha
 async function fetchData() {
   loading.value = true
   try {
-    const res = await get<BudgetSummary>('/budgets/summary', { params: { month: currentMonth.value } })
+    const res = await budgetsApi.fetchBudgetSummary({ month: currentMonth.value })
     summary.value = res.data
   } catch {
     // Error handled globally
@@ -53,7 +36,7 @@ async function fetchData() {
 async function addBudget() {
   if (!form.value.category || !form.value.amount) return
   try {
-    await post('/budgets', { ...form.value, amount: parseFloat(form.value.amount), month: currentMonth.value })
+    await budgetsApi.createBudget({ category: form.value.category, amount: parseFloat(form.value.amount), month: currentMonth.value })
     toast.success('Budget berhasil disimpan.')
     showForm.value = false
     form.value = { category: '', amount: '', month: currentMonth.value }
@@ -65,7 +48,7 @@ async function addBudget() {
 
 async function deleteBudget(item: BudgetItem) {
   try {
-    await del(`/budgets/${item.id}`)
+    await budgetsApi.deleteBudget(item.id)
     toast.success('Budget berhasil dihapus.')
     fetchData()
   } catch {

@@ -1,28 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { get, upload } from '@purdia/http'
 import { formatCurrency } from '@purdia/utils'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSkeleton from '@purdia/ui/src/components/BaseSkeleton.vue'
 import { LineChart } from '@purdia/charts'
 import { TrendingUp, TrendingDown, Coins, Download, Upload, FileDown } from '@lucide/vue'
+import type { GoldHistory, GoldDashboard } from '@/types/gold'
+import * as goldApi from '@/api/gold'
 
 const { success, error: showError } = useToast()
-
-// --- Types ---
-interface GoldHistory {
-  date: string
-  price: number
-  change: number
-  change_percent: number
-}
-
-interface GoldDashboard {
-  latest: { date: string; price: number; change: number; change_percent: number } | null
-  sparkline: number[]
-  stats: { high_30d: number; low_30d: number; change_30d: number; change_percent_30d: number } | null
-}
 
 // --- State ---
 const dashboard = ref<GoldDashboard | null>(null)
@@ -109,8 +96,8 @@ async function fetchAll() {
   loading.value = true
   try {
     const [dashRes, histRes] = await Promise.allSettled([
-      get<GoldDashboard>('/gold/dashboard'),
-      get<GoldHistory[]>('/gold/history', { params: { period: period.value } }),
+      goldApi.fetchDashboard(),
+      goldApi.fetchHistory({ period: period.value }),
     ])
     if (dashRes.status === 'fulfilled') dashboard.value = dashRes.value.data
     if (histRes.status === 'fulfilled') history.value = histRes.value.data
@@ -125,7 +112,7 @@ async function changePeriod(p: string) {
   period.value = p
   chartLoading.value = true
   try {
-    const res = await get<GoldHistory[]>('/gold/history', { params: { period: p } })
+    const res = await goldApi.fetchHistory({ period: p })
     history.value = res.data
   } catch {
     // handled globally
@@ -137,10 +124,7 @@ async function changePeriod(p: string) {
 // --- Export / Import ---
 async function handleExport(format: 'csv' | 'json') {
   try {
-    const res = await get<Blob>('/gold/export', {
-      params: { format },
-      responseType: 'blob',
-    } as any)
+    const res = await goldApi.exportData({ format })
 
     const blob = new Blob([res as any], { type: format === 'csv' ? 'text/csv' : 'application/json' })
     const url = URL.createObjectURL(blob)
@@ -156,7 +140,7 @@ async function handleExport(format: 'csv' | 'json') {
 
 async function downloadTemplate() {
   try {
-    const res = await get<Blob>('/gold/import/template', { responseType: 'blob' } as any)
+    const res = await goldApi.downloadTemplate()
     const blob = new Blob([res as any], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -182,7 +166,7 @@ async function handleImport(event: Event) {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await upload<{ imported: number }>('/gold/import', formData)
+    const res = await goldApi.importData(formData)
     success(res.data.message ?? `Berhasil mengimpor ${res.data.data?.imported ?? 0} data.`)
     await fetchAll()
   } catch {
