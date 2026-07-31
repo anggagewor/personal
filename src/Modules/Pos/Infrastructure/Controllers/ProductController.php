@@ -4,6 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Catalog\CreateProductAction;
 use Modules\Pos\Application\Actions\Catalog\DeactivateProductAction;
@@ -53,6 +54,12 @@ class ProductController extends BaseController
 
         $validated = $request->validated();
 
+        // Handle image upload
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('products', 'public');
+        }
+
         $variants = array_map(
             fn (array $v) => new ProductVariantData(
                 name: $v['name'],
@@ -71,7 +78,7 @@ class ProductController extends BaseController
                     basePrice: (float) $validated['base_price'],
                     categoryId: (int) $validated['category_id'],
                     sku: $validated['sku'] ?? null,
-                    image: $validated['image'] ?? null,
+                    image: $imagePath,
                     hasVariants: $validated['has_variants'] ?? false,
                     trackStock: $validated['track_stock'] ?? true,
                     variants: $variants,
@@ -116,6 +123,22 @@ class ProductController extends BaseController
 
         $validated = $request->validated();
 
+        // Handle image upload / removal
+        $imagePath = $product->image;
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $imagePath = $request->file('image')->store('products', 'public');
+        } elseif (!empty($validated['remove_image'])) {
+            // Remove existing image
+            if ($product->image) {
+                Storage::disk('public')->delete($product->image);
+            }
+            $imagePath = null;
+        }
+
         $variants = isset($validated['variants'])
             ? array_map(
                 fn (array $v) => new ProductVariantData(
@@ -141,7 +164,7 @@ class ProductController extends BaseController
                     basePrice: isset($validated['base_price']) ? (float) $validated['base_price'] : $product->basePrice,
                     categoryId: $validated['category_id'] ?? $product->categoryId,
                     sku: array_key_exists('sku', $validated) ? $validated['sku'] : $product->sku,
-                    image: array_key_exists('image', $validated) ? $validated['image'] : $product->image,
+                    image: $imagePath,
                     hasVariants: $validated['has_variants'] ?? $product->hasVariants,
                     trackStock: $validated['track_stock'] ?? $product->trackStock,
                     variants: $variants,

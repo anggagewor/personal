@@ -22,6 +22,7 @@ class DiscountModel extends Model
         'starts_at',
         'ends_at',
         'conditions',
+        'product_id',
     ];
 
     protected function casts(): array

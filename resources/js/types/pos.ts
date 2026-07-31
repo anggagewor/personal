@@ -60,6 +60,11 @@ export interface CartItem {
   quantity: number
   unit_price: number
   subtotal: number
+  image?: string | null
+  discount_amount?: number
+  discount_label?: string | null
+  voucher_amount?: number
+  voucher_label?: string | null
 }
 
 export interface CheckoutPayload {
@@ -137,6 +142,7 @@ export interface Voucher {
   usage_count: number
   expires_at: string | null
   is_active: boolean
+  product_id: number | null
 }
 
 // === Table & QR Order ===

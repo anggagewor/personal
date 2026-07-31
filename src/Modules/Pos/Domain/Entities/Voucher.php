@@ -18,6 +18,7 @@ class Voucher
         public int $usageCount = 0,
         public ?DateTimeImmutable $expiresAt = null,
         public bool $isActive = true,
+        public ?int $productId = null,
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
     ) {}

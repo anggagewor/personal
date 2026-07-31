@@ -45,6 +45,7 @@ async function fetchData() {
     // Set payment flow from outlet config
     if (outlet.value) {
       cartStore.setPaymentFlow(outlet.value.payment_flow === 'pay_later' ? 'pay_later' : 'pay_first')
+      cartStore.setOutletId(outlet.value.id)
     }
   } catch {
     // Error handled by @purdia/http
@@ -67,6 +68,7 @@ function handleAddToCart(product: Product, variantId?: number) {
     variant_name: product.has_variants ? variant.name : null,
     quantity: 1,
     unit_price: variant.price,
+    image: product.image,
   })
 }
 
@@ -87,10 +89,18 @@ function onReceiptClose() {
 }
 
 onMounted(() => {
-  if (outletId.value) fetchData()
+  if (outletId.value) {
+    cartStore.setOutletId(outletId.value)
+    fetchData()
+  }
 })
 
-watch(outletId, (val) => { if (val) fetchData() })
+watch(outletId, (val) => {
+  if (val) {
+    cartStore.setOutletId(val)
+    fetchData()
+  }
+})
 </script>
 
 <template>

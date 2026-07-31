@@ -55,6 +55,7 @@ class EloquentDiscountRepository implements DiscountRepositoryInterface
             'starts_at' => $data->startsAt,
             'ends_at' => $data->endsAt,
             'conditions' => $data->conditions,
+            'product_id' => $data->productId ?? null,
         ]);
 
         return $this->toEntity($model);
@@ -75,6 +76,7 @@ class EloquentDiscountRepository implements DiscountRepositoryInterface
             'starts_at' => $data->startsAt,
             'ends_at' => $data->endsAt,
             'conditions' => $data->conditions,
+            'product_id' => $data->productId ?? null,
         ]);
 
         return $this->toEntity($model->fresh());
@@ -125,7 +127,7 @@ class EloquentDiscountRepository implements DiscountRepositoryInterface
             minPurchase: $model->min_purchase ? (float) $model->min_purchase : null,
             buyQuantity: null,
             getQuantity: null,
-            productId: null,
+            productId: $model->product_id ? (int) $model->product_id : null,
             startDate: $model->starts_at?->toDateTimeString(),
             endDate: $model->ends_at?->toDateTimeString(),
             isActive: (bool) $model->is_active,

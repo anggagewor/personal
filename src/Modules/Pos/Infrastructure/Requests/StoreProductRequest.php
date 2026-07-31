@@ -18,7 +18,7 @@ class StoreProductRequest extends FormRequest
             'base_price' => ['required', 'numeric', 'min:0'],
             'category_id' => ['required', 'integer'],
             'sku' => ['nullable', 'string', 'max:50'],
-            'image' => ['nullable', 'string', 'max:255'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'has_variants' => ['sometimes', 'boolean'],
             'track_stock' => ['sometimes', 'boolean'],
             'variants' => ['sometimes', 'array'],

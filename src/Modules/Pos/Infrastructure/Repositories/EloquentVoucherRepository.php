@@ -119,6 +119,7 @@ class EloquentVoucherRepository implements VoucherRepositoryInterface
             usageCount: (int) $model->usage_count,
             expiresAt: $model->expires_at ? new DateTimeImmutable($model->expires_at->toDateTimeString()) : null,
             isActive: (bool) $model->is_active,
+            productId: $model->product_id ? (int) $model->product_id : null,
             createdAt: $model->created_at ? new DateTimeImmutable($model->created_at->toDateTimeString()) : null,
             updatedAt: $model->updated_at ? new DateTimeImmutable($model->updated_at->toDateTimeString()) : null,
         );

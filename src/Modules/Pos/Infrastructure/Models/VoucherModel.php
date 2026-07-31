@@ -21,6 +21,7 @@ class VoucherModel extends Model
         'usage_count',
         'expires_at',
         'is_active',
+        'product_id',
     ];
 
     protected function casts(): array

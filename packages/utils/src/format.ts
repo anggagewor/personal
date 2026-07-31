@@ -1,17 +1,19 @@
 /**
  * Format number as Indonesian Rupiah currency.
+ * Accepts number or numeric string (e.g. "10000.00" from API decimal fields).
  */
 export function formatCurrency(
-  value: number,
+  value: number | string,
   options: { locale?: string; currency?: string } = {},
 ): string {
   const { locale = 'id-ID', currency = 'IDR' } = options
+  const num = typeof value === 'string' ? parseFloat(value) : value
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(num || 0)
 }
 
 /**

@@ -12,13 +12,14 @@ class VoucherResource
             'id' => $voucher->id,
             'outlet_id' => $voucher->outletId,
             'code' => $voucher->code,
-            'type' => $voucher->type->value,
-            'value' => $voucher->value,
+            'discount_type' => $voucher->type->value,
+            'discount_value' => $voucher->value,
             'min_purchase' => $voucher->minPurchase,
             'usage_limit' => $voucher->usageLimit,
             'usage_count' => $voucher->usageCount,
             'expires_at' => $voucher->expiresAt?->format('Y-m-d\TH:i:s.000000\Z'),
             'is_active' => $voucher->isActive,
+            'product_id' => $voucher->productId,
             'created_at' => $voucher->createdAt?->format('Y-m-d\TH:i:s.000000\Z'),
         ];
     }

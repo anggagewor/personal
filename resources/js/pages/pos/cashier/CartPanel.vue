@@ -84,16 +84,30 @@ function clearCart() {
           class="rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/50"
         >
           <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
-                {{ item.product_name }}
-              </p>
-              <p v-if="item.variant_name" class="text-xs text-gray-400">
-                {{ item.variant_name }}
-              </p>
-              <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                {{ formatCurrency(item.unit_price) }}
-              </p>
+            <div class="flex items-start gap-2 min-w-0 flex-1">
+              <!-- Product thumbnail -->
+              <div class="h-10 w-10 shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-700">
+                <img
+                  v-if="item.image"
+                  :src="item.image"
+                  :alt="item.product_name"
+                  class="h-full w-full object-cover"
+                />
+                <div v-else class="flex h-full w-full items-center justify-center">
+                  <ShoppingCart :size="14" class="text-gray-400" />
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
+                  {{ item.product_name }}
+                </p>
+                <p v-if="item.variant_name" class="text-xs text-gray-400">
+                  {{ item.variant_name }}
+                </p>
+                <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {{ formatCurrency(item.unit_price) }}
+                </p>
+              </div>
             </div>
             <button
               class="shrink-0 rounded p-1 text-gray-400 hover:text-red-500 dark:hover:text-red-400"
@@ -126,6 +140,18 @@ function clearCart() {
               {{ formatCurrency(item.subtotal) }}
             </p>
           </div>
+
+          <!-- Per-item discount info -->
+          <div v-if="item.discount_amount || item.voucher_amount" class="mt-2 space-y-0.5 border-t border-dashed border-gray-200 pt-2 dark:border-gray-600">
+            <div v-if="item.discount_amount" class="flex items-center justify-between text-xs">
+              <span class="text-green-600 dark:text-green-400">{{ item.discount_label || 'Diskon' }}</span>
+              <span class="font-medium text-red-500">-{{ formatCurrency(item.discount_amount) }}</span>
+            </div>
+            <div v-if="item.voucher_amount" class="flex items-center justify-between text-xs">
+              <span class="text-purple-600 dark:text-purple-400">Voucher {{ item.voucher_label }}</span>
+              <span class="font-medium text-red-500">-{{ formatCurrency(item.voucher_amount) }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -133,9 +159,15 @@ function clearCart() {
     <!-- Cart summary + checkout button -->
     <div class="border-t border-gray-200 px-4 py-3 dark:border-gray-700">
       <!-- Discount info -->
-      <div v-if="cartStore.discountTotal > 0" class="mb-2 flex items-center justify-between text-xs">
+      <div v-if="cartStore.discountTotal > 0" class="mb-1 flex items-center justify-between text-xs">
         <span class="text-gray-500 dark:text-gray-400">Diskon</span>
         <span class="text-red-500">-{{ formatCurrency(cartStore.discountTotal) }}</span>
+      </div>
+
+      <!-- Voucher info -->
+      <div v-if="cartStore.voucherTotal > 0" class="mb-1 flex items-center justify-between text-xs">
+        <span class="text-gray-500 dark:text-gray-400">Voucher</span>
+        <span class="text-red-500">-{{ formatCurrency(cartStore.voucherTotal) }}</span>
       </div>
 
       <!-- Subtotal -->

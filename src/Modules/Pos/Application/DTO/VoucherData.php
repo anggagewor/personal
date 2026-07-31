@@ -12,5 +12,6 @@ readonly class VoucherData
         public ?int $usageLimit = null,
         public ?string $expiresAt = null,
         public bool $isActive = true,
+        public ?int $productId = null,
     ) {}
 }

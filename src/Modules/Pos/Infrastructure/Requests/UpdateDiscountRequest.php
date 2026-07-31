@@ -21,8 +21,8 @@ class UpdateDiscountRequest extends FormRequest
             'member_only' => ['boolean'],
             'is_active' => ['boolean'],
             'priority' => ['integer', 'min:0'],
-            'starts_at' => ['nullable', 'date'],
-            'ends_at' => ['nullable', 'date', 'after_or_equal:starts_at'],
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
         ];
     }
 }

@@ -52,8 +52,9 @@ class DiscountController extends BaseController
             memberOnly: $validated['member_only'] ?? false,
             isActive: $validated['is_active'] ?? true,
             priority: $validated['priority'] ?? 0,
-            startsAt: $validated['starts_at'] ?? null,
-            endsAt: $validated['ends_at'] ?? null,
+            startsAt: $validated['start_date'] ?? null,
+            endsAt: $validated['end_date'] ?? null,
+            productId: $validated['product_id'] ?? null,
         ));
 
         return response()->json([
@@ -82,8 +83,9 @@ class DiscountController extends BaseController
             memberOnly: $validated['member_only'] ?? false,
             isActive: $validated['is_active'] ?? true,
             priority: $validated['priority'] ?? 0,
-            startsAt: $validated['starts_at'] ?? null,
-            endsAt: $validated['ends_at'] ?? null,
+            startsAt: $validated['start_date'] ?? null,
+            endsAt: $validated['end_date'] ?? null,
+            productId: $validated['product_id'] ?? null,
         ));
 
         return response()->json([
@@ -115,18 +117,26 @@ class DiscountController extends BaseController
             'outlet_id' => 'required|integer',
             'subtotal' => 'required|numeric|min:0',
             'member_id' => 'nullable|integer',
+            'items' => 'nullable|array',
+            'items.*.product_id' => 'required_with:items|integer',
+            'items.*.quantity' => 'required_with:items|integer|min:1',
+            'items.*.subtotal' => 'required_with:items|numeric|min:0',
         ]);
 
         $this->findOwnedOrFail($this->outletRepo, $validated['outlet_id'], $request);
 
-        $discounts = $action->execute(
+        $result = $action->execute(
             outletId: $validated['outlet_id'],
             subtotal: (float) $validated['subtotal'],
             memberId: $validated['member_id'] ?? null,
+            items: $validated['items'] ?? [],
         );
 
         return response()->json([
-            'data' => DiscountResource::collection($discounts),
+            'data' => [
+                'applicable' => DiscountResource::collection($result['applicable']),
+                'total_discount' => $result['total_discount'],
+            ],
             'message' => 'Evaluasi diskon berhasil.',
         ]);
     }

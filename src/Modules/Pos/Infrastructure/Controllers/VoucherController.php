@@ -56,6 +56,7 @@ class VoucherController extends BaseController
             usageLimit: $validated['usage_limit'] ?? null,
             expiresAt: $validated['expires_at'] ?? null,
             isActive: $validated['is_active'] ?? true,
+            productId: $validated['product_id'] ?? null,
         ));
 
         return response()->json([
@@ -113,16 +114,41 @@ class VoucherController extends BaseController
         $validated = $request->validate([
             'code' => 'required|string',
             'subtotal' => 'required|numeric|min:0',
+            'items' => 'nullable|array',
+            'items.*.product_id' => 'required_with:items|integer',
+            'items.*.subtotal' => 'required_with:items|numeric|min:0',
         ]);
 
         try {
             $voucher = $action->execute(
                 code: $validated['code'],
                 subtotal: (float) $validated['subtotal'],
+                items: $validated['items'] ?? [],
             );
 
+            // Calculate discount amount based on product scope
+            $discountBase = (float) $validated['subtotal'];
+            if ($voucher->productId !== null && !empty($validated['items'])) {
+                $discountBase = 0.0;
+                foreach ($validated['items'] as $item) {
+                    if (($item['product_id'] ?? 0) === $voucher->productId) {
+                        $discountBase += (float) ($item['subtotal'] ?? 0);
+                    }
+                }
+            }
+
+            $discountAmount = match ($voucher->type->value) {
+                'percentage' => $discountBase * ($voucher->value / 100),
+                'fixed' => min($voucher->value, $discountBase),
+                default => 0.0,
+            };
+
             return response()->json([
-                'data' => VoucherResource::toArray($voucher),
+                'data' => [
+                    'valid' => true,
+                    'voucher' => VoucherResource::toArray($voucher),
+                    'discount_amount' => round($discountAmount, 2),
+                ],
                 'message' => 'Voucher valid.',
             ]);
         } catch (InvalidVoucherException $e) {

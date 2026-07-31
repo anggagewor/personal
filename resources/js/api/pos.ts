@@ -1,4 +1,4 @@
-import { get, post, put, del } from '@purdia/http'
+import { get, post, put, del, upload } from '@purdia/http'
 import type {
   Outlet,
   Category,
@@ -64,7 +64,11 @@ export function fetchProducts(outletId: number, params?: { category_id?: number;
   return get<Product[]>(`/pos/outlets/${outletId}/products`, { params })
 }
 
-export function createProduct(outletId: number, payload: Partial<Product>) {
+export function createProduct(outletId: number, payload: Partial<Product>, imageFile?: File | null) {
+  if (imageFile) {
+    const formData = buildProductFormData(payload, imageFile)
+    return upload<Product>(`/pos/outlets/${outletId}/products`, formData)
+  }
   return post<Product>(`/pos/outlets/${outletId}/products`, payload)
 }
 
@@ -72,8 +76,42 @@ export function fetchProduct(id: number) {
   return get<Product>(`/pos/products/${id}`)
 }
 
-export function updateProduct(id: number, payload: Partial<Product>) {
+export function updateProduct(id: number, payload: Partial<Product>, imageFile?: File | null, removeImage?: boolean) {
+  if (imageFile || removeImage) {
+    const formData = buildProductFormData(payload, imageFile, removeImage)
+    formData.append('_method', 'PUT')
+    return upload<Product>(`/pos/products/${id}`, formData)
+  }
   return put<Product>(`/pos/products/${id}`, payload)
+}
+
+function buildProductFormData(payload: Partial<Product>, imageFile?: File | null, removeImage?: boolean): FormData {
+  const formData = new FormData()
+
+  if (payload.name) formData.append('name', payload.name)
+  if (payload.category_id) formData.append('category_id', String(payload.category_id))
+  if (payload.base_price !== undefined) formData.append('base_price', String(payload.base_price))
+  if (payload.sku !== undefined) formData.append('sku', payload.sku || '')
+  if (payload.has_variants !== undefined) formData.append('has_variants', payload.has_variants ? '1' : '0')
+  if (payload.track_stock !== undefined) formData.append('track_stock', payload.track_stock ? '1' : '0')
+
+  if (imageFile) {
+    formData.append('image', imageFile)
+  }
+  if (removeImage) {
+    formData.append('remove_image', '1')
+  }
+
+  if (payload.variants && payload.variants.length > 0) {
+    payload.variants.forEach((v, i) => {
+      formData.append(`variants[${i}][name]`, v.name)
+      formData.append(`variants[${i}][price]`, String(v.price))
+      if (v.sku) formData.append(`variants[${i}][sku]`, v.sku)
+      formData.append(`variants[${i}][stock_quantity]`, String(v.stock_quantity))
+    })
+  }
+
+  return formData
 }
 
 export function deactivateProduct(id: number) {
@@ -155,7 +193,8 @@ export function deleteDiscount(id: number) {
 }
 
 export function evaluateDiscounts(payload: { outlet_id: number; items: { product_id: number; quantity: number; subtotal: number }[]; member_id?: number }) {
-  return post<{ applicable: Discount[]; total_discount: number }>('/pos/discounts/evaluate', payload)
+  const subtotal = payload.items.reduce((sum, i) => sum + i.subtotal, 0)
+  return post<{ applicable: Discount[]; total_discount: number }>('/pos/discounts/evaluate', { ...payload, subtotal })
 }
 
 // --- Vouchers ---
@@ -176,7 +215,7 @@ export function fetchVoucher(id: number) {
   return get<Voucher>(`/pos/vouchers/${id}`)
 }
 
-export function validateVoucher(payload: { code: string; outlet_id: number; subtotal: number }) {
+export function validateVoucher(payload: { code: string; outlet_id: number; subtotal: number; items?: { product_id: number; subtotal: number }[] }) {
   return post<{ valid: boolean; voucher?: Voucher; discount_amount?: number }>('/pos/vouchers/validate', payload)
 }
 

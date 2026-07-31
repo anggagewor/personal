@@ -60,8 +60,8 @@ class VoucherTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonPath('data.code', 'DISKON50K')
-            ->assertJsonPath('data.type', 'fixed');
-        $this->assertEquals(50000, $response->json('data.value'));
+            ->assertJsonPath('data.discount_type', 'fixed');
+        $this->assertEquals(50000, $response->json('data.discount_value'));
 
         $this->assertDatabaseHas('pos_vouchers', [
             'outlet_id' => $this->outlet->id,

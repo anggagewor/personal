@@ -345,6 +345,10 @@ function setPaymentFlow(flow: 'pay_first' | 'pay_later') {
             <span class="text-gray-500 dark:text-gray-400">Diskon</span>
             <span class="text-red-500">-{{ formatCurrency(cartStore.discountTotal) }}</span>
           </div>
+          <div v-if="cartStore.voucherTotal > 0" class="mt-1 flex justify-between text-sm">
+            <span class="text-gray-500 dark:text-gray-400">Voucher</span>
+            <span class="text-red-500">-{{ formatCurrency(cartStore.voucherTotal) }}</span>
+          </div>
           <div class="mt-2 flex justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
             <span class="font-semibold text-gray-900 dark:text-white">Total</span>
             <span class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(cartStore.total) }}</span>

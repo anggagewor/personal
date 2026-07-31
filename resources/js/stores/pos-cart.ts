@@ -5,9 +5,11 @@
  * Cart lives purely in frontend state and is submitted as a complete payload during checkout.
  */
 
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import type { CartItem, Member, Voucher, Discount } from '@/types/pos'
+import * as posApi from '@/api/pos'
+import { debounce } from '@purdia/utils'
 
 export const usePosCartStore = defineStore('pos-cart', () => {
   // ---------------------------------------------------------------------------
@@ -19,6 +21,8 @@ export const usePosCartStore = defineStore('pos-cart', () => {
   const voucher = ref<Voucher | null>(null)
   const applicableDiscounts = ref<Discount[]>([])
   const paymentFlow = ref<'pay_first' | 'pay_later'>('pay_first')
+  const outletId = ref<number | null>(null)
+  const evaluating = ref(false)
 
   // ---------------------------------------------------------------------------
   // Getters
@@ -28,38 +32,186 @@ export const usePosCartStore = defineStore('pos-cart', () => {
     items.value.reduce((sum, item) => sum + item.subtotal, 0),
   )
 
-  const discountTotal = computed(() => {
-    let total = 0
+  const discountTotal = computed(() =>
+    items.value.reduce((sum, item) => sum + (item.discount_amount || 0), 0),
+  )
 
-    for (const discount of applicableDiscounts.value) {
-      if (discount.type === 'percentage') {
-        total += subtotal.value * (discount.value / 100)
-      } else if (discount.type === 'fixed') {
-        total += Math.min(discount.value, subtotal.value)
-      }
-    }
+  const voucherTotal = computed(() =>
+    items.value.reduce((sum, item) => sum + (item.voucher_amount || 0), 0),
+  )
 
-    if (voucher.value) {
-      if (voucher.value.discount_type === 'percentage') {
-        total += subtotal.value * (voucher.value.discount_value / 100)
-      } else if (voucher.value.discount_type === 'fixed') {
-        total += Math.min(voucher.value.discount_value, subtotal.value)
-      }
-    }
+  const totalDeductions = computed(() => discountTotal.value + voucherTotal.value)
 
-    // Discount cannot exceed subtotal
-    return Math.min(total, subtotal.value)
-  })
-
-  const total = computed(() => subtotal.value - discountTotal.value)
+  const total = computed(() => Math.max(0, subtotal.value - totalDeductions.value))
 
   const itemCount = computed(() =>
     items.value.reduce((sum, item) => sum + item.quantity, 0),
   )
 
   // ---------------------------------------------------------------------------
+  // Discount Evaluation
+  // ---------------------------------------------------------------------------
+
+  async function evaluateDiscountsNow() {
+    if (!outletId.value || items.value.length === 0) {
+      applicableDiscounts.value = []
+      clearItemDiscounts()
+      return
+    }
+
+    evaluating.value = true
+    try {
+      const payload = {
+        outlet_id: outletId.value,
+        items: items.value.map((item) => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          subtotal: item.subtotal,
+        })),
+        member_id: member.value?.id,
+      }
+
+      const res = await posApi.evaluateDiscounts(payload)
+      applicableDiscounts.value = res.data.applicable
+
+      // Map discounts per item
+      applyDiscountsToItems()
+    } catch {
+      // Fail silently - discounts are non-critical
+    } finally {
+      evaluating.value = false
+    }
+  }
+
+  const evaluateDiscountsDebounced = debounce(evaluateDiscountsNow, 300)
+
+  function applyDiscountsToItems() {
+    // Reset discount amounts
+    for (const item of items.value) {
+      item.discount_amount = 0
+      item.discount_label = null
+    }
+
+    let remainingSubtotal = subtotal.value
+
+    for (const discount of applicableDiscounts.value) {
+      if (discount.product_id !== null) {
+        // Product-specific discount: apply to matching item
+        const item = items.value.find((i) => i.product_id === discount.product_id)
+        if (!item) continue
+
+        const base = item.subtotal
+        const amount = discount.type === 'percentage'
+          ? base * (discount.value / 100)
+          : Math.min(discount.value, base)
+
+        item.discount_amount = (item.discount_amount || 0) + Math.round(amount)
+        item.discount_label = discount.name
+      } else {
+        // General discount: distribute proportionally across all items
+        if (remainingSubtotal <= 0) continue
+
+        const base = remainingSubtotal
+        const totalAmount = discount.type === 'percentage'
+          ? base * (discount.value / 100)
+          : Math.min(discount.value, base)
+
+        // Distribute proportionally
+        for (const item of items.value) {
+          const proportion = item.subtotal / subtotal.value
+          const itemAmount = Math.round(totalAmount * proportion)
+          item.discount_amount = (item.discount_amount || 0) + itemAmount
+          if (!item.discount_label) {
+            item.discount_label = discount.name
+          }
+        }
+
+        remainingSubtotal -= totalAmount
+      }
+    }
+
+    // Apply voucher per product if product-bound
+    applyVoucherToItems()
+  }
+
+  function applyVoucherToItems() {
+    // Reset voucher amounts
+    for (const item of items.value) {
+      item.voucher_amount = 0
+      item.voucher_label = null
+    }
+
+    if (!voucher.value) return
+
+    const v = voucher.value
+
+    if (v.product_id !== null) {
+      // Product-bound voucher
+      const item = items.value.find((i) => i.product_id === v.product_id)
+      if (!item) return
+
+      const base = item.subtotal - (item.discount_amount || 0)
+      const amount = v.discount_type === 'percentage'
+        ? base * (v.discount_value / 100)
+        : Math.min(v.discount_value, base)
+
+      item.voucher_amount = Math.round(Math.max(0, amount))
+      item.voucher_label = v.code
+    } else {
+      // General voucher: distribute proportionally
+      const afterDiscount = subtotal.value - discountTotal.value
+      if (afterDiscount <= 0) return
+
+      const totalAmount = v.discount_type === 'percentage'
+        ? afterDiscount * (v.discount_value / 100)
+        : Math.min(v.discount_value, afterDiscount)
+
+      for (const item of items.value) {
+        const itemAfterDiscount = item.subtotal - (item.discount_amount || 0)
+        const proportion = itemAfterDiscount / afterDiscount
+        const itemAmount = Math.round(totalAmount * proportion)
+        item.voucher_amount = Math.max(0, itemAmount)
+        if (!item.voucher_label) {
+          item.voucher_label = v.code
+        }
+      }
+    }
+  }
+
+  function clearItemDiscounts() {
+    for (const item of items.value) {
+      item.discount_amount = 0
+      item.discount_label = null
+      item.voucher_amount = 0
+      item.voucher_label = null
+    }
+  }
+
+  // Watch items + member changes to re-evaluate
+  watch(
+    [() => items.value.length, () => items.value.map((i) => `${i.product_id}:${i.quantity}`).join(','), () => member.value?.id],
+    () => {
+      if (items.value.length > 0 && outletId.value) {
+        evaluateDiscountsDebounced()
+      } else {
+        applicableDiscounts.value = []
+        clearItemDiscounts()
+      }
+    },
+  )
+
+  // Re-apply voucher when voucher changes
+  watch(voucher, () => {
+    applyVoucherToItems()
+  })
+
+  // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
+
+  function setOutletId(id: number) {
+    outletId.value = id
+  }
 
   function addItem(item: Omit<CartItem, 'subtotal'>) {
     const existing = items.value.find(
@@ -75,6 +227,10 @@ export const usePosCartStore = defineStore('pos-cart', () => {
       items.value.push({
         ...item,
         subtotal: item.quantity * item.unit_price,
+        discount_amount: 0,
+        discount_label: null,
+        voucher_amount: 0,
+        voucher_label: null,
       })
     }
   }
@@ -115,6 +271,7 @@ export const usePosCartStore = defineStore('pos-cart', () => {
 
   function setApplicableDiscounts(discounts: Discount[]) {
     applicableDiscounts.value = discounts
+    applyDiscountsToItems()
   }
 
   function clearCart() {
@@ -132,12 +289,17 @@ export const usePosCartStore = defineStore('pos-cart', () => {
     voucher,
     applicableDiscounts,
     paymentFlow,
+    outletId,
+    evaluating,
     // Getters
     subtotal,
     discountTotal,
+    voucherTotal,
+    totalDeductions,
     total,
     itemCount,
     // Actions
+    setOutletId,
     addItem,
     removeItem,
     updateQuantity,
@@ -146,5 +308,6 @@ export const usePosCartStore = defineStore('pos-cart', () => {
     applyVoucher,
     setApplicableDiscounts,
     clearCart,
+    evaluateDiscountsNow,
   }
 })

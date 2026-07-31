@@ -18,9 +18,10 @@ class DiscountResource
             'member_only' => $discount->memberOnly,
             'is_active' => $discount->isActive,
             'priority' => $discount->priority,
-            'starts_at' => $discount->startDate,
-            'ends_at' => $discount->endDate,
+            'start_date' => $discount->startDate ? substr($discount->startDate, 0, 10) : null,
+            'end_date' => $discount->endDate ? substr($discount->endDate, 0, 10) : null,
             'conditions' => $discount->conditions,
+            'product_id' => $discount->productId,
         ];
     }
 

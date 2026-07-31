@@ -15,5 +15,6 @@ readonly class DiscountData
         public ?string $startsAt = null,
         public ?string $endsAt = null,
         public ?array $conditions = null,
+        public ?int $productId = null,
     ) {}
 }

@@ -13,7 +13,16 @@ class ValidateVoucherAction
         private VoucherRepositoryInterface $voucherRepo,
     ) {}
 
-    public function execute(string $code, float $subtotal): Voucher
+    /**
+     * Validate a voucher code against the current cart.
+     *
+     * @param string $code
+     * @param float $subtotal Total cart subtotal
+     * @param array $items Cart items: [['product_id' => int, 'subtotal' => float], ...]
+     * @return Voucher
+     * @throws InvalidVoucherException
+     */
+    public function execute(string $code, float $subtotal, array $items = []): Voucher
     {
         $voucher = $this->voucherRepo->findByCode($code);
 
@@ -35,6 +44,20 @@ class ValidateVoucherAction
 
         if ($voucher->minPurchase !== null && $subtotal < $voucher->minPurchase) {
             throw InvalidVoucherException::minimumPurchaseNotMet($code, $voucher->minPurchase);
+        }
+
+        // Product-specific voucher: check if the target product is in the cart
+        if ($voucher->productId !== null && !empty($items)) {
+            $productInCart = false;
+            foreach ($items as $item) {
+                if (($item['product_id'] ?? 0) === $voucher->productId) {
+                    $productInCart = true;
+                    break;
+                }
+            }
+            if (!$productInCart) {
+                throw InvalidVoucherException::productNotInCart($code);
+            }
         }
 
         return $voucher;

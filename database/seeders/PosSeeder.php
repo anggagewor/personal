@@ -6,12 +6,14 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Modules\Pos\Infrastructure\Models\CategoryModel;
+use Modules\Pos\Infrastructure\Models\DiscountModel;
 use Modules\Pos\Infrastructure\Models\OutletModel;
 use Modules\Pos\Infrastructure\Models\PaymentMethodModel;
 use Modules\Pos\Infrastructure\Models\ProductModel;
 use Modules\Pos\Infrastructure\Models\ProductVariantModel;
 use Modules\Pos\Infrastructure\Models\TransactionItemModel;
 use Modules\Pos\Infrastructure\Models\TransactionModel;
+use Modules\Pos\Infrastructure\Models\VoucherModel;
 use Modules\User\Infrastructure\Models\UserModel;
 
 class PosSeeder extends Seeder
@@ -67,6 +69,14 @@ class PosSeeder extends Seeder
             // 5. Create Transactions
             $this->createTransactions($outlet, $products, $paymentMethods);
             $this->command->info('✓ Transactions created');
+
+            // 6. Create Discounts (Promos)
+            $this->createDiscounts($outlet, $products);
+            $this->command->info('✓ Discounts created');
+
+            // 7. Create Vouchers
+            $this->createVouchers($outlet, $products);
+            $this->command->info('✓ Vouchers created');
 
             $this->command->info('POS seeding complete!');
         });
@@ -479,6 +489,205 @@ class PosSeeder extends Seeder
                     'created_at' => $transaction->created_at,
                 ]));
             }
+        }
+    }
+
+    private function createDiscounts(OutletModel $outlet, array $products): void
+    {
+        $now = Carbon::now();
+
+        // Find specific products for product-level discounts
+        $latte = collect($products)->firstWhere(fn ($p) => $p['model']->name === 'Latte');
+        $esKopiSusu = collect($products)->firstWhere(fn ($p) => $p['model']->name === 'Es Kopi Susu');
+        $croissant = collect($products)->firstWhere(fn ($p) => $p['model']->name === 'Croissant');
+
+        $discounts = [
+            // Promo umum: berlaku untuk seluruh transaksi
+            [
+                'name' => 'Diskon Weekend 10%',
+                'type' => 'percentage',
+                'value' => 10,
+                'min_purchase' => 50000,
+                'member_only' => false,
+                'is_active' => true,
+                'priority' => 1,
+                'starts_at' => $now->copy()->startOfWeek()->next('Saturday'),
+                'ends_at' => $now->copy()->startOfWeek()->next('Sunday')->endOfDay(),
+                'product_id' => null,
+            ],
+            // Promo khusus member
+            [
+                'name' => 'Member Discount 15%',
+                'type' => 'percentage',
+                'value' => 15,
+                'min_purchase' => 75000,
+                'member_only' => true,
+                'is_active' => true,
+                'priority' => 2,
+                'starts_at' => $now->copy()->startOfMonth(),
+                'ends_at' => $now->copy()->endOfMonth(),
+                'product_id' => null,
+            ],
+            // Promo produk: diskon untuk Latte
+            [
+                'name' => 'Promo Latte Rp 5.000 OFF',
+                'type' => 'fixed',
+                'value' => 5000,
+                'min_purchase' => null,
+                'member_only' => false,
+                'is_active' => true,
+                'priority' => 3,
+                'starts_at' => $now->copy()->subDays(2),
+                'ends_at' => $now->copy()->addDays(14),
+                'product_id' => $latte ? $latte['model']->id : null,
+            ],
+            // Promo produk: diskon Es Kopi Susu 20%
+            [
+                'name' => 'Es Kopi Susu 20% OFF',
+                'type' => 'percentage',
+                'value' => 20,
+                'min_purchase' => null,
+                'member_only' => false,
+                'is_active' => true,
+                'priority' => 4,
+                'starts_at' => $now->copy()->subDays(1),
+                'ends_at' => $now->copy()->addDays(7),
+                'product_id' => $esKopiSusu ? $esKopiSusu['model']->id : null,
+            ],
+            // Promo sudah expired (untuk test)
+            [
+                'name' => 'Flash Sale Croissant 50%',
+                'type' => 'percentage',
+                'value' => 50,
+                'min_purchase' => null,
+                'member_only' => false,
+                'is_active' => true,
+                'priority' => 5,
+                'starts_at' => $now->copy()->subDays(10),
+                'ends_at' => $now->copy()->subDays(3),
+                'product_id' => $croissant ? $croissant['model']->id : null,
+            ],
+            // Diskon flat Rp 10.000 min belanja 100rb
+            [
+                'name' => 'Hemat Rp 10.000',
+                'type' => 'fixed',
+                'value' => 10000,
+                'min_purchase' => 100000,
+                'member_only' => false,
+                'is_active' => true,
+                'priority' => 6,
+                'starts_at' => $now->copy()->startOfMonth(),
+                'ends_at' => $now->copy()->endOfMonth(),
+                'product_id' => null,
+            ],
+        ];
+
+        foreach ($discounts as $data) {
+            DiscountModel::create(array_merge($data, [
+                'outlet_id' => $outlet->id,
+            ]));
+        }
+    }
+
+    private function createVouchers(OutletModel $outlet, array $products): void
+    {
+        $now = Carbon::now();
+
+        // Find specific products for product-level vouchers
+        $latte = collect($products)->firstWhere(fn ($p) => $p['model']->name === 'Latte');
+        $matcha = collect($products)->firstWhere(fn ($p) => $p['model']->name === 'Matcha Latte');
+        $nasiGoreng = collect($products)->firstWhere(fn ($p) => $p['model']->name === 'Nasi Goreng');
+
+        $vouchers = [
+            // Voucher umum: berlaku seluruh transaksi
+            [
+                'code' => 'WELCOME20',
+                'type' => 'percentage',
+                'value' => 20,
+                'min_purchase' => 50000,
+                'usage_limit' => 100,
+                'usage_count' => 12,
+                'expires_at' => $now->copy()->addMonths(3),
+                'is_active' => true,
+                'product_id' => null,
+            ],
+            [
+                'code' => 'HEMAT10K',
+                'type' => 'fixed',
+                'value' => 10000,
+                'min_purchase' => 75000,
+                'usage_limit' => 50,
+                'usage_count' => 8,
+                'expires_at' => $now->copy()->addMonth(),
+                'is_active' => true,
+                'product_id' => null,
+            ],
+            // Voucher per produk: Latte gratis Rp 10.000
+            [
+                'code' => 'LATTEFREE',
+                'type' => 'fixed',
+                'value' => 10000,
+                'min_purchase' => null,
+                'usage_limit' => 30,
+                'usage_count' => 5,
+                'expires_at' => $now->copy()->addDays(30),
+                'is_active' => true,
+                'product_id' => $latte ? $latte['model']->id : null,
+            ],
+            // Voucher per produk: Matcha 25% off
+            [
+                'code' => 'MATCHA25',
+                'type' => 'percentage',
+                'value' => 25,
+                'min_purchase' => null,
+                'usage_limit' => 20,
+                'usage_count' => 3,
+                'expires_at' => $now->copy()->addDays(14),
+                'is_active' => true,
+                'product_id' => $matcha ? $matcha['model']->id : null,
+            ],
+            // Voucher per produk: Nasi Goreng Rp 5.000 off
+            [
+                'code' => 'NASGOR5K',
+                'type' => 'fixed',
+                'value' => 5000,
+                'min_purchase' => null,
+                'usage_limit' => null,
+                'usage_count' => 0,
+                'expires_at' => $now->copy()->addDays(60),
+                'is_active' => true,
+                'product_id' => $nasiGoreng ? $nasiGoreng['model']->id : null,
+            ],
+            // Voucher sudah expired (untuk test)
+            [
+                'code' => 'EXPIRED50',
+                'type' => 'percentage',
+                'value' => 50,
+                'min_purchase' => null,
+                'usage_limit' => 10,
+                'usage_count' => 10,
+                'expires_at' => $now->copy()->subDays(7),
+                'is_active' => true,
+                'product_id' => null,
+            ],
+            // Voucher non-aktif (untuk test)
+            [
+                'code' => 'INACTIVE15',
+                'type' => 'percentage',
+                'value' => 15,
+                'min_purchase' => 30000,
+                'usage_limit' => 100,
+                'usage_count' => 0,
+                'expires_at' => $now->copy()->addMonths(2),
+                'is_active' => false,
+                'product_id' => null,
+            ],
+        ];
+
+        foreach ($vouchers as $data) {
+            VoucherModel::create(array_merge($data, [
+                'outlet_id' => $outlet->id,
+            ]));
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Modules\Pos\Infrastructure\Resources;
 
+use Illuminate\Support\Facades\Storage;
 use Modules\Pos\Domain\Entities\Product;
 
 class ProductResource
@@ -15,7 +16,7 @@ class ProductResource
             'name' => $product->name,
             'base_price' => $product->basePrice,
             'sku' => $product->sku,
-            'image' => $product->image,
+            'image' => $product->image ? Storage::disk('public')->url($product->image) : null,
             'has_variants' => $product->hasVariants,
             'track_stock' => $product->trackStock,
             'status' => $product->status->value,

@@ -116,9 +116,17 @@ function pickVariant(variant: ProductVariant) {
           class="group flex flex-col rounded-xl border border-gray-200 bg-white p-3 text-left transition-all hover:border-primary-300 hover:shadow-sm active:scale-[0.98] dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-600"
           @click="selectProduct(product)"
         >
-          <!-- Product image placeholder -->
-          <div class="flex h-16 w-full items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
-            <Package :size="24" class="text-gray-400" />
+          <!-- Product image -->
+          <div class="h-16 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700">
+            <img
+              v-if="product.image"
+              :src="product.image"
+              :alt="product.name"
+              class="h-full w-full object-cover"
+            />
+            <div v-else class="flex h-full w-full items-center justify-center">
+              <Package :size="24" class="text-gray-400" />
+            </div>
           </div>
 
           <!-- Product info -->

@@ -6,7 +6,7 @@ import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import BaseCheckbox from '@purdia/ui/src/components/BaseCheckbox.vue'
-import { Plus, Trash2 } from '@lucide/vue'
+import { Plus, Trash2, Upload, X } from '@lucide/vue'
 import type { Product, ProductVariant, Category } from '@/types/pos'
 import * as posApi from '@/api/pos'
 
@@ -36,6 +36,12 @@ const form = ref({
 
 const variants = ref<{ name: string; sku: string; price: string; stock_quantity: string }[]>([])
 
+// Image state
+const imageFile = ref<File | null>(null)
+const imagePreview = ref<string | null>(null)
+const existingImage = ref<string | null>(null)
+const removeImage = ref(false)
+
 const categoryOptions = computed(() =>
   props.categories.map((c) => ({ label: c.name, value: c.id })),
 )
@@ -49,6 +55,11 @@ watch(
   () => props.modelValue,
   (open) => {
     if (open) {
+      // Reset image state
+      imageFile.value = null
+      imagePreview.value = null
+      removeImage.value = false
+
       if (props.editingProduct) {
         form.value = {
           name: props.editingProduct.name,
@@ -64,13 +75,40 @@ watch(
           price: String(v.price),
           stock_quantity: String(v.stock_quantity),
         }))
+        existingImage.value = props.editingProduct.image
       } else {
         form.value = { name: '', category_id: '', base_price: '', sku: '', has_variants: false, track_stock: false }
         variants.value = []
+        existingImage.value = null
       }
     }
   },
 )
+
+function onFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  imageFile.value = file
+  removeImage.value = false
+
+  // Generate preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+function clearImage() {
+  imageFile.value = null
+  imagePreview.value = null
+  if (existingImage.value) {
+    removeImage.value = true
+  }
+  existingImage.value = null
+}
 
 function addVariant() {
   variants.value.push({ name: '', sku: '', price: '', stock_quantity: '0' })
@@ -103,10 +141,10 @@ async function save() {
     }
 
     if (props.editingProduct) {
-      await posApi.updateProduct(props.editingProduct.id, payload)
+      await posApi.updateProduct(props.editingProduct.id, payload, imageFile.value, removeImage.value)
       toast.success('Produk berhasil diperbarui.')
     } else {
-      await posApi.createProduct(props.outletId, payload)
+      await posApi.createProduct(props.outletId, payload, imageFile.value)
       toast.success('Produk berhasil ditambahkan.')
     }
 
@@ -128,6 +166,50 @@ async function save() {
       </h2>
 
       <form class="mt-4 space-y-4" @submit.prevent="save">
+        <!-- Image upload -->
+        <div>
+          <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Gambar Produk</label>
+          <div class="flex items-start gap-4">
+            <!-- Preview -->
+            <div class="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-700">
+              <img
+                v-if="imagePreview || (existingImage && !removeImage)"
+                :src="imagePreview || existingImage!"
+                alt="Preview"
+                class="h-full w-full object-cover"
+              />
+              <div v-else class="flex h-full w-full items-center justify-center">
+                <Upload :size="24" class="text-gray-400" />
+              </div>
+              <!-- Remove button -->
+              <button
+                v-if="imagePreview || (existingImage && !removeImage)"
+                type="button"
+                class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
+                @click="clearImage"
+              >
+                <X :size="12" />
+              </button>
+            </div>
+            <!-- Upload input -->
+            <div class="flex-1">
+              <label
+                class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                <Upload :size="16" />
+                Pilih Gambar
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  class="hidden"
+                  @change="onFileChange"
+                />
+              </label>
+              <p class="mt-1 text-xs text-gray-400">JPG, PNG, atau WebP. Maks 2MB.</p>
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <BaseInput v-model="form.name" label="Nama Produk" placeholder="contoh: Kopi Susu" required />
           <BaseSelect

@@ -30,4 +30,9 @@ class InvalidVoucherException extends \DomainException
     {
         return new self("Voucher '{$code}' tidak aktif.");
     }
+
+    public static function productNotInCart(string $code): self
+    {
+        return new self("Voucher '{$code}' hanya berlaku untuk produk tertentu yang belum ada di keranjang.");
+    }
 }
