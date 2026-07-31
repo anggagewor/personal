@@ -268,11 +268,21 @@ export const routes: RouteRecordRaw[] = [
         name: 'logs',
         component: () => import('@/pages/logs/Index.vue'),
       },
-      // Module Manager
+      // Foundry
       {
-        path: 'modules',
-        name: 'modules',
-        component: () => import('@/pages/module-manager/Index.vue'),
+        path: 'foundry',
+        name: 'foundry',
+        component: () => import('@/pages/foundry/Overview.vue'),
+      },
+      {
+        path: 'foundry/graph',
+        name: 'foundry.graph',
+        component: () => import('@/pages/foundry/Graph.vue'),
+      },
+      {
+        path: 'foundry/modules',
+        name: 'foundry.modules',
+        component: () => import('@/pages/foundry/Modules.vue'),
       },
       // Settings
       {

@@ -256,9 +256,13 @@ export const navigation: NavGroup[] = [
       },
       {
         id: 'modules',
-        label: 'Module Manager',
+        label: 'Foundry',
         icon: 'Package',
-        to: '/modules',
+        children: [
+          { label: 'Overview', icon: 'LayoutDashboard', to: '/foundry' },
+          { label: 'Graph', icon: 'Globe', to: '/foundry/graph' },
+          { label: 'Modules', icon: 'Package', to: '/foundry/modules' },
+        ],
       },
       {
         id: 'streaks',
