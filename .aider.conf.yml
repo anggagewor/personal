@@ -1,0 +1,8 @@
+# Aider configuration for Purdia Dashboard
+# Read .cursorrules for full coding rules
+
+read:
+  - MANIFESTO.md
+  - .cursorrules
+  - docs/backend.md
+  - docs/frontend.md
