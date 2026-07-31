@@ -62,7 +62,7 @@ Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur per module.
 - 📊 Accounting (double-entry bookkeeping, laporan keuangan)
 
 **Business:**
-- 🛒 Point of Sale (multi-outlet, kasir, katalog, diskon, voucher, member, meja, open bill, QR order, laporan)
+- 🛒 Point of Sale (multi-outlet, kasir, katalog, gambar produk, diskon otomatis per-item, voucher, member, meja, open bill, QR order, struk detail, laporan diskon)
 - 📦 Supplier Management (PO lifecycle, goods receiving, payment tracking, laporan pembelian)
 
 **Utilities & Developer Tools:**

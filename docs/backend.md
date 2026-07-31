@@ -150,8 +150,14 @@ Domain ← Application ← Infrastructure
 | Quote | Motivational quotes (CRUD + daily) |
 | Wishlist | Wishlist items |
 | Trash | Soft-delete / restore |
-| Shared | Cross-module traits, contracts, weather, dashboard |
+| Pos | POS multi-outlet (kasir, katalog, diskon, voucher, member, transaksi, laporan) |
+| Supplier | Supplier management (PO lifecycle, goods receiving, payment tracking) |
+| Converter | Unit converter (built-in + custom categories) |
+| Accounting | Double-entry bookkeeping (CoA, jurnal, buku besar, laporan) |
+| Drive | Google Drive integration (OAuth, file manager, backup) |
 | LogReader | Memory-efficient Laravel log reader (reverse file reading) |
+| Database | Database manager (browse, filter, edit, alter, raw query) |
+| Shared | Cross-module traits, contracts, weather, dashboard |
 
 ## Scaffold Module Baru
 

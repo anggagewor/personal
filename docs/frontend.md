@@ -29,6 +29,23 @@ import { initHttp, get, post, put, patch, del, upload, download, useHttp } from 
 import type { ApiResponse, PaginationMeta, ApiError, HttpClientConfig } from '@purdia/http'
 ```
 
+**File Upload Pattern:**
+
+Untuk endpoint yang menerima file (gambar produk, avatar, dll), gunakan `upload()` dengan `FormData`:
+
+```ts
+import { upload } from '@purdia/http'
+
+function createWithImage(payload: Partial<Product>, file: File) {
+  const formData = new FormData()
+  formData.append('name', payload.name!)
+  formData.append('image', file)
+  // Untuk PUT via POST method spoofing:
+  // formData.append('_method', 'PUT')
+  return upload<Product>('/products', formData)
+}
+```
+
 ### @purdia/auth
 
 ```ts
@@ -71,6 +88,8 @@ import { formatCurrency, formatNumber, formatDate, formatRelativeTime } from '@p
 import { debounce, throttle, sleep } from '@purdia/utils'
 import { clamp, randomInt, uid } from '@purdia/utils'
 ```
+
+> **Note:** `formatCurrency` menerima `number | string` — aman dipakai langsung dengan value dari API yang mungkin berupa string decimal (e.g. `"10000.00"`).
 
 ### @purdia/charts
 

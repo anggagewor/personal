@@ -465,21 +465,25 @@
 |-------|-----------|
 | Multi-Outlet | Kelola banyak outlet dalam satu akun |
 | Outlet Settings | Tipe bisnis (retail/warung/kafe/warkop), alur pembayaran (bayar dulu/nanti/keduanya) |
-| Katalog Produk | Produk + varian, SKU, harga, stock tracking |
+| Katalog Produk | Produk + varian, SKU, harga, stock tracking, upload gambar produk |
 | Kategori | Hierarki kategori produk dengan sorting |
-| Kasir | Interface kasir untuk input transaksi |
-| Transaksi | Checkout, hitung kembalian, cetak struk |
+| Kasir | Interface kasir untuk input transaksi, gambar produk di grid & keranjang |
+| Diskon Otomatis | Evaluasi diskon real-time per item di keranjang (product-specific & general) |
+| Diskon Conditions | Support kondisi: min_qty, hours, days — validated server-side |
+| Voucher | Generate voucher (single/batch), validasi + redemption, per-produk atau general |
+| Detail Potongan | Setiap item keranjang tampilkan semua diskon & voucher yang berlaku (breakdown lengkap) |
+| Transaksi | Checkout dengan diskon ter-persist, hitung kembalian, cetak struk |
+| Struk Lengkap | Nama outlet, alamat, kasir, daftar diskon per-item, subtotal/diskon/total, footer |
 | Void | Batalkan transaksi dengan alasan |
 | Metode Pembayaran | Cash, QRIS, transfer bank, e-wallet (konfigurasi per outlet) |
-| Diskon | Diskon produk/kategori/total, otomatis evaluate |
-| Voucher | Generate voucher (single/batch), validasi + redemption |
 | Member | Membership dengan poin (CRUD, search) |
 | Meja | Manajemen meja + session untuk model dine-in |
 | Open Bill | Buka tagihan, tutup nanti (bayar belakangan) |
 | QR Order | Menu publik (tanpa auth) via QR code, customer bisa order sendiri |
 | Stock Management | Track stock per variant, adjustment (restock/set/adjust) |
-| Laporan | Harian, rentang tanggal, per produk, per metode bayar, export |
-| Dashboard | Ringkasan penjualan, top products, grafik |
+| Laporan | Harian, rentang tanggal, per produk, per metode bayar, export CSV |
+| Laporan Diskon | Gross revenue, total diskon, net revenue di semua laporan & dashboard |
+| Dashboard | Pendapatan bersih, penjualan kotor, total diskon, transaksi, grafik 7 hari |
 
 **Endpoints:** `/api/pos/*` (25+ endpoints)
 **Route:** `/pos`, `/pos/cashier/:outletId`, `/pos/catalog/:outletId`, dll.
