@@ -32,6 +32,7 @@ return [
     Modules\Accounting\Infrastructure\Providers\AccountingServiceProvider::class,
     Modules\Pos\Infrastructure\Providers\PosServiceProvider::class,
     Modules\Supplier\Infrastructure\Providers\SupplierServiceProvider::class,
+    Modules\DatabaseManager\Infrastructure\Providers\DatabaseManagerServiceProvider::class,
     Modules\LogReader\Infrastructure\Providers\LogReaderServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
 ];

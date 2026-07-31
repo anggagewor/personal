@@ -251,6 +251,17 @@ export const routes: RouteRecordRaw[] = [
         name: 'tools.sql-generator',
         component: () => import('@/pages/tools/SqlGenerator.vue'),
       },
+      // Database Manager
+      {
+        path: 'database',
+        name: 'database',
+        component: () => import('@/pages/database/Index.vue'),
+      },
+      {
+        path: 'database/:table',
+        name: 'database.table',
+        component: () => import('@/pages/database/TableView.vue'),
+      },
       // Log Viewer
       {
         path: 'logs',
