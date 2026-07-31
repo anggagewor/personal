@@ -151,6 +151,7 @@ Domain ← Application ← Infrastructure
 | Wishlist | Wishlist items |
 | Trash | Soft-delete / restore |
 | Shared | Cross-module traits, contracts, weather, dashboard |
+| LogReader | Memory-efficient Laravel log reader (reverse file reading) |
 
 ## Scaffold Module Baru
 
@@ -208,3 +209,90 @@ Gunakan script scaffold untuk generate full-stack module (backend DDD + frontend
    npm run build
    php artisan test
    ```
+
+## LogReader — Strategi Baca Log Hemat Memory
+
+Module LogReader menggunakan **Reverse File Reading** via `fseek` untuk membaca file log Laravel berukuran besar (bisa bergiga-giga) tanpa membebani memory.
+
+### Prinsip
+
+1. **Baca dari ujung file** — `fseek` langsung ke akhir file, lalu mundur per chunk.
+2. **Chunk 8KB** — setiap request hanya alokasi ~8-16KB buffer di RAM, regardless file size.
+3. **Parse on-the-fly** — begitu chunk terbaca, langsung di-parse cari pattern `[YYYY-MM-DD HH:MM:SS]`.
+4. **Stop begitu cukup** — minta 30 entries? Begitu dapat 30, langsung return.
+5. **Safety limit** — max scan 2MB per request. Jika filter terlalu ketat dan 2MB tidak cukup, return yang ada.
+
+### Flow Per Request
+
+```
+Request: GET /api/logs/entries?file=laravel.log&offset=0&per_page=30
+
+1. filesize() → 3GB, set position = 3GB (end of file)
+2. position -= 8192, fseek(position), fread(8192)
+3. Parse entries dari chunk → dapet 12 entries (belum 30)
+4. position -= 8192, fseek(position), fread(8192)
+5. Parse lagi, total = 30 → STOP
+6. Return entries + meta.next_offset = position saat ini
+
+Request berikutnya: ?offset={next_offset}
+→ langsung fseek ke posisi itu, lanjut mundur
+```
+
+### Pagination: Cursor-Based (Byte Offset)
+
+Tidak menggunakan page number. Frontend menyimpan `next_offset` dari response `meta`, lalu kirim ulang sebagai parameter `offset` untuk "load more". Ini memungkinkan jump langsung ke posisi file tanpa scan ulang.
+
+### Kenapa Tidak Pakai Pendekatan Lain?
+
+| Pendekatan | Masalah |
+|-----------|---------|
+| `file_get_contents()` | Load seluruh file ke string — OOM untuk file besar |
+| `file()` (array per line) | Load seluruh file ke array — sama OOM |
+| `SplFileObject` + seek line | Harus count lines dari awal — lambat untuk file besar |
+| Reverse fseek (✓) | Langsung loncat ke posisi byte, memory konstan ~16KB |
+
+### Struktur File
+
+```
+src/Modules/LogReader/
+├── Domain/
+│   ├── Entities/LogEntry.php
+│   ├── Enums/LogLevel.php
+│   └── Contracts/LogReaderInterface.php
+├── Application/
+│   └── Actions/
+│       ├── ReadLogEntriesAction.php
+│       └── ListLogFilesAction.php
+└── Infrastructure/
+    ├── Controllers/LogReaderController.php
+    ├── Services/ReverseFileLogReader.php   ← core logic
+    ├── Resources/LogEntryResource.php
+    ├── Providers/LogReaderServiceProvider.php
+    └── Routes/api.php
+```
+
+### API Endpoints
+
+| Method | Endpoint | Keterangan |
+|--------|----------|-----------|
+| GET | `/api/logs/files` | List file log + ukuran + modified date |
+| GET | `/api/logs/entries` | Baca entries (params: file, per_page, offset, level, search) |
+
+### Response Meta
+
+```json
+{
+  "meta": {
+    "file_size": 3221225472,
+    "next_offset": 3221209088,
+    "count": 30,
+    "has_more": true
+  }
+}
+```
+
+### Keamanan
+
+- **Prevent directory traversal** — filename di-`basename()` sebelum resolve path.
+- **Regex validation** — controller validate filename harus match `/^[\w\-\.]+\.log$/`.
+- **Auth required** — semua endpoint pakai `auth:sanctum` middleware.

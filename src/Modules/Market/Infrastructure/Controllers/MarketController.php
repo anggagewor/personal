@@ -97,6 +97,8 @@ class MarketController extends Controller
         $latestPrices = $priceRepo->getLatestPrices($userId);
 
         $result = [];
+        $lastSyncedAt = null;
+
         foreach ($latestPrices as $symbol => $snapshot) {
             $result[$symbol] = [
                 'symbol' => $snapshot->symbol,
@@ -105,12 +107,19 @@ class MarketController extends Controller
                 'change_percent' => $snapshot->changePercent,
                 'previous_close' => $snapshot->previousClose,
             ];
+
+            // Track the most recent fetched_at across all symbols
+            $fetchedAt = $snapshot->fetchedAt?->format('Y-m-d\TH:i:s\Z');
+            if ($fetchedAt && ($lastSyncedAt === null || $fetchedAt > $lastSyncedAt)) {
+                $lastSyncedAt = $fetchedAt;
+            }
         }
 
         return response()->json([
             'data' => $result,
             'meta' => [
                 'refresh_interval' => (int) config('services.twelvedata.refresh_interval', 15),
+                'last_synced_at' => $lastSyncedAt,
             ],
         ]);
     }

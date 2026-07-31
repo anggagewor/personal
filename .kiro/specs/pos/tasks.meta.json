@@ -1,0 +1,650 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create all POS database migrations": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427794989
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427810594
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428040589
+      }
+    ],
+    "2.1 Create all POS domain enums": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795083
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428047524
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428798559
+      }
+    ],
+    "2.2 Create all POS domain exceptions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795180
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428047634
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428799239
+      }
+    ],
+    "3.1 Create domain entities": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795300
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428806404
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429118739
+      }
+    ],
+    "3.2 Create repository contracts (interfaces)": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795384
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428807045
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429119579
+      }
+    ],
+    "4.1 Create Eloquent models": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795458
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429125856
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429531512
+      }
+    ],
+    "4.2 Create Eloquent repositories — Outlet, Category, Product": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795532
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429538784
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785451882591
+      }
+    ],
+    "4.3 Create Eloquent repositories — Transaction, Discount, Voucher": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795617
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429539591
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785451883399
+      }
+    ],
+    "4.4 Create Eloquent repositories — Table, Member, Report": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795693
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429540337
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785451881865
+      }
+    ],
+    "4.5 Create PosServiceProvider and register module": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795782
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785451890369
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452040488
+      }
+    ],
+    "5.1 Create all Data Transfer Objects": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427795862
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785451891255
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452041580
+      }
+    ],
+    "6.1 Create Outlet actions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796011
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452049312
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452361769
+      }
+    ],
+    "6.2 Create Catalog actions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796111
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452050082
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452362631
+      }
+    ],
+    "7.1 Create Transaction actions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796197
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452370138
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452587653
+      }
+    ],
+    "7.2 Create Discount and Voucher actions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796268
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452371142
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452588354
+      }
+    ],
+    "8.1 Create Member actions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796361
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452596351
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452851511
+      }
+    ],
+    "8.2 Create QR Order actions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796434
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452597536
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452852148
+      }
+    ],
+    "8.3 Create Report queries": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796515
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452597853
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452852896
+      }
+    ],
+    "9. Checkpoint — Backend domain and application layers": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796655
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452860860
+      }
+    ],
+    "10.1 Create all FormRequest validation classes": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796728
+      },
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452867843
+      }
+    ],
+    "11.1 Create all API resource classes": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796825
+      }
+    ],
+    "12.1 Create controllers — Outlet, Category, Product, Stock": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796895
+      }
+    ],
+    "12.2 Create controllers — Transaction, OpenBill, PaymentMethod": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427796968
+      }
+    ],
+    "12.3 Create controllers — Discount, Voucher, Member": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797046
+      }
+    ],
+    "12.4 Create controllers — Table, OrderQueue, Report, Receipt, QrOrderPublic": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797117
+      }
+    ],
+    "12.5 Create route files": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797220
+      }
+    ],
+    "13. Checkpoint — Backend complete": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797330
+      }
+    ],
+    "14.1 Create POS TypeScript types": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797417
+      }
+    ],
+    "14.2 Create POS API layer": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797516
+      }
+    ],
+    "15.1 Create POS cart Pinia store": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797618
+      }
+    ],
+    "16.1 Create POS index and outlet pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797734
+      }
+    ],
+    "16.2 Create catalog management pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797820
+      }
+    ],
+    "17.1 Create main POS cashier page": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797916
+      }
+    ],
+    "18.1 Create discount management pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427797999
+      }
+    ],
+    "18.2 Create voucher management pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798095
+      }
+    ],
+    "19.1 Create table management and order queue pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798166
+      }
+    ],
+    "19.2 Create public QR order pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798247
+      }
+    ],
+    "20.1 Create transaction history pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798342
+      }
+    ],
+    "20.2 Create member management pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798428
+      }
+    ],
+    "20.3 Create open bills pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798498
+      }
+    ],
+    "21.1 Create reports pages": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798579
+      }
+    ],
+    "22.1 Register all POS routes in the frontend router": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798666
+      }
+    ],
+    "23. Checkpoint — Frontend complete": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798749
+      }
+    ],
+    "24.1 Write feature tests for Outlet and Catalog CRUD": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798827
+      }
+    ],
+    "24.2 Write feature tests for Transaction, Void, and Payment Flow": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798901
+      }
+    ],
+    "24.3 Write feature tests for Discount, Voucher, and Member": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427798981
+      }
+    ],
+    "24.4 Write feature tests for QR Order and Reports": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799064
+      }
+    ],
+    "25.1 Write property test for cart calculation invariant": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799163
+      }
+    ],
+    "25.2 Write property tests for stock management": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799251
+      }
+    ],
+    "25.3 Write property tests for discount evaluation": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799430
+      }
+    ],
+    "25.4 Write property tests for voucher validation": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799544
+      }
+    ],
+    "25.5 Write property tests for uniqueness constraints": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799666
+      }
+    ],
+    "25.6 Write property tests for payment flow and open bills": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799769
+      }
+    ],
+    "25.7 Write property tests for member management": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799867
+      }
+    ],
+    "25.8 Write property tests for transaction void and reports": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427799952
+      }
+    ],
+    "25.9 Write property tests for receipts and product exclusion": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427800033
+      }
+    ],
+    "26. Final Checkpoint": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785427800116
+      }
+    ],
+    "1. Database Migrations": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428040752
+      }
+    ],
+    "2. Domain Layer — Enums & Exceptions": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785428799337
+      }
+    ],
+    "3. Domain Layer — Entities & Contracts": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785429119711
+      }
+    ],
+    "4. Infrastructure Layer — Models & Repositories": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452041171
+      }
+    ],
+    "5. Application Layer — DTOs": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452041959
+      }
+    ],
+    "6. Application Layer — Actions (Outlet & Catalog)": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452362772
+      }
+    ],
+    "7. Application Layer — Actions (Transaction & Payment)": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452588682
+      }
+    ],
+    "8. Application Layer — Actions (Member & QR Order)": [
+      {
+        "executionId": "82125040-e928-4c36-88cd-8fa0a027a95b",
+        "chatSessionId": "sess_22f58a28-79fa-43bc-9bfc-a5edb6da161e",
+        "timestamp": 1785452853012
+      }
+    ]
+  }
+}

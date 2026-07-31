@@ -251,6 +251,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'tools.sql-generator',
         component: () => import('@/pages/tools/SqlGenerator.vue'),
       },
+      // Log Viewer
+      {
+        path: 'logs',
+        name: 'logs',
+        component: () => import('@/pages/logs/Index.vue'),
+      },
       // Settings
       {
         path: 'settings/general',
@@ -277,6 +283,122 @@ export const routes: RouteRecordRaw[] = [
         name: 'settings.market',
         component: () => import('@/pages/settings/Market.vue'),
       },
+      // POS
+      {
+        path: 'pos',
+        name: 'pos',
+        component: () => import('@/pages/pos/Index.vue'),
+      },
+      {
+        path: 'pos/outlet/setup',
+        name: 'pos.outlet.setup',
+        component: () => import('@/pages/pos/outlet/Setup.vue'),
+      },
+      {
+        path: 'pos/outlet/settings',
+        name: 'pos.outlet.settings',
+        component: () => import('@/pages/pos/outlet/Settings.vue'),
+      },
+      {
+        path: 'pos/catalog',
+        name: 'pos.catalog',
+        component: () => import('@/pages/pos/catalog/Index.vue'),
+      },
+      {
+        path: 'pos/discount',
+        name: 'pos.discount',
+        component: () => import('@/pages/pos/discount/Index.vue'),
+      },
+      {
+        path: 'pos/voucher',
+        name: 'pos.voucher',
+        component: () => import('@/pages/pos/voucher/Index.vue'),
+      },
+      {
+        path: 'pos/voucher/detail',
+        name: 'pos.voucher.detail',
+        component: () => import('@/pages/pos/voucher/VoucherDetail.vue'),
+      },
+      {
+        path: 'pos/tables',
+        name: 'pos.tables',
+        component: () => import('@/pages/pos/tables/Index.vue'),
+      },
+      {
+        path: 'pos/tables/order-queue',
+        name: 'pos.tables.order-queue',
+        component: () => import('@/pages/pos/tables/OrderQueue.vue'),
+      },
+      {
+        path: 'pos/tables/qr',
+        name: 'pos.tables.qr',
+        component: () => import('@/pages/pos/tables/QrCodeDisplay.vue'),
+      },
+      {
+        path: 'pos/cashier',
+        name: 'pos.cashier',
+        component: () => import('@/pages/pos/cashier/Index.vue'),
+      },
+      {
+        path: 'pos/transactions',
+        name: 'pos.transactions',
+        component: () => import('@/pages/pos/transactions/Index.vue'),
+      },
+      {
+        path: 'pos/transactions/:id',
+        name: 'pos.transactions.detail',
+        component: () => import('@/pages/pos/transactions/TransactionDetail.vue'),
+      },
+      {
+        path: 'pos/members',
+        name: 'pos.members',
+        component: () => import('@/pages/pos/members/Index.vue'),
+      },
+      {
+        path: 'pos/open-bills',
+        name: 'pos.open-bills',
+        component: () => import('@/pages/pos/open-bills/Index.vue'),
+      },
+      {
+        path: 'pos/reports',
+        name: 'pos.reports',
+        component: () => import('@/pages/pos/reports/Index.vue'),
+      },
+      {
+        path: 'pos/reports/daily',
+        name: 'pos.reports.daily',
+        component: () => import('@/pages/pos/reports/DailyReport.vue'),
+      },
+      {
+        path: 'pos/reports/products',
+        name: 'pos.reports.products',
+        component: () => import('@/pages/pos/reports/ProductRanking.vue'),
+      },
+      {
+        path: 'pos/reports/revenue',
+        name: 'pos.reports.revenue',
+        component: () => import('@/pages/pos/reports/RevenueTrend.vue'),
+      },
     ],
+  },
+
+  // ---------- Public QR Order (no auth, no DashboardLayout) ----------
+  {
+    path: '/pos/qr/:token/menu',
+    name: 'pos.qr-order.menu',
+    component: () => import('@/pages/pos/qr-order/Menu.vue'),
+    meta: { public: true },
+  },
+  {
+    path: '/pos/qr/:token/cart',
+    name: 'pos.qr-order.cart',
+    component: () => import('@/pages/pos/qr-order/Cart.vue'),
+    meta: { public: true },
+  },
+  {
+    path: '/pos/qr/:token/order/:orderId',
+    name: 'pos.qr-order.status',
+    component: () => import('@/pages/pos/qr-order/OrderStatus.vue'),
+    meta: { public: true },
   },
 ]

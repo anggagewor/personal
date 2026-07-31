@@ -30,5 +30,7 @@ return [
     Modules\GoogleDrive\Infrastructure\Providers\GoogleDriveServiceProvider::class,
     Modules\Converter\Infrastructure\Providers\ConverterServiceProvider::class,
     Modules\Accounting\Infrastructure\Providers\AccountingServiceProvider::class,
+    Modules\Pos\Infrastructure\Providers\PosServiceProvider::class,
+    Modules\LogReader\Infrastructure\Providers\LogReaderServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
 ];

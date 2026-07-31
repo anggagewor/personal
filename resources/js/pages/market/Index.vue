@@ -1,60 +1,52 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useToast } from '@purdia/toast'
+import { formatRelativeTime } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseSkeleton from '@purdia/ui/src/components/BaseSkeleton.vue'
-import { CandlestickChart } from '@purdia/charts'
-import type { CandlestickItem } from '@purdia/charts'
-import { TrendingUp, TrendingDown, RefreshCw, Settings, Download, Upload, FileDown } from '@lucide/vue'
-import type { WatchlistItem, PriceData, OhlcPoint } from '@/types/market'
+import { LineChart } from '@purdia/charts'
+import type { ChartData, ChartOptions } from 'chart.js'
+import { TrendingUp, TrendingDown, RefreshCw, Settings, Download, Upload, FileDown, Clock } from '@lucide/vue'
+import type { WatchlistItem, PriceData, HistoryPoint } from '@/types/market'
 import * as marketApi from '@/api/market'
 
 const { success, error: showError } = useToast()
 
-// --- State ---
 const items = ref<WatchlistItem[]>([])
 const prices = ref<Record<string, PriceData>>({})
 const refreshInterval = ref(15)
 const loading = ref(true)
 const refreshing = ref(false)
+const lastSyncedAt = ref<string | null>(null)
 
-// OHLC data per symbol
-const allOhlc = ref<Record<string, CandlestickItem[]>>({})
+const allHistory = ref<Record<string, HistoryPoint[]>>({})
 const chartLoading = ref(false)
 
-// --- Date range ---
 type RangeKey = '1d' | '7d' | '30d'
 const activeRange = ref<RangeKey>('7d')
 
-const rangeOptions: { key: RangeKey; label: string; interval: string }[] = [
-  { key: '1d', label: '1H', interval: '1h' },
-  { key: '7d', label: '7H', interval: '4h' },
-  { key: '30d', label: '30H', interval: '1d' },
+const rangeOptions: { key: RangeKey; label: string }[] = [
+  { key: '1d', label: '1H' },
+  { key: '7d', label: '7H' },
+  { key: '30d', label: '30H' },
 ]
 
 function getRangeFromTo(range: RangeKey): { from: string; to: string } {
   const now = new Date()
   const to = now.toISOString().slice(0, 19).replace('T', ' ')
   const from = new Date(now)
-
   switch (range) {
     case '1d': from.setDate(from.getDate() - 1); break
     case '7d': from.setDate(from.getDate() - 7); break
     case '30d': from.setDate(from.getDate() - 30); break
   }
-
   return { from: from.toISOString().slice(0, 19).replace('T', ' '), to }
-}
-
-function getInterval(range: RangeKey): string {
-  return rangeOptions.find(o => o.key === range)?.interval ?? '1d'
 }
 
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
 const importing = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
-// --- Helpers ---
 function getPrice(symbol: string): PriceData | null {
   return prices.value[symbol] ?? null
 }
@@ -68,17 +60,57 @@ function formatPrice(price: number, symbol: string): string {
   return price.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 })
 }
 
-function toCandles(ohlcData: OhlcPoint[]): CandlestickItem[] {
-  return ohlcData.map(p => ({
-    time: p.time.includes(' ') ? p.time.split(' ')[0] : p.time,
-    open: p.open,
-    high: p.high,
-    low: p.low,
-    close: p.close,
-  }))
+function buildLineChartData(symbol: string): ChartData<'line'> | null {
+  const history = allHistory.value[symbol]
+  if (!history || history.length < 2) return null
+
+  const priceData = getPrice(symbol)
+  const isPositive = priceData ? priceData.change_percent >= 0 : true
+  const color = isPositive ? '#10b981' : '#ef4444'
+
+  return {
+    labels: history.map(p => {
+      const d = new Date(p.fetched_at)
+      return activeRange.value === '1d'
+        ? d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+    }),
+    datasets: [{
+      label: symbol,
+      data: history.map(p => p.price),
+      borderColor: color,
+      backgroundColor: color + '20',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      tension: 0.3,
+      fill: true,
+    }],
+  }
 }
 
-// --- Actions ---
+function getLineChartOptions(): ChartOptions<'line'> {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { mode: 'index', intersect: false },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 10 }, maxTicksLimit: 6 },
+      },
+      y: {
+        grid: { color: '#f1f5f9' },
+        ticks: { font: { size: 10 } },
+      },
+    },
+    interaction: { mode: 'nearest', axis: 'x', intersect: false },
+  }
+}
+
 async function fetchAll() {
   loading.value = true
   try {
@@ -86,48 +118,42 @@ async function fetchAll() {
       marketApi.fetchWatchlist(),
       marketApi.fetchPrices(),
     ])
-
     if (itemsRes.status === 'fulfilled') items.value = itemsRes.value.data
     if (pricesRes.status === 'fulfilled') {
       prices.value = pricesRes.value.data
       refreshInterval.value = pricesRes.value.meta?.refresh_interval ?? 15
+      lastSyncedAt.value = pricesRes.value.meta?.last_synced_at ?? null
     }
   } catch {
     // handled globally
   } finally {
     loading.value = false
   }
-
-  await loadAllOhlc()
+  await loadAllHistory()
 }
 
-async function loadAllOhlc() {
+async function loadAllHistory() {
   if (!items.value.length) return
   chartLoading.value = true
-
   const { from, to } = getRangeFromTo(activeRange.value)
-  const interval = getInterval(activeRange.value)
 
   const results = await Promise.allSettled(
-    items.value.map(item =>
-      marketApi.fetchOhlc(item.symbol, { from, to, interval })
-    )
+    items.value.map(item => marketApi.fetchHistory(item.symbol, { from, to }))
   )
 
-  const ohlcMap: Record<string, CandlestickItem[]> = {}
+  const historyMap: Record<string, HistoryPoint[]> = {}
   results.forEach((res, idx) => {
     if (res.status === 'fulfilled' && res.value.data.length > 0) {
-      ohlcMap[items.value[idx].symbol] = toCandles(res.value.data)
+      historyMap[items.value[idx].symbol] = res.value.data
     }
   })
-
-  allOhlc.value = ohlcMap
+  allHistory.value = historyMap
   chartLoading.value = false
 }
 
 async function changeRange(range: RangeKey) {
   activeRange.value = range
-  await loadAllOhlc()
+  await loadAllHistory()
 }
 
 async function refreshPrices() {
@@ -135,6 +161,7 @@ async function refreshPrices() {
   try {
     const res = await marketApi.fetchPrices()
     prices.value = res.data
+    lastSyncedAt.value = res.meta?.last_synced_at ?? null
   } catch {
     // handled globally
   } finally {
@@ -147,11 +174,9 @@ function startAutoRefresh() {
   autoRefreshTimer = setInterval(refreshPrices, refreshInterval.value * 60 * 1000)
 }
 
-// --- Export / Import ---
 async function handleExport(format: 'csv' | 'json') {
   try {
     const res = await marketApi.exportData({ format })
-
     const blob = new Blob([res as any], { type: format === 'csv' ? 'text/csv' : 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -167,7 +192,6 @@ async function handleExport(format: 'csv' | 'json') {
 async function downloadTemplate() {
   try {
     const res = await marketApi.downloadTemplate()
-
     const blob = new Blob([res as any], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -188,14 +212,13 @@ async function handleImport(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
-
   importing.value = true
   try {
     const formData = new FormData()
     formData.append('file', file)
     const res = await marketApi.importData(formData)
     success(res.data.message ?? `Berhasil mengimpor ${res.data.data?.imported ?? 0} data.`)
-    await loadAllOhlc()
+    await loadAllHistory()
   } catch {
     showError('Gagal mengimpor data. Pastikan format CSV sesuai template.')
   } finally {
@@ -236,6 +259,12 @@ onUnmounted(() => {
       </div>
     </div>
     <input ref="fileInput" type="file" accept=".csv" class="hidden" @change="handleImport" />
+
+    <!-- Last sync info -->
+    <div v-if="lastSyncedAt" class="mt-3 flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+      <Clock :size="12" />
+      <span>Terakhir sinkron: {{ formatRelativeTime(lastSyncedAt) }}</span>
+    </div>
 
     <!-- Loading skeleton -->
     <div v-if="loading" class="mt-6 space-y-4">
@@ -306,7 +335,7 @@ onUnmounted(() => {
 
         <!-- Range selector -->
         <div class="mt-6 flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Grafik Candlestick</h2>
+          <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Grafik Harga</h2>
           <div class="flex items-center gap-1">
             <button
               v-for="opt in rangeOptions"
@@ -322,14 +351,14 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Per-symbol candlestick charts -->
+        <!-- Per-symbol line charts -->
         <div v-if="chartLoading" class="mt-4 flex items-center justify-center py-16">
           <RefreshCw :size="20" class="animate-spin text-gray-400" />
         </div>
 
-        <div v-else-if="Object.keys(allOhlc).length > 0" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div v-else-if="Object.keys(allHistory).length > 0" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div
-            v-for="item in items.filter(i => allOhlc[i.symbol]?.length >= 2)"
+            v-for="item in items.filter(i => allHistory[i.symbol]?.length >= 2)"
             :key="'chart-' + item.id"
             class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
           >
@@ -346,18 +375,19 @@ onUnmounted(() => {
                 {{ getPrice(item.symbol)!.change_percent >= 0 ? '+' : '' }}{{ getPrice(item.symbol)!.change_percent.toFixed(2) }}%
               </span>
             </div>
-            <CandlestickChart :data="allOhlc[item.symbol]" :height="250" />
+            <LineChart
+              v-if="buildLineChartData(item.symbol)"
+              :data="buildLineChartData(item.symbol)!"
+              :options="getLineChartOptions()"
+              :height="200"
+            />
           </div>
         </div>
 
         <div v-else class="mt-4 flex flex-col items-center rounded-xl border border-gray-200 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-800">
           <TrendingUp :size="32" class="text-gray-300 dark:text-gray-600" />
-          <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">
-            Belum ada riwayat harga.
-          </p>
-          <p class="mt-1 text-xs text-gray-400 dark:text-gray-600">
-            Data akan terkumpul seiring waktu setelah cron aktif.
-          </p>
+          <p class="mt-2 text-sm text-gray-400 dark:text-gray-500">Belum ada riwayat harga.</p>
+          <p class="mt-1 text-xs text-gray-400 dark:text-gray-600">Data akan terkumpul seiring waktu setelah cron aktif.</p>
         </div>
 
         <!-- Auto refresh info -->

@@ -192,6 +192,28 @@ export const navigation: NavGroup[] = [
     ],
   },
   {
+    title: 'Bisnis',
+    items: [
+      {
+        id: 'pos',
+        label: 'Point of Sale',
+        icon: 'ShoppingCart',
+        children: [
+          { label: 'Outlet', icon: 'Store', to: '/pos' },
+          { label: 'Kasir', icon: 'Monitor', to: '/pos/cashier' },
+          { label: 'Katalog', icon: 'Package', to: '/pos/catalog' },
+          { label: 'Diskon', icon: 'Percent', to: '/pos/discount' },
+          { label: 'Voucher', icon: 'Ticket', to: '/pos/voucher' },
+          { label: 'Meja', icon: 'LayoutGrid', to: '/pos/tables' },
+          { label: 'Transaksi', icon: 'Receipt', to: '/pos/transactions' },
+          { label: 'Member', icon: 'Users', to: '/pos/members' },
+          { label: 'Open Bills', icon: 'Clock', to: '/pos/open-bills' },
+          { label: 'Laporan', icon: 'BarChart3', to: '/pos/reports' },
+        ],
+      },
+    ],
+  },
+  {
     title: 'Kelola',
     items: [
       {
@@ -208,6 +230,12 @@ export const navigation: NavGroup[] = [
         label: 'Aktivitas',
         icon: 'Activity',
         to: '/activity',
+      },
+      {
+        id: 'logs',
+        label: 'Log Viewer',
+        icon: 'ScrollText',
+        to: '/logs',
       },
       {
         id: 'streaks',
