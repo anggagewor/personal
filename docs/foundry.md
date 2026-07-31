@@ -284,7 +284,12 @@ src/Modules/
 │   │   └── Actions/
 │   │       ├── ListModulesAction.php
 │   │       ├── ExtractModuleAction.php
-│   │       └── ImportModuleAction.php
+│   │       ├── ImportModuleAction.php
+│   │       ├── GetGraphDataAction.php
+│   │       ├── GetHealthScoreAction.php
+│   │       ├── GetImpactAnalysisAction.php
+│   │       ├── GetExtractPreviewAction.php
+│   │       └── InspectModuleAction.php
 │   ├── Infrastructure/
 │   │   ├── Commands/
 │   │   │   ├── ListModulesCommand.php
@@ -305,3 +310,43 @@ src/Modules/
 - Foundry scan/graph/verify/doctor commands → `SharedServiceProvider`
 - Foundry list/extract/import commands → `ModuleManagerServiceProvider`
 - API endpoints (`/api/modules/*`) → `ModuleManagerServiceProvider`
+
+---
+
+## Web UI (Foundry Dashboard)
+
+Akses via sidebar **Foundry** atau langsung ke `/foundry`.
+
+### Pages
+
+| Route | Fungsi |
+|-------|--------|
+| `/foundry` | **Overview** — DX Score (Lighthouse-style), category breakdown (architecture/docs/extractability/testing), dependency heatmap, top/bottom modules |
+| `/foundry/graph` | **Graph** — Interactive force-directed dependency graph. Klik node → highlight dependencies + dependents. Zoom, pan, search, drag nodes. Detail panel di samping. |
+| `/foundry/modules` | **Modules** — List semua module. Klik → detail modal: health checks, inspector (file counts per layer), depends/used-by, impact analysis, extract preview. |
+
+### API Endpoints
+
+```
+GET  /api/modules                    → List semua module
+GET  /api/modules/graph              → Graph data (nodes + edges)
+GET  /api/modules/health             → DX score semua module
+GET  /api/modules/health?module=X    → DX score specific module
+GET  /api/modules/{name}             → Detail module + deps + used_by
+GET  /api/modules/{name}/inspect     → Inspector (file counts)
+GET  /api/modules/{name}/impact      → Impact analysis
+GET  /api/modules/{name}/extract-preview → Extract preview
+POST /api/modules/{name}/extract     → Extract module ke zip
+POST /api/modules/import             → Import module dari zip
+```
+
+### Features
+
+1. **DX Score** — Score 0-100 per module berdasarkan architecture (40), documentation (20), extractability (20), testing (20).
+2. **Dependency Heatmap** — Visualisasi module yang paling banyak di-depend (core modules).
+3. **Interactive Graph** — Canvas-based force-directed layout. Node size = jumlah dependents. Click = highlight subgraph.
+4. **Impact Analysis** — "Kalau module ini berubah, module mana saja yang terpengaruh?" (BFS reverse deps).
+5. **Inspector** — Breakdown detail: entities, actions, controllers, models, repositories, commands, migrations, tests, total files, size.
+6. **Health Checks** — Per-module diagnostic: DDD layers, manifest, contracts, tests, circular deps, self-contained.
+7. **Reverse Dependencies (Used By)** — Complement "Depends On" — lihat siapa yang pakai module ini.
+8. **Extract Preview** — Sebelum extract, lihat: berapa module included, file count, migration count, test count, estimated size.

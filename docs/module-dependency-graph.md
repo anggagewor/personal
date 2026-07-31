@@ -35,7 +35,7 @@ Berguna untuk menentukan module mana yang bisa dicabut sendiri (standalone) dan 
 | Journal | Shared | BelongsToUser, AuthorizesOwnership |
 | LogReader | — | Fully standalone |
 | Market | Shared | AuthorizesOwnership |
-| ModuleManager | — | Fully standalone (extract/import modules) |
+| ModuleManager | — | Fully standalone (Foundry UI — extract/import/graph/health) |
 | Note | Shared | BelongsToUser, AuthorizesOwnership |
 | Pomodoro | Shared | BelongsToUser, AuthorizesOwnership |
 | Pos | Shared | BaseController, BelongsToUser, AuthorizesOwnership |

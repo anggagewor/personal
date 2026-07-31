@@ -557,20 +557,23 @@
 
 ---
 
-## 35. Module Manager
+## 35. Foundry (Module Manager)
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| List Modules | Lihat semua module dengan dependencies, tags, status extractable |
-| Filter by Tag | Filter module berdasarkan kategori (productivity, finance, dev-tools, dll) |
-| Module Detail | Lihat detail module termasuk full dependency tree |
-| Extract Module | Bundle module + dependencies jadi zip archive |
-| Import Module | Import module dari zip archive ke project |
+| Overview | DX Score (Lighthouse-style), category scores (architecture/docs/extractability/testing), dependency heatmap, top/bottom modules |
+| Graph | Interactive force-directed dependency graph — klik node highlight deps & dependents, zoom, pan, search, detail panel |
+| Modules | List semua module dengan detail: inspector (file counts per layer), health badges, reverse deps (used by), impact analysis, extractability score, extract preview |
+| Extract | Bundle module + dependencies jadi zip archive dengan preview (files, migrations, tests, size) |
+| Import | Import module dari zip archive ke project |
+| Impact Analysis | Sebelum refactor, lihat module mana yang terpengaruh |
+| Health Checks | Per-module diagnostic: DDD compliance, manifest, contracts, tests, circular deps |
+| Inspector | Breakdown per module: entities, actions, controllers, models, repositories, commands, migrations, tests, total files, size |
 | CLI Commands | `foundry:list`, `foundry:extract`, `foundry:import` |
 
-**Endpoints:** `/api/modules`, `/api/modules/{name}`, `/api/modules/{name}/extract`, `/api/modules/import`
+**Endpoints:** `/api/modules`, `/api/modules/graph`, `/api/modules/health`, `/api/modules/{name}`, `/api/modules/{name}/inspect`, `/api/modules/{name}/impact`, `/api/modules/{name}/extract-preview`, `/api/modules/{name}/extract`, `/api/modules/import`
 **Commands:** `php artisan foundry:list`, `php artisan foundry:extract {Module}`, `php artisan foundry:import {path}`
-**Route:** `/modules`
+**Route:** `/foundry`, `/foundry/graph`, `/foundry/modules`
 
 ---
 
@@ -609,7 +612,7 @@
 | POS | `/pos`, `/pos/cashier/:outletId`, `/pos/catalog/:outletId` |
 | Supplier | `/supplier/:outletId`, `/supplier/suppliers`, `/supplier/purchase-orders`, `/supplier/reports` |
 | Database Manager | `/database`, `/database/:table` |
-| Module Manager | `/modules` |
+| Module Manager | `/foundry`, `/foundry/graph`, `/foundry/modules` |
 | Log Viewer | `/logs` |
 | Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/market`, `/settings/export` |
 
