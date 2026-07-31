@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Catalog\CreateCategoryAction;
 use Modules\Pos\Application\Actions\Catalog\DeleteCategoryAction;
 use Modules\Pos\Application\Actions\Catalog\ReorderCategoryAction;
@@ -18,7 +18,7 @@ use Modules\Pos\Infrastructure\Requests\UpdateCategoryRequest;
 use Modules\Pos\Infrastructure\Resources\CategoryResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
     use AuthorizesOwnership;
 

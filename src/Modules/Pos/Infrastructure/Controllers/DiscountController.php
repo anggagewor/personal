@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Discount\CreateDiscountAction;
 use Modules\Pos\Application\Actions\Discount\DeleteDiscountAction;
 use Modules\Pos\Application\Actions\Discount\EvaluateDiscountsAction;
@@ -17,7 +17,7 @@ use Modules\Pos\Infrastructure\Requests\UpdateDiscountRequest;
 use Modules\Pos\Infrastructure\Resources\DiscountResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class DiscountController extends Controller
+class DiscountController extends BaseController
 {
     use AuthorizesOwnership;
 

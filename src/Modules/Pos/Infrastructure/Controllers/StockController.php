@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Catalog\AdjustStockAction;
 use Modules\Pos\Application\DTO\StockAdjustmentData;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
@@ -13,7 +13,7 @@ use Modules\Pos\Domain\Exceptions\InvalidStockAdjustmentException;
 use Modules\Pos\Infrastructure\Requests\StoreStockAdjustmentRequest;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class StockController extends Controller
+class StockController extends BaseController
 {
     use AuthorizesOwnership;
 

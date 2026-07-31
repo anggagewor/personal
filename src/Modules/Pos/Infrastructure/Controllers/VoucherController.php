@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Voucher\BatchCreateVoucherAction;
 use Modules\Pos\Application\Actions\Voucher\CreateVoucherAction;
 use Modules\Pos\Application\Actions\Voucher\ValidateVoucherAction;
@@ -17,7 +17,7 @@ use Modules\Pos\Infrastructure\Requests\StoreVoucherRequest;
 use Modules\Pos\Infrastructure\Resources\VoucherResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class VoucherController extends Controller
+class VoucherController extends BaseController
 {
     use AuthorizesOwnership;
 

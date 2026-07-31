@@ -56,13 +56,15 @@ function clearCart() {
           {{ cartStore.itemCount }}
         </span>
       </div>
-      <button
+      <BaseButton
         v-if="hasItems"
-        class="text-xs text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+        variant="ghost"
+        size="xs"
+        class="text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
         @click="clearCart"
       >
         Kosongkan
-      </button>
+      </BaseButton>
     </div>
 
     <!-- Cart items -->

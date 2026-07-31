@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatCurrency } from '@purdia/utils'
+import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { ShoppingCart, Plus, Search } from '@lucide/vue'
 import type { Product, Category, Outlet } from '@/types/pos'
 import * as posApi from '@/api/pos'
@@ -132,13 +133,12 @@ onMounted(() => {
     <!-- Menu content -->
     <div v-else class="mx-auto max-w-lg px-4 pb-24">
       <!-- Search -->
-      <div class="relative mt-4">
-        <Search :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
+      <div class="mt-4">
+        <BaseInput
           v-model="search"
-          type="text"
           placeholder="Cari menu..."
-          class="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-4 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          :icon="Search"
+          size="md"
         />
       </div>
 

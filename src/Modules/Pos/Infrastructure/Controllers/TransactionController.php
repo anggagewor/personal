@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Transaction\CreateTransactionAction;
 use Modules\Pos\Application\Actions\Transaction\VoidTransactionAction;
 use Modules\Pos\Application\Actions\Voucher\RedeemVoucherAction;
@@ -20,7 +20,7 @@ use Modules\Pos\Infrastructure\Requests\VoidTransactionRequest;
 use Modules\Pos\Infrastructure\Resources\TransactionResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class TransactionController extends Controller
+class TransactionController extends BaseController
 {
     use AuthorizesOwnership;
 

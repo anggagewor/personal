@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { formatCurrency } from '@purdia/utils'
 import BaseTabs from '@purdia/ui/src/components/BaseTabs.vue'
+import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { Search, Package } from '@lucide/vue'
 import type { Product, Category } from '@/types/pos'
 
@@ -63,15 +64,12 @@ function selectProduct(product: Product) {
   <div class="flex h-full flex-col">
     <!-- Header with search -->
     <div class="sticky top-0 z-10 border-b border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-      <div class="relative">
-        <Search :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          v-model="search"
-          type="text"
-          placeholder="Cari produk..."
-          class="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-        />
-      </div>
+      <BaseInput
+        v-model="search"
+        placeholder="Cari produk..."
+        :icon="Search"
+        size="md"
+      />
 
       <!-- Category tabs -->
       <div class="mt-3 -mb-px overflow-x-auto">

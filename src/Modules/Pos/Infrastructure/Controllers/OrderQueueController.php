@@ -4,14 +4,14 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\QrOrder\AcceptOrderAction;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Pos\Domain\Contracts\TableRepositoryInterface;
 use Modules\Pos\Infrastructure\Resources\OrderQueueResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class OrderQueueController extends Controller
+class OrderQueueController extends BaseController
 {
     use AuthorizesOwnership;
 

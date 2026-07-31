@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Queries\DailySalesReportQuery;
 use Modules\Pos\Application\Queries\DateRangeSalesReportQuery;
 use Modules\Pos\Application\Queries\ProductRankingQuery;
@@ -15,7 +15,7 @@ use Modules\Pos\Infrastructure\Resources\ReportResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ReportController extends Controller
+class ReportController extends BaseController
 {
     use AuthorizesOwnership;
 

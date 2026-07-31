@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Catalog\CreateProductAction;
 use Modules\Pos\Application\Actions\Catalog\DeactivateProductAction;
 use Modules\Pos\Application\Actions\Catalog\UpdateProductAction;
@@ -18,7 +18,7 @@ use Modules\Pos\Infrastructure\Requests\UpdateProductRequest;
 use Modules\Pos\Infrastructure\Resources\ProductResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class ProductController extends Controller
+class ProductController extends BaseController
 {
     use AuthorizesOwnership;
 

@@ -226,15 +226,14 @@ function setPaymentFlow(flow: 'pay_first' | 'pay_later') {
           </label>
           <div v-if="selectedMember" class="flex items-center gap-2 rounded-lg border border-primary-200 bg-primary-50 px-3 py-2 dark:border-primary-800 dark:bg-primary-900/20">
             <span class="text-sm text-primary-700 dark:text-primary-300">{{ selectedMember.name }} — {{ selectedMember.phone }}</span>
-            <button class="ml-auto text-xs text-red-500 hover:text-red-600" @click="clearMember">Hapus</button>
+            <BaseButton variant="ghost" size="xs" class="ml-auto text-red-500 hover:text-red-600" @click="clearMember">Hapus</BaseButton>
           </div>
           <div v-else class="relative">
-            <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
+            <BaseInput
               v-model="memberSearch"
-              type="text"
               placeholder="Cari member (nama/telepon)..."
-              class="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+              :icon="Search"
+              size="md"
               @input="searchMembers"
             />
             <!-- Search results dropdown -->
@@ -262,15 +261,11 @@ function setPaymentFlow(flow: 'pay_first' | 'pay_later') {
             Kode Voucher (opsional)
           </label>
           <div class="flex gap-2">
-            <input
+            <BaseInput
               v-model="voucherCode"
-              type="text"
               placeholder="Masukkan kode voucher"
-              class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-              :class="{
-                'border-green-400 dark:border-green-600': voucherValid === true,
-                'border-red-400 dark:border-red-600': voucherValid === false,
-              }"
+              size="md"
+              class="flex-1"
             />
             <BaseButton
               variant="secondary"

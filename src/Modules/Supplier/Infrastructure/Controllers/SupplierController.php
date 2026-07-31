@@ -4,7 +4,7 @@ namespace Modules\Supplier\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 use Modules\Supplier\Application\Actions\Supplier\CreateSupplierAction;
@@ -18,7 +18,7 @@ use Modules\Supplier\Infrastructure\Requests\UpdateSupplierRequest;
 use Modules\Supplier\Infrastructure\Resources\SupplierListResource;
 use Modules\Supplier\Infrastructure\Resources\SupplierResource;
 
-class SupplierController extends Controller
+class SupplierController extends BaseController
 {
     use AuthorizesOwnership;
 

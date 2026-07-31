@@ -26,10 +26,15 @@ class PosSeeder extends Seeder
         DB::transaction(function () {
             $this->command->info('Seeding POS data...');
 
-            $user = UserModel::firstOrCreate(
-                ['email' => 'test@example.com'],
-                ['name' => 'Test User', 'password' => bcrypt('password')]
-            );
+            $user = UserModel::first();
+
+            if (!$user) {
+                $user = UserModel::create([
+                    'name' => 'Test User',
+                    'email' => 'test@example.com',
+                    'password' => bcrypt('password'),
+                ]);
+            }
 
             // 1. Create Outlet
             $outlet = OutletModel::create([

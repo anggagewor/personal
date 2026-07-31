@@ -2,6 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatCurrency } from '@purdia/utils'
+import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
+import BaseTextarea from '@purdia/ui/src/components/BaseTextarea.vue'
+import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart } from '@lucide/vue'
 import * as posApi from '@/api/pos'
 
@@ -166,24 +169,17 @@ onMounted(() => {
 
         <!-- Customer info -->
         <div class="mt-6 space-y-3">
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Nama (opsional)</label>
-            <input
-              v-model="customerName"
-              type="text"
-              placeholder="Nama kamu"
-              class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Catatan (opsional)</label>
-            <textarea
-              v-model="notes"
-              placeholder="Contoh: tidak pedas, es batu sedikit"
-              rows="3"
-              class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm resize-none focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
+          <BaseInput
+            v-model="customerName"
+            label="Nama (opsional)"
+            placeholder="Nama kamu"
+          />
+          <BaseTextarea
+            v-model="notes"
+            label="Catatan (opsional)"
+            placeholder="Contoh: tidak pedas, es batu sedikit"
+            :rows="3"
+          />
         </div>
 
         <!-- Error message -->
@@ -201,13 +197,15 @@ onMounted(() => {
         </div>
 
         <!-- Submit button -->
-        <button
-          class="w-full rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+        <BaseButton
+          variant="primary"
+          size="lg"
+          class="w-full rounded-xl"
           :disabled="submitting"
           @click="submitOrder"
         >
           {{ submitting ? 'Mengirim...' : 'Kirim Pesanan' }}
-        </button>
+        </BaseButton>
       </div>
     </div>
   </div>

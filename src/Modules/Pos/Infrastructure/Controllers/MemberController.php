@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Member\CreateMemberAction;
 use Modules\Pos\Application\Actions\Member\DeleteMemberAction;
 use Modules\Pos\Application\Actions\Member\UpdateMemberAction;
@@ -16,7 +16,7 @@ use Modules\Pos\Infrastructure\Requests\UpdateMemberRequest;
 use Modules\Pos\Infrastructure\Resources\MemberResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class MemberController extends Controller
+class MemberController extends BaseController
 {
     use AuthorizesOwnership;
 

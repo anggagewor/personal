@@ -4,7 +4,7 @@ namespace Modules\Supplier\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Supplier\Application\Queries\PurchaseByProductQuery;
 use Modules\Supplier\Application\Queries\PurchaseBySupplierQuery;
 use Modules\Supplier\Application\Queries\PurchaseSummaryQuery;
@@ -12,7 +12,7 @@ use Modules\Supplier\Application\Queries\SupplierDashboardQuery;
 use Modules\Supplier\Infrastructure\Requests\ExportReportRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class SupplierReportController extends Controller
+class SupplierReportController extends BaseController
 {
     public function __construct(
         private PurchaseSummaryQuery $purchaseSummaryQuery,

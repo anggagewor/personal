@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Transaction\CloseOpenBillAction;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Pos\Domain\Contracts\TransactionRepositoryInterface;
@@ -12,7 +12,7 @@ use Modules\Pos\Infrastructure\Requests\CloseOpenBillRequest;
 use Modules\Pos\Infrastructure\Resources\TransactionResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class OpenBillController extends Controller
+class OpenBillController extends BaseController
 {
     use AuthorizesOwnership;
 

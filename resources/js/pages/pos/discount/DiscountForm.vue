@@ -5,6 +5,7 @@ import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
+import BaseCheckbox from '@purdia/ui/src/components/BaseCheckbox.vue'
 import type { Discount } from '@/types/pos'
 import * as posApi from '@/api/pos'
 
@@ -206,14 +207,7 @@ async function save() {
         </div>
 
         <!-- Member only toggle -->
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input
-            v-model="form.member_only"
-            type="checkbox"
-            class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-          <span class="text-sm text-gray-700 dark:text-gray-300">Khusus Member</span>
-        </label>
+        <BaseCheckbox v-model="form.member_only" label="Khusus Member" />
 
         <!-- Actions -->
         <div class="flex justify-end gap-2 pt-2">

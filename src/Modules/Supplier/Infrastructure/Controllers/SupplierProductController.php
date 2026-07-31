@@ -4,7 +4,7 @@ namespace Modules\Supplier\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Supplier\Application\Actions\SupplierProduct\LinkProductAction;
 use Modules\Supplier\Application\Actions\SupplierProduct\UnlinkProductAction;
 use Modules\Supplier\Application\DTO\SupplierProductData;
@@ -13,7 +13,7 @@ use Modules\Supplier\Domain\Contracts\SupplierRepositoryInterface;
 use Modules\Supplier\Infrastructure\Requests\LinkProductRequest;
 use Modules\Supplier\Infrastructure\Resources\SupplierProductResource;
 
-class SupplierProductController extends Controller
+class SupplierProductController extends BaseController
 {
     public function __construct(
         private SupplierProductRepositoryInterface $supplierProductRepo,

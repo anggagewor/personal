@@ -6,6 +6,7 @@ import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import BaseSelect from '@purdia/ui/src/components/BaseSelect.vue'
 import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
+import BaseCheckbox from '@purdia/ui/src/components/BaseCheckbox.vue'
 import { ArrowLeft, Plus, Pencil, Trash2, Receipt, CreditCard, Save } from '@lucide/vue'
 import type { Outlet, PaymentMethod } from '@/types/pos'
 import * as posApi from '@/api/pos'
@@ -298,15 +299,7 @@ onMounted(() => {
             :maxlength="50"
             required
           />
-          <div class="flex items-center gap-2">
-            <input
-              id="payment-active"
-              v-model="paymentForm.is_active"
-              type="checkbox"
-              class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
-            />
-            <label for="payment-active" class="text-sm text-gray-700 dark:text-gray-300">Aktif</label>
-          </div>
+          <BaseCheckbox v-model="paymentForm.is_active" label="Aktif" />
           <div class="flex justify-end gap-2 pt-2">
             <BaseButton variant="secondary" size="sm" type="button" @click="showPaymentForm = false">Batal</BaseButton>
             <BaseButton variant="primary" size="sm" type="submit" :loading="submitting">Simpan</BaseButton>

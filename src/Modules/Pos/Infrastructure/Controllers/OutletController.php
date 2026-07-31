@@ -4,7 +4,7 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Outlet\CreateOutletAction;
 use Modules\Pos\Application\Actions\Outlet\DeleteOutletAction;
 use Modules\Pos\Application\Actions\Outlet\UpdateOutletAction;
@@ -17,7 +17,7 @@ use Modules\Pos\Infrastructure\Requests\UpdateOutletRequest;
 use Modules\Pos\Infrastructure\Resources\OutletResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class OutletController extends Controller
+class OutletController extends BaseController
 {
     use AuthorizesOwnership;
 

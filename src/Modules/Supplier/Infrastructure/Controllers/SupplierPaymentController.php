@@ -3,7 +3,7 @@
 namespace Modules\Supplier\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Supplier\Application\Actions\Payment\RecordPaymentAction;
 use Modules\Supplier\Application\DTO\SupplierPaymentData;
 use Modules\Supplier\Domain\Contracts\SupplierPaymentRepositoryInterface;
@@ -13,7 +13,7 @@ use Modules\Supplier\Domain\Exceptions\OverPaymentException;
 use Modules\Supplier\Infrastructure\Requests\StoreSupplierPaymentRequest;
 use Modules\Supplier\Infrastructure\Resources\SupplierPaymentResource;
 
-class SupplierPaymentController extends Controller
+class SupplierPaymentController extends BaseController
 {
     public function __construct(
         private SupplierPaymentRepositoryInterface $paymentRepository,

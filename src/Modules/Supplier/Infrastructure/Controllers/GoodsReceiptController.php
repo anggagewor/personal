@@ -3,7 +3,7 @@
 namespace Modules\Supplier\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Supplier\Application\Actions\GoodsReceipt\CreateGoodsReceiptAction;
 use Modules\Supplier\Application\DTO\GoodsReceiptData;
 use Modules\Supplier\Application\DTO\GoodsReceiptItemData;
@@ -13,7 +13,7 @@ use Modules\Supplier\Domain\Exceptions\OverDeliveryException;
 use Modules\Supplier\Infrastructure\Requests\StoreGoodsReceiptRequest;
 use Modules\Supplier\Infrastructure\Resources\GoodsReceiptResource;
 
-class GoodsReceiptController extends Controller
+class GoodsReceiptController extends BaseController
 {
     public function __construct(
         private GoodsReceiptRepositoryInterface $receiptRepository,

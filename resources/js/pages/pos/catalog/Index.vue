@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from '@purdia/toast'
 import { formatCurrency } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
+import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { Plus, Search, Package, PackageX, MoreVertical, Pencil, Archive, BarChart3 } from '@lucide/vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import CategoryList from './CategoryList.vue'
 import ProductForm from './ProductForm.vue'
 import StockAdjustment from './StockAdjustment.vue'
-import type { Product, Category } from '@/types/pos'
+import type { Product, Category, Outlet } from '@/types/pos'
 import * as posApi from '@/api/pos'
 
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
 
-const outletId = computed(() => Number(route.query.outlet))
+const resolvedOutletId = ref<number>(0)
+const outletId = computed(() => resolvedOutletId.value)
 
 const categories = ref<Category[]>([])
 const products = ref<Product[]>([])
@@ -32,6 +35,26 @@ const stockProduct = ref<Product | null>(null)
 
 // Dropdown menu
 const openMenuId = ref<number | null>(null)
+
+async function resolveOutletId() {
+  const fromQuery = Number(route.query.outlet)
+  if (fromQuery) {
+    resolvedOutletId.value = fromQuery
+    return
+  }
+
+  // Auto-select first outlet if not specified in URL
+  try {
+    const res = await posApi.fetchOutlets()
+    if (res.data.length > 0) {
+      resolvedOutletId.value = res.data[0].id
+      // Update URL so subsequent navigations retain the outlet
+      router.replace({ query: { ...route.query, outlet: String(res.data[0].id) } })
+    }
+  } catch {
+    // Error handled globally
+  }
+}
 
 async function fetchCategories() {
   if (!outletId.value) return
@@ -122,9 +145,15 @@ function onStockAdjusted() {
 
 watch(selectedCategoryId, () => fetchProducts())
 
-// Initial load
-fetchCategories()
-fetchProducts()
+watch(outletId, (val) => {
+  if (val) {
+    fetchCategories()
+    fetchProducts()
+  }
+})
+
+// Initial load: resolve outlet then fetch data
+resolveOutletId()
 </script>
 
 <template>
@@ -156,13 +185,12 @@ fetchProducts()
       <!-- Product list -->
       <div class="flex-1 min-w-0">
         <!-- Search bar -->
-        <div class="relative mb-4">
-          <Search :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
+        <div class="mb-4">
+          <BaseInput
             v-model="search"
-            type="text"
             placeholder="Cari produk..."
-            class="w-full rounded-lg border border-gray-300 py-2 pl-9 pr-4 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            :icon="Search"
+            size="md"
           />
         </div>
 

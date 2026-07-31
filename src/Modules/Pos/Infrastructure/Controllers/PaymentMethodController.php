@@ -4,12 +4,12 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Pos\Infrastructure\Models\PaymentMethodModel;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class PaymentMethodController extends Controller
+class PaymentMethodController extends BaseController
 {
     use AuthorizesOwnership;
 

@@ -4,13 +4,13 @@ namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Transaction\GenerateReceiptAction;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Pos\Domain\Contracts\TransactionRepositoryInterface;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
-class ReceiptController extends Controller
+class ReceiptController extends BaseController
 {
     use AuthorizesOwnership;
 

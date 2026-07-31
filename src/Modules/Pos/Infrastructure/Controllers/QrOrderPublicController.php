@@ -3,7 +3,7 @@
 namespace Modules\Pos\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\QrOrder\SubmitOrderAction;
 use Modules\Pos\Application\DTO\QrOrderData;
 use Modules\Pos\Domain\Contracts\ProductRepositoryInterface;
@@ -13,7 +13,7 @@ use Modules\Pos\Infrastructure\Requests\SubmitQrOrderRequest;
 use Modules\Pos\Infrastructure\Resources\OrderQueueResource;
 use Modules\Pos\Infrastructure\Resources\ProductResource;
 
-class QrOrderPublicController extends Controller
+class QrOrderPublicController extends BaseController
 {
     public function __construct(
         private TableRepositoryInterface $tableRepository,

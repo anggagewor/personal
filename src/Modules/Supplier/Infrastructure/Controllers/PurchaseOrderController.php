@@ -4,7 +4,7 @@ namespace Modules\Supplier\Infrastructure\Controllers;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Supplier\Application\Actions\PurchaseOrder\CancelPurchaseOrderAction;
 use Modules\Supplier\Application\Actions\PurchaseOrder\ConfirmPurchaseOrderAction;
 use Modules\Supplier\Application\Actions\PurchaseOrder\CreatePurchaseOrderAction;
@@ -21,7 +21,7 @@ use Modules\Supplier\Infrastructure\Requests\UpdatePurchaseOrderRequest;
 use Modules\Supplier\Infrastructure\Resources\PurchaseOrderListResource;
 use Modules\Supplier\Infrastructure\Resources\PurchaseOrderResource;
 
-class PurchaseOrderController extends Controller
+class PurchaseOrderController extends BaseController
 {
     public function __construct(
         private PurchaseOrderRepositoryInterface $poRepository,
