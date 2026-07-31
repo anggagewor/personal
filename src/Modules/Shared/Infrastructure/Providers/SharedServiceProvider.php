@@ -2,7 +2,6 @@
 
 namespace Modules\Shared\Infrastructure\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Modules\Shared\Infrastructure\Commands\Foundry\DoctorCommand;
 use Modules\Shared\Infrastructure\Commands\Foundry\GraphCommand;
@@ -18,8 +17,6 @@ class SharedServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Route::prefix('api')->group(__DIR__ . '/../Routes/api.php');
-
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ScanCommand::class,

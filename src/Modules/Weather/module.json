@@ -1,0 +1,8 @@
+{
+    "name": "Weather",
+    "display_name": "Weather",
+    "description": "Current weather information via OpenWeatherMap API",
+    "depends": [],
+    "extractable": true,
+    "tags": ["utility"]
+}

@@ -1,0 +1,8 @@
+{
+    "name": "Dashboard",
+    "display_name": "Dashboard",
+    "description": "Weekly summary and dashboard aggregation across modules",
+    "depends": [],
+    "extractable": false,
+    "tags": ["aggregation"]
+}

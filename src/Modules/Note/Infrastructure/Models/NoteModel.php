@@ -5,12 +5,12 @@ namespace Modules\Note\Infrastructure\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Shared\Infrastructure\Traits\BelongsToUser;
 
 class NoteModel extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, BelongsToUser;
 
     protected $table = 'notes';
 
@@ -26,11 +26,6 @@ class NoteModel extends Model
         return [
             'is_pinned' => 'boolean',
         ];
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(\Modules\User\Infrastructure\Models\UserModel::class, 'user_id');
     }
 
     public function scopePinned(Builder $query): Builder

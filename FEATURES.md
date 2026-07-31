@@ -2,7 +2,7 @@
 
 > **Disclaimer:** Proyek ini adalah personal dashboard sekaligus playground untuk meracik module-module yang bisa di-reuse di proyek lain. Banyak module sengaja dibangun dengan standar production-grade (DDD 3-layer, property-based testing, proper state machines) meskipun ini "cuma" personal dashboard — tujuannya agar pola-polanya bisa langsung dicopy ke proyek klien tanpa perlu refactor ulang.
 
-**Total: 34 fitur / 28 module**
+**Total: 34 fitur / 30 module**
 
 ## 1. Authentication & User Management
 
@@ -289,7 +289,7 @@
 | Stat Cards | Total notes, tasks pending, bookmarks, events mendatang |
 | Weekly Summary | Tasks completed/created, pomodoros, focus minutes, habits, notes, streak |
 | Quote of the Day | Tampil di dashboard |
-| Weather | Cuaca kota saat ini (OpenWeatherMap, cache 1 jam) |
+| Weather | Cuaca kota saat ini (OpenWeatherMap, cache 1 jam) — module standalone |
 | World Clock | Timezone yang dikonfigurasi user, live update tiap detik |
 | Market Widget | Watchlist symbols + harga + sparkline chart (dari DB) |
 | Gold Widget | Harga emas Antam terkini + sparkline 30 hari + 30d stats |
@@ -298,6 +298,7 @@
 | Recent Notes | 3 catatan terbaru |
 
 **Endpoints:** `/api/dashboard/weekly-summary`, `/api/weather/current`
+**Module:** `Dashboard` (weekly summary), `Weather` (cuaca)
 
 ---
 

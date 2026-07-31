@@ -35,4 +35,6 @@ return [
     Modules\DatabaseManager\Infrastructure\Providers\DatabaseManagerServiceProvider::class,
     Modules\LogReader\Infrastructure\Providers\LogReaderServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
+    Modules\Weather\Infrastructure\Providers\WeatherServiceProvider::class,
+    Modules\Dashboard\Infrastructure\Providers\DashboardServiceProvider::class,
 ];

@@ -42,5 +42,6 @@ class PosServiceProvider extends ServiceProvider
     {
         Route::prefix('api')->group(__DIR__ . '/../Routes/api.php');
         Route::prefix('api')->group(__DIR__ . '/../Routes/public.php');
+        $this->loadMigrationsFrom(__DIR__ . '/../Migrations');
     }
 }

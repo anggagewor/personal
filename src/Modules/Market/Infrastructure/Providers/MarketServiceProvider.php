@@ -22,6 +22,7 @@ class MarketServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::prefix('api')->group(__DIR__ . '/../Routes/api.php');
+        $this->loadMigrationsFrom(__DIR__ . '/../Migrations');
 
         if ($this->app->runningInConsole()) {
             $this->commands([
