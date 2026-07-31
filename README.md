@@ -4,7 +4,9 @@
 
 # Purdia Dashboard
 
-Personal productivity dashboard yang dibangun dengan Laravel 13 (DDD Modular) dan Vue 3 + TypeScript.
+Personal productivity dashboard + business tools, dibangun dengan Laravel 13 (DDD Modular) dan Vue 3 + TypeScript.
+
+> **Disclaimer:** Ini adalah proyek personal sekaligus playground untuk meracik module-module yang bisa dipakai di proyek lain. Jangan heran kalau banyak module yang terasa "over-engineered" untuk kelas personal dashboard — memang sengaja dibikin proper agar bisa di-reuse dan dipelajari pola-polanya (DDD, property testing, full 3-layer, dsb). Think of it as a module incubator.
 
 ## Tech Stack
 
@@ -30,38 +32,53 @@ Personal productivity dashboard yang dibangun dengan Laravel 13 (DDD Modular) da
 - `@purdia/charts` — Chart components (Bar, Line, Doughnut)
 - `@purdia/utils` — Utility functions (format, timing, misc)
 - `@purdia/theme` — Dark/light mode & color scheme
-- `@purdia/crypto` — Encrypted localStorage
+- `@purdia/crypto` — Encrypted localStorage (AES-GCM via Web Crypto API)
 - `@purdia/tailwind` — Shared Tailwind config & tokens
 
-## Fitur
+## Modules (28 total)
 
-Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur.
+Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur per module.
 
-**Ringkasan:**
-- 🔐 Authentication (login, register, token refresh)
-- 📝 Notes dengan rich text editor & pin
-- 🔖 Bookmarks dengan kategori
-- ✅ Task management (status, priority, reorder, recurrence)
-- 📅 Calendar events & hari libur nasional
-- 🍅 Pomodoro timer
+**Productivity:**
+- 📝 Notes (rich text, pin, search)
+- ✅ Tasks (status, priority, recurrence, kanban)
+- 📅 Calendar (events, hari libur nasional)
+- 🍅 Pomodoro Timer
 - 📋 Scratchpads (quick notes)
-- 🎯 Habit tracker (daily/weekly + streak)
-- 💰 Finance tracker (income/expense + summary)
-- 📈 Market watchlist (forex, crypto, stock via Twelve Data + sparkline)
-- 🪙 Emas Antam (harga harian + chart historis 15 tahun)
-- 📚 Reading list
-- 📓 Daily journal & mood tracker
-- 🏆 Goals & milestones
+- 🎯 Habits (daily/weekly + streak)
+- 📓 Journal & Mood Tracker
+- 🏆 Goals & Milestones
+- 📚 Reading List
+- 🔖 Bookmarks
 - 🎁 Wishlist
-- 🏷️ Tags (polymorphic, attach ke notes/tasks)
-- 💬 Daily motivational quotes (CRUD + quote of the day)
-- 🗑️ Unified trash (restore / permanent delete)
-- 📊 Dashboard (weekly summary, weather, world clock, market widget, gold widget, quick capture)
-- 🌐 World Clock (configurable timezones, live update)
-- ⚙️ Settings (profile, appearance, market watchlist, export)
-- 📐 Unit Converter (8 kategori bawaan + custom)
-- 📊 Accounting (COA, jurnal, buku besar, laporan keuangan)
-- 🛠️ SQL Generator (CREATE TABLE multi-dialect, frontend-only)
+- 💬 Daily Quotes
+- 🏷️ Tags (polymorphic)
+
+**Finance & Market:**
+- 💰 Finance Tracker (income/expense)
+- 💳 Budget Planning
+- 📈 Market Watchlist (forex, crypto, stock — Twelve Data API)
+- 🪙 Emas Antam (harga harian + chart 15 tahun)
+- 📊 Accounting (double-entry bookkeeping, laporan keuangan)
+
+**Business:**
+- 🛒 Point of Sale (multi-outlet, kasir, katalog, diskon, voucher, member, meja, open bill, QR order, laporan)
+- 📦 Supplier Management (PO lifecycle, goods receiving, payment tracking, laporan pembelian)
+
+**Utilities & Developer Tools:**
+- 🔐 Password Vault (client-side encrypted)
+- 🌐 Google Drive Integration (OAuth, backup, sync notes)
+- 📐 Unit Converter (8 kategori + custom)
+- 🛠️ SQL Generator (multi-dialect, frontend-only)
+- 🗄️ Database Manager (browse tables, filter, edit rows, alter table)
+- 📜 Log Viewer (tail log files, filter by level)
+- 🗑️ Unified Trash (restore / permanent delete)
+
+**System:**
+- 🔐 Authentication (login, register, token refresh)
+- ⚙️ Settings (profile, appearance, market config, export)
+- 📊 Dashboard (weekly summary, weather, world clock, market & gold widgets)
+- ⌨️ Quick Command (Cmd+K palette)
 
 ## Arsitektur
 
@@ -69,8 +86,8 @@ Lihat [FEATURES.md](./FEATURES.md) untuk daftar lengkap fitur.
 src/Modules/
 ├── {Module}/
 │   ├── Domain/           → Entities, Enums, Contracts (pure PHP)
-│   ├── Application/      → Actions (use cases), DTOs
-│   └── Infrastructure/   → Controllers, Models, Repositories, Routes, Migrations
+│   ├── Application/      → Actions (use cases), DTOs, Queries
+│   └── Infrastructure/   → Controllers, Models, Repositories, Routes, Requests, Resources
 └── Shared/               → Cross-module traits, contracts
 
 app/                      → Laravel boilerplate (providers, middleware)
@@ -93,6 +110,9 @@ php artisan key:generate
 php artisan migrate
 npm install
 npm run build
+
+# Seed dummy data (POS + Supplier)
+php artisan db:seed
 
 # Install Chromium untuk headless browser (dipakai modul Gold)
 npx puppeteer browsers install chrome
@@ -125,10 +145,21 @@ Lihat [docs/backend.md](./docs/backend.md#scaffold-module-baru) untuk detail & n
 ## Testing
 
 ```bash
+# Feature tests
 php artisan test --testsuite=Feature
+
+# Property-based tests
+php artisan test --testsuite=Property
+
+# Unit tests
+php artisan test --testsuite=Unit
+
+# Module-specific
+vendor/bin/phpunit tests/Feature/Supplier/
+vendor/bin/phpunit tests/Property/Supplier/
 ```
 
-Tests menggunakan SQLite in-memory. Semua module punya feature test.
+Tests menggunakan SQLite in-memory.
 
 ## Build
 
@@ -138,38 +169,21 @@ npm run build
 
 ## Scheduler & Cron
 
-Beberapa module (seperti Gold) punya scheduled command yang perlu dijalankan secara otomatis. Laravel scheduler di-trigger oleh satu entry cron:
-
 ```bash
 # Tambahkan ke crontab (crontab -e)
 * * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-**Scheduled commands yang terdaftar:**
+**Scheduled commands:**
 
 | Command | Jadwal | Keterangan |
 |---------|--------|------------|
 | `market:fetch-prices` | Setiap 15 menit (configurable) | Fetch harga market watchlist via Twelve Data API |
 | `gold:fetch-daily` | Setiap hari jam 12:00 | Fetch harga emas Antam via headless browser |
 
-> Interval `market:fetch-prices` bisa diatur via `TWELVEDATA_REFRESH_INTERVAL` di `.env` (dalam menit, default: 15).
-
-### Manual Run
-
-```bash
-# Jalankan scheduler sekali (untuk testing)
-php artisan schedule:run
-
-# Atau jalankan command langsung
-php artisan gold:fetch-daily
-```
-
 ### Prasyarat Gold Module
 
-Gold module menggunakan Puppeteer (headless Chrome) untuk fetch harga dari sumber publik:
-
 ```bash
-# Pastikan Chromium sudah terinstall
 npx puppeteer browsers install chrome
 ```
 
@@ -180,9 +194,7 @@ ANTAM_API_URL=<api_url>
 ```
 
 > **Disclaimer:** Data harga emas diambil dari sumber publik semata-mata untuk keperluan personal
-> dashboard. Penggunaan dibatasi 1x per hari dan tidak dimaksudkan untuk membebani server atau
-> mendistribusikan ulang data secara komersial. Jika tersedia API resmi di kemudian hari,
-> integrasi akan dialihkan ke sana.
+> dashboard. Penggunaan dibatasi 1x per hari.
 
 ## API
 

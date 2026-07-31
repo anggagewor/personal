@@ -1,5 +1,9 @@
 # Daftar Fitur — Purdia Dashboard
 
+> **Disclaimer:** Proyek ini adalah personal dashboard sekaligus playground untuk meracik module-module yang bisa di-reuse di proyek lain. Banyak module sengaja dibangun dengan standar production-grade (DDD 3-layer, property-based testing, proper state machines) meskipun ini "cuma" personal dashboard — tujuannya agar pola-polanya bisa langsung dicopy ke proyek klien tanpa perlu refactor ulang.
+
+**Total: 34 fitur / 28 module**
+
 ## 1. Authentication & User Management
 
 | Fitur | Deskripsi |
@@ -453,6 +457,101 @@
 
 ---
 
+---
+
+## 31. Point of Sale (POS)
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Multi-Outlet | Kelola banyak outlet dalam satu akun |
+| Outlet Settings | Tipe bisnis (retail/warung/kafe/warkop), alur pembayaran (bayar dulu/nanti/keduanya) |
+| Katalog Produk | Produk + varian, SKU, harga, stock tracking |
+| Kategori | Hierarki kategori produk dengan sorting |
+| Kasir | Interface kasir untuk input transaksi |
+| Transaksi | Checkout, hitung kembalian, cetak struk |
+| Void | Batalkan transaksi dengan alasan |
+| Metode Pembayaran | Cash, QRIS, transfer bank, e-wallet (konfigurasi per outlet) |
+| Diskon | Diskon produk/kategori/total, otomatis evaluate |
+| Voucher | Generate voucher (single/batch), validasi + redemption |
+| Member | Membership dengan poin (CRUD, search) |
+| Meja | Manajemen meja + session untuk model dine-in |
+| Open Bill | Buka tagihan, tutup nanti (bayar belakangan) |
+| QR Order | Menu publik (tanpa auth) via QR code, customer bisa order sendiri |
+| Stock Management | Track stock per variant, adjustment (restock/set/adjust) |
+| Laporan | Harian, rentang tanggal, per produk, per metode bayar, export |
+| Dashboard | Ringkasan penjualan, top products, grafik |
+
+**Endpoints:** `/api/pos/*` (25+ endpoints)
+**Route:** `/pos`, `/pos/cashier/:outletId`, `/pos/catalog/:outletId`, dll.
+
+---
+
+## 32. Supplier Management
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| Supplier CRUD | Nama, alamat, telepon, email, rekening bank, catatan |
+| Soft Delete | Hapus supplier tanpa kehilangan histori PO |
+| Nama Unik per Outlet | Validasi duplikat nama dalam satu outlet |
+| Search | Cari supplier berdasarkan nama, telepon, email |
+| Purchase Order | PO lifecycle: draft → confirmed → partial/received, atau cancelled |
+| PO Number Auto | Format PO-YYYYMMDD-SEQ (otomatis generate) |
+| PO Items | Dynamic line items (produk, qty, harga beli, subtotal) |
+| Total Calculation | Total PO = sum(qty × unit_cost) |
+| Confirm & Cancel | Validasi state sebelum transisi (empty PO gabisa confirm, dsb) |
+| Goods Receiving | Terima barang per PO, partial/full delivery |
+| Over-delivery Prevention | Qty terima tidak boleh melebihi qty pesan |
+| Auto Stock Update | Penerimaan barang otomatis tambah stock di POS |
+| PO Status Auto | Partial/received ditentukan otomatis dari penerimaan |
+| Payment Recording | Catat pembayaran ke supplier (tunai/transfer/e-wallet) |
+| Overpayment Prevention | Bayar tidak boleh melebihi sisa tagihan |
+| Payment Status Auto | Unpaid/partial/paid otomatis dari total bayar |
+| Supplier-Product Link | Hubungkan supplier ke produk + default harga beli |
+| Default Cost Pre-fill | Harga beli otomatis terisi saat buat PO |
+| Unlink Preserves History | Putus hubungan tanpa merusak data PO lama |
+| Outstanding Debt | Total utang per supplier (exclude cancelled PO) |
+| Laporan Pembelian | Summary, per supplier, per produk, date range, CSV export |
+| Dashboard Supplier | Total utang, PO pending, pembelian terakhir |
+
+**Endpoints:** `/api/supplier/*` (25 endpoints)
+**Route:** `/supplier/:outletId`, `/supplier/suppliers`, `/supplier/purchase-orders`, `/supplier/reports`
+
+---
+
+## 33. Log Viewer
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| List Log Files | Lihat semua file log Laravel |
+| Read Entries | Baca log entry dengan pagination |
+| Filter by Level | Filter: emergency, alert, critical, error, warning, notice, info, debug |
+| Search | Pencarian teks dalam log |
+| Reverse Read | Baca dari bawah (terbaru dulu) |
+
+**Endpoints:** `/api/logs/files`, `/api/logs/entries`
+**Route:** `/logs`
+
+---
+
+## 34. Database Manager
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| List Tables | Lihat semua tabel + jumlah row |
+| Table Structure | Kolom, tipe data, nullable, key, default, extra, indexes |
+| Browse Rows | View data paginated (25 per page) |
+| Sort | Klik header kolom untuk sort asc/desc |
+| Filter | Multi-filter: kolom + operator (=, !=, >, <, LIKE, IS NULL, dll) + value |
+| Inline Edit | Edit row langsung di tabel (klik pencil → ubah → save) |
+| Delete Row | Hapus row per primary key (dengan confirm) |
+| Alter Table | Tambah kolom, hapus kolom, ubah tipe/nullable kolom |
+| Raw Query | Execute SELECT query (read-only, untuk keamanan) |
+
+**Endpoints:** `/api/database/*` (7 endpoints)
+**Route:** `/database`, `/database/:table`
+
+---
+
 ## Frontend Pages
 
 | Halaman | Route |
@@ -485,4 +584,9 @@
 | Activity | `/activity` |
 | Trash | `/trash` |
 | SQL Generator | `/tools/sql-generator` |
+| POS | `/pos`, `/pos/cashier/:outletId`, `/pos/catalog/:outletId` |
+| Supplier | `/supplier/:outletId`, `/supplier/suppliers`, `/supplier/purchase-orders`, `/supplier/reports` |
+| Database Manager | `/database`, `/database/:table` |
+| Log Viewer | `/logs` |
 | Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/market`, `/settings/export` |
+
