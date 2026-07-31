@@ -40,6 +40,7 @@ class TransactionResource
             'voucher_code' => $transaction->voucherCode,
             'notes' => null,
             'items' => TransactionItemResource::collection($transaction->items),
+            'applied_discounts' => $transaction->appliedDiscounts,
             'created_at' => $transaction->createdAt?->format('Y-m-d\TH:i:s.000000\Z'),
         ];
     }

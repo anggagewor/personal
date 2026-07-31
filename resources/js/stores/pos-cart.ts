@@ -89,7 +89,7 @@ export const usePosCartStore = defineStore('pos-cart', () => {
     // Reset discount amounts
     for (const item of items.value) {
       item.discount_amount = 0
-      item.discount_label = null
+      item.discounts = []
     }
 
     let remainingSubtotal = subtotal.value
@@ -105,8 +105,10 @@ export const usePosCartStore = defineStore('pos-cart', () => {
           ? base * (discount.value / 100)
           : Math.min(discount.value, base)
 
-        item.discount_amount = (item.discount_amount || 0) + Math.round(amount)
-        item.discount_label = discount.name
+        const roundedAmount = Math.round(amount)
+        item.discount_amount = (item.discount_amount || 0) + roundedAmount
+        if (!item.discounts) item.discounts = []
+        item.discounts.push({ name: discount.name, amount: roundedAmount })
       } else {
         // General discount: distribute proportionally across all items
         if (remainingSubtotal <= 0) continue
@@ -121,9 +123,8 @@ export const usePosCartStore = defineStore('pos-cart', () => {
           const proportion = item.subtotal / subtotal.value
           const itemAmount = Math.round(totalAmount * proportion)
           item.discount_amount = (item.discount_amount || 0) + itemAmount
-          if (!item.discount_label) {
-            item.discount_label = discount.name
-          }
+          if (!item.discounts) item.discounts = []
+          item.discounts.push({ name: discount.name, amount: itemAmount })
         }
 
         remainingSubtotal -= totalAmount
@@ -181,7 +182,7 @@ export const usePosCartStore = defineStore('pos-cart', () => {
   function clearItemDiscounts() {
     for (const item of items.value) {
       item.discount_amount = 0
-      item.discount_label = null
+      item.discounts = []
       item.voucher_amount = 0
       item.voucher_label = null
     }
@@ -228,7 +229,7 @@ export const usePosCartStore = defineStore('pos-cart', () => {
         ...item,
         subtotal: item.quantity * item.unit_price,
         discount_amount: 0,
-        discount_label: null,
+        discounts: [],
         voucher_amount: 0,
         voucher_label: null,
       })

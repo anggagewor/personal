@@ -11,6 +11,7 @@ use Modules\Pos\Domain\Entities\Transaction;
 use Modules\Pos\Domain\Entities\TransactionItem;
 use Modules\Pos\Domain\Enums\TransactionStatus;
 use Modules\Pos\Infrastructure\Models\TransactionItemModel;
+use Modules\Pos\Infrastructure\Models\TransactionDiscountModel;
 use Modules\Pos\Infrastructure\Models\TransactionModel;
 
 class EloquentTransactionRepository implements TransactionRepositoryInterface
@@ -56,7 +57,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
 
     public function findById(int $id): ?Transaction
     {
-        $model = TransactionModel::with('items')->find($id);
+        $model = TransactionModel::with(['items', 'discounts'])->find($id);
 
         if (!$model) {
             return null;
@@ -74,7 +75,8 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             }
 
             $status = $data->status ?? TransactionStatus::Completed->value;
-            $total = $subtotal; // Discount calculation handled by the action layer
+            $discountAmount = $data->discountAmount;
+            $total = max(0, $subtotal - $discountAmount);
 
             $changeAmount = null;
             if ($data->paymentMethodType === 'cash' && $data->amountTendered !== null) {
@@ -87,7 +89,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
                 'outlet_id' => $outletId,
                 'transaction_number' => $transactionNumber,
                 'subtotal' => $subtotal,
-                'discount_amount' => 0,
+                'discount_amount' => $discountAmount,
                 'total' => $total,
                 'payment_method' => $data->paymentMethod,
                 'payment_method_type' => $data->paymentMethodType,
@@ -112,7 +114,19 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
                 ]);
             }
 
-            return $this->toEntity($model->fresh()->load('items'));
+            // Save applied discounts detail
+            foreach ($data->appliedDiscounts as $disc) {
+                TransactionDiscountModel::create([
+                    'transaction_id' => $model->id,
+                    'discount_id' => $disc['discount_id'] ?? null,
+                    'name' => $disc['name'],
+                    'type' => $disc['type'],
+                    'value' => $disc['value'],
+                    'discount_amount' => $disc['amount'],
+                ]);
+            }
+
+            return $this->toEntity($model->fresh()->load(['items', 'discounts']));
         });
     }
 
@@ -195,6 +209,15 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             subtotal: (float) $itemModel->subtotal,
         ))->all();
 
+        $appliedDiscounts = $model->relationLoaded('discounts')
+            ? $model->discounts->map(fn ($d) => [
+                'name' => $d->name,
+                'type' => $d->type,
+                'value' => (float) $d->value,
+                'amount' => (float) $d->discount_amount,
+            ])->all()
+            : [];
+
         return new Transaction(
             id: $model->id,
             outletId: $model->outlet_id,
@@ -211,6 +234,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             tableSessionId: $model->table_session_id,
             voucherCode: $model->voucher_code,
             items: $items,
+            appliedDiscounts: $appliedDiscounts,
             createdAt: $model->created_at ? new DateTimeImmutable($model->created_at->toDateTimeString()) : null,
             voidedAt: $model->voided_at ? new DateTimeImmutable($model->voided_at->toDateTimeString()) : null,
         );

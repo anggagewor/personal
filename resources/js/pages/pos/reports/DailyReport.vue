@@ -33,9 +33,11 @@ function exportCsv() {
   if (!summary.value) return
 
   const rows: string[][] = [
-    ['Tanggal', 'Total Pendapatan', 'Jumlah Transaksi', 'Rata-rata Transaksi'],
+    ['Tanggal', 'Penjualan Kotor', 'Total Diskon', 'Pendapatan Bersih', 'Jumlah Transaksi', 'Rata-rata Transaksi'],
     [
       summary.value.date,
+      String(summary.value.gross_revenue),
+      String(summary.value.total_discount),
       String(summary.value.total_revenue),
       String(summary.value.transaction_count),
       String(summary.value.average_transaction),
@@ -98,18 +100,23 @@ watch(outletId, (val) => { if (val) fetchReport() })
 
     <template v-else-if="summary">
       <!-- Stats Cards -->
-      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-          <p class="text-xs text-gray-500 dark:text-gray-400">Total Pendapatan</p>
-          <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(summary.total_revenue) }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Penjualan Kotor</p>
+          <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(summary.gross_revenue) }}</p>
         </div>
         <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-          <p class="text-xs text-gray-500 dark:text-gray-400">Jumlah Transaksi</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Total Diskon</p>
+          <p class="mt-1 text-xl font-bold text-red-600 dark:text-red-400">-{{ formatCurrency(summary.total_discount) }}</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Pendapatan Bersih</p>
+          <p class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">{{ formatCurrency(summary.total_revenue) }}</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+          <p class="text-xs text-gray-500 dark:text-gray-400">Transaksi</p>
           <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ summary.transaction_count }}</p>
-        </div>
-        <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
-          <p class="text-xs text-gray-500 dark:text-gray-400">Rata-rata Transaksi</p>
-          <p class="mt-1 text-xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(summary.average_transaction) }}</p>
+          <p class="text-xs text-gray-400 mt-0.5">Rata-rata {{ formatCurrency(summary.average_transaction) }}</p>
         </div>
       </div>
 

@@ -142,10 +142,10 @@ function clearCart() {
           </div>
 
           <!-- Per-item discount info -->
-          <div v-if="item.discount_amount || item.voucher_amount" class="mt-2 space-y-0.5 border-t border-dashed border-gray-200 pt-2 dark:border-gray-600">
-            <div v-if="item.discount_amount" class="flex items-center justify-between text-xs">
-              <span class="text-green-600 dark:text-green-400">{{ item.discount_label || 'Diskon' }}</span>
-              <span class="font-medium text-red-500">-{{ formatCurrency(item.discount_amount) }}</span>
+          <div v-if="(item.discounts && item.discounts.length) || item.voucher_amount" class="mt-2 space-y-0.5 border-t border-dashed border-gray-200 pt-2 dark:border-gray-600">
+            <div v-for="(disc, dIdx) in (item.discounts || [])" :key="dIdx" class="flex items-center justify-between text-xs">
+              <span class="text-green-600 dark:text-green-400 truncate mr-2">{{ disc.name }}</span>
+              <span class="shrink-0 font-medium text-red-500">-{{ formatCurrency(disc.amount) }}</span>
             </div>
             <div v-if="item.voucher_amount" class="flex items-center justify-between text-xs">
               <span class="text-purple-600 dark:text-purple-400">Voucher {{ item.voucher_label }}</span>

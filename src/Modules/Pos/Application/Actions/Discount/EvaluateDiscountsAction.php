@@ -42,6 +42,11 @@ class EvaluateDiscountsAction
             $remaining = $subtotal;
 
             foreach ($discounts as $discount) {
+                // Check conditions for ALL discounts (hours, days, min_qty, etc.)
+                if (!$this->meetsConditions($discount, $items)) {
+                    continue;
+                }
+
                 // Product-specific discount: skip if product not in cart
                 if ($discount->productId !== null) {
                     if (!in_array($discount->productId, $cartProductIds, true)) {
@@ -102,5 +107,62 @@ class EvaluateDiscountsAction
             'fixed' => min($discount->value, $base),
             default => 0.0,
         };
+    }
+
+    /**
+     * Check if discount conditions are met (e.g. min_qty, hours, days).
+     */
+    private function meetsConditions(Discount $discount, array $items): bool
+    {
+        if (empty($discount->conditions)) {
+            return true;
+        }
+
+        // Check min_qty condition
+        if (isset($discount->conditions['min_qty']) && $discount->productId !== null) {
+            $minQty = (int) $discount->conditions['min_qty'];
+            $totalQty = 0;
+
+            foreach ($items as $item) {
+                if (($item['product_id'] ?? 0) === $discount->productId) {
+                    $totalQty += (int) ($item['quantity'] ?? 0);
+                }
+            }
+
+            if ($totalQty < $minQty) {
+                return false;
+            }
+        }
+
+        // Check hours condition (e.g. {"hours": {"start": "14:00", "end": "17:00"}})
+        if (isset($discount->conditions['hours'])) {
+            $now = now();
+            $currentTime = $now->format('H:i');
+            $start = $discount->conditions['hours']['start'] ?? '00:00';
+            $end = $discount->conditions['hours']['end'] ?? '23:59';
+
+            if ($currentTime < $start || $currentTime > $end) {
+                return false;
+            }
+        }
+
+        // Check days condition (e.g. {"days": ["Saturday", "Sunday"]})
+        if (isset($discount->conditions['days'])) {
+            $today = now()->format('l'); // e.g. "Friday"
+            if (!in_array($today, $discount->conditions['days'], true)) {
+                return false;
+            }
+        }
+
+        // Check segment condition (e.g. {"segment": "student"})
+        // Segment-based discounts require member validation at a higher level
+        // For now, skip if segment is set (treat as member_only equivalent)
+        if (isset($discount->conditions['segment'])) {
+            // Segment discounts are handled separately via member linking
+            // If no member is provided, these should already be filtered by findApplicable
+            return true;
+        }
+
+        return true;
     }
 }

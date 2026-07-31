@@ -24,6 +24,8 @@ class Transaction
         public ?string $voucherCode = null,
         /** @var TransactionItem[] */
         public array $items = [],
+        /** @var array{name: string, type: string, value: float, amount: float}[] */
+        public array $appliedDiscounts = [],
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $voidedAt = null,
     ) {}

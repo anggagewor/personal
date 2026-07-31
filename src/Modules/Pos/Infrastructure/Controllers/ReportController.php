@@ -105,8 +105,10 @@ class ReportController extends BaseController
         return response()->streamDownload(function () use ($data) {
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, ['Tanggal', 'Jumlah Transaksi', 'Pendapatan', 'Rata-rata Transaksi']);
+            fputcsv($handle, ['Tanggal', 'Jumlah Transaksi', 'Penjualan Kotor', 'Total Diskon', 'Pendapatan Bersih', 'Rata-rata Transaksi']);
 
+            $totalGross = 0;
+            $totalDiscount = 0;
             $totalRevenue = 0;
             $totalCount = 0;
 
@@ -114,16 +116,20 @@ class ReportController extends BaseController
                 fputcsv($handle, [
                     $row['date'] ?? '',
                     $row['count'] ?? 0,
+                    $row['gross_revenue'] ?? 0,
+                    $row['discount'] ?? 0,
                     $row['revenue'] ?? 0,
                     $row['average'] ?? 0,
                 ]);
+                $totalGross += $row['gross_revenue'] ?? 0;
+                $totalDiscount += $row['discount'] ?? 0;
                 $totalRevenue += $row['revenue'] ?? 0;
                 $totalCount += $row['count'] ?? 0;
             }
 
             // Summary row
             fputcsv($handle, []);
-            fputcsv($handle, ['Total', $totalCount, $totalRevenue, $totalCount > 0 ? round($totalRevenue / $totalCount) : 0]);
+            fputcsv($handle, ['Total', $totalCount, $totalGross, $totalDiscount, $totalRevenue, $totalCount > 0 ? round($totalRevenue / $totalCount) : 0]);
 
             fclose($handle);
         }, $filename, [

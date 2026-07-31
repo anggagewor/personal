@@ -65,4 +65,9 @@ class TransactionModel extends Model
     {
         return $this->hasMany(VoucherRedemptionModel::class, 'transaction_id');
     }
+
+    public function discounts(): HasMany
+    {
+        return $this->hasMany(TransactionDiscountModel::class, 'transaction_id');
+    }
 }

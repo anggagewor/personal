@@ -137,6 +137,7 @@ watch(outletId, (val) => {
   <ReceiptPreview
     v-model="showReceipt"
     :receipt="receiptData"
+    :outlet="outlet"
     @close="onReceiptClose"
   />
 </template>

@@ -25,6 +25,8 @@ class StoreTransactionRequest extends FormRequest
             'payment_method_type' => ['nullable', 'string', 'in:cash,bank_transfer,e_wallet,custom'],
             'amount_tendered' => ['nullable', 'numeric', 'min:0'],
             'voucher_code' => ['nullable', 'string', 'max:50'],
+            'discount_ids' => ['nullable', 'array'],
+            'discount_ids.*' => ['integer'],
             'member_id' => ['nullable', 'integer'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];

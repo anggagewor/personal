@@ -15,5 +15,8 @@ readonly class CheckoutData
         public ?string $voucherCode = null,
         public ?string $notes = null,
         public ?string $status = null,
+        public float $discountAmount = 0,
+        /** @var array{discount_id: int|null, name: string, type: string, value: float, amount: float}[] */
+        public array $appliedDiscounts = [],
     ) {}
 }

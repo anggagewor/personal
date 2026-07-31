@@ -67,6 +67,89 @@ class TransactionController extends BaseController
             $validated['items'],
         );
 
+        // Evaluate discounts server-side for integrity
+        $discountAmount = 0.0;
+        $appliedDiscounts = [];
+        $discountIds = $validated['discount_ids'] ?? [];
+        if (!empty($discountIds)) {
+            $evaluateAction = app(\Modules\Pos\Application\Actions\Discount\EvaluateDiscountsAction::class);
+            $evalItems = array_map(fn (array $item) => [
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+                'subtotal' => $item['quantity'] * $item['unit_price'],
+            ], $validated['items']);
+
+            $subtotal = array_sum(array_column($evalItems, 'subtotal'));
+            $evalResult = $evaluateAction->execute(
+                outletId: $outletId,
+                subtotal: $subtotal,
+                memberId: $validated['member_id'] ?? null,
+                items: $evalItems,
+            );
+            $discountAmount = $evalResult['total_discount'];
+
+            // Build applied discounts detail
+            $remaining = $subtotal;
+            foreach ($evalResult['applicable'] as $disc) {
+                $base = $disc->productId !== null
+                    ? collect($evalItems)->where('product_id', $disc->productId)->sum('subtotal')
+                    : $remaining;
+
+                $amount = match ($disc->type->value) {
+                    'percentage' => $base * ($disc->value / 100),
+                    'fixed' => min($disc->value, $base),
+                    default => 0.0,
+                };
+
+                if ($amount > 0) {
+                    $appliedDiscounts[] = [
+                        'discount_id' => $disc->id,
+                        'name' => $disc->name,
+                        'type' => $disc->type->value,
+                        'value' => $disc->value,
+                        'amount' => round($amount, 2),
+                    ];
+                    $remaining -= $amount;
+                }
+            }
+        }
+
+        // Evaluate voucher discount
+        $voucherDiscount = 0.0;
+        if (!empty($validated['voucher_code'])) {
+            $validateAction = app(\Modules\Pos\Application\Actions\Voucher\ValidateVoucherAction::class);
+            try {
+                $voucher = $validateAction->execute(
+                    code: $validated['voucher_code'],
+                    subtotal: array_sum(array_map(fn ($i) => $i['quantity'] * $i['unit_price'], $validated['items'])) - $discountAmount,
+                    items: array_map(fn ($i) => ['product_id' => $i['product_id'], 'subtotal' => $i['quantity'] * $i['unit_price']], $validated['items']),
+                );
+                $voucherBase = $voucher->productId !== null
+                    ? collect($validated['items'])->where('product_id', $voucher->productId)->sum(fn ($i) => $i['quantity'] * $i['unit_price'])
+                    : array_sum(array_map(fn ($i) => $i['quantity'] * $i['unit_price'], $validated['items'])) - $discountAmount;
+
+                $voucherDiscount = match ($voucher->type->value) {
+                    'percentage' => $voucherBase * ($voucher->value / 100),
+                    'fixed' => min($voucher->value, $voucherBase),
+                    default => 0.0,
+                };
+
+                if ($voucherDiscount > 0) {
+                    $appliedDiscounts[] = [
+                        'discount_id' => null,
+                        'name' => 'Voucher ' . $validated['voucher_code'],
+                        'type' => $voucher->type->value,
+                        'value' => $voucher->value,
+                        'amount' => round($voucherDiscount, 2),
+                    ];
+                }
+            } catch (\Throwable) {
+                // Voucher validation failure is non-blocking
+            }
+        }
+
+        $totalDiscountAmount = $discountAmount + $voucherDiscount;
+
         $checkoutData = new CheckoutData(
             outletId: $outletId,
             items: $items,
@@ -76,6 +159,8 @@ class TransactionController extends BaseController
             memberId: $validated['member_id'] ?? null,
             voucherCode: $validated['voucher_code'] ?? null,
             notes: $validated['notes'] ?? null,
+            discountAmount: $totalDiscountAmount,
+            appliedDiscounts: $appliedDiscounts,
         );
 
         try {

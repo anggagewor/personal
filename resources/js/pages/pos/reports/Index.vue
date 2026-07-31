@@ -54,7 +54,7 @@ watch(outletId, (val) => { if (val) fetchDashboard() })
 
     <template v-else>
       <!-- Summary Cards -->
-      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
           <div class="flex items-center gap-3">
             <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
@@ -62,7 +62,29 @@ watch(outletId, (val) => { if (val) fetchDashboard() })
             </div>
             <div>
               <p class="text-lg font-bold text-gray-900 dark:text-white">{{ formatCurrency(stats?.today_revenue ?? 0) }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">Pendapatan Hari Ini</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Pendapatan Bersih</p>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+              <TrendingUp :size="20" />
+            </div>
+            <div>
+              <p class="text-lg font-bold text-gray-900 dark:text-white">{{ formatCurrency(stats?.today_gross_revenue ?? 0) }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Penjualan Kotor</p>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+              <BarChart3 :size="20" />
+            </div>
+            <div>
+              <p class="text-lg font-bold text-gray-900 dark:text-white">{{ formatCurrency(stats?.today_discount ?? 0) }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Total Diskon</p>
             </div>
           </div>
         </div>

@@ -63,6 +63,8 @@ class CreateTransactionAction
             voucherCode: $data->voucherCode,
             notes: $data->notes,
             status: $status,
+            discountAmount: $data->discountAmount,
+            appliedDiscounts: $data->appliedDiscounts,
         );
 
         // Create transaction via repository (handles transaction number generation)

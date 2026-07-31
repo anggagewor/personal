@@ -52,6 +52,11 @@ export interface ProductVariant {
 }
 
 // === Cart (Ephemeral) ===
+export interface CartItemDiscount {
+  name: string
+  amount: number
+}
+
 export interface CartItem {
   product_id: number
   product_variant_id: number | null
@@ -62,7 +67,7 @@ export interface CartItem {
   subtotal: number
   image?: string | null
   discount_amount?: number
-  discount_label?: string | null
+  discounts?: CartItemDiscount[]
   voucher_amount?: number
   voucher_label?: string | null
 }
@@ -196,6 +201,8 @@ export interface PaymentMethod {
 // === Reports ===
 export interface DailySummary {
   date: string
+  gross_revenue: number
+  total_discount: number
   total_revenue: number
   transaction_count: number
   average_transaction: number
@@ -204,8 +211,10 @@ export interface DailySummary {
 
 export interface DashboardStats {
   today_revenue: number
+  today_gross_revenue: number
+  today_discount: number
   today_transactions: number
-  weekly_trend: { date: string; revenue: number }[]
+  weekly_trend: { date: string; revenue: number; discount: number }[]
 }
 
 // === Member ===

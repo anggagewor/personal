@@ -168,6 +168,7 @@ async function submit() {
       payment_flow: paymentFlow.value,
       member_id: selectedMember.value?.id,
       voucher_code: voucherValid.value ? voucherCode.value : undefined,
+      discount_ids: cartStore.applicableDiscounts.map((d) => d.id),
     }
 
     if (!isPayLater.value) {
