@@ -1,0 +1,8 @@
+{
+    "name": "Goal",
+    "display_name": "Goals & Milestones",
+    "description": "Goal tracking with milestones and target dates",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

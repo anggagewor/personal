@@ -268,6 +268,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'logs',
         component: () => import('@/pages/logs/Index.vue'),
       },
+      // Module Manager
+      {
+        path: 'modules',
+        name: 'modules',
+        component: () => import('@/pages/module-manager/Index.vue'),
+      },
       // Settings
       {
         path: 'settings/general',

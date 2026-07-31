@@ -1,0 +1,8 @@
+{
+    "name": "ModuleManager",
+    "display_name": "Module Manager",
+    "description": "Entry point for extracting and importing foundry modules across projects",
+    "depends": [],
+    "extractable": true,
+    "tags": ["dev-tools"]
+}

@@ -1,0 +1,8 @@
+{
+    "name": "Accounting",
+    "display_name": "Accounting",
+    "description": "Double-entry bookkeeping with chart of accounts, journal entries, and financial reports",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["finance"]
+}

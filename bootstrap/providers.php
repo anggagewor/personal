@@ -34,6 +34,7 @@ return [
     Modules\Supplier\Infrastructure\Providers\SupplierServiceProvider::class,
     Modules\DatabaseManager\Infrastructure\Providers\DatabaseManagerServiceProvider::class,
     Modules\LogReader\Infrastructure\Providers\LogReaderServiceProvider::class,
+    Modules\ModuleManager\Infrastructure\Providers\ModuleManagerServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
     Modules\Weather\Infrastructure\Providers\WeatherServiceProvider::class,
     Modules\Dashboard\Infrastructure\Providers\DashboardServiceProvider::class,

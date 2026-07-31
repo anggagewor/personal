@@ -255,6 +255,12 @@ export const navigation: NavGroup[] = [
         to: '/logs',
       },
       {
+        id: 'modules',
+        label: 'Module Manager',
+        icon: 'Package',
+        to: '/modules',
+      },
+      {
         id: 'streaks',
         label: 'Streaks',
         icon: 'Flame',

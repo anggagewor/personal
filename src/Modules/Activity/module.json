@@ -1,0 +1,8 @@
+{
+    "name": "Activity",
+    "display_name": "Activity Log",
+    "description": "Automatic activity logging for user actions",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["utility"]
+}

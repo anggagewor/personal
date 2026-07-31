@@ -1,0 +1,8 @@
+{
+    "name": "Trash",
+    "display_name": "Trash",
+    "description": "Unified soft-delete restore and permanent delete for notes and tasks",
+    "depends": ["Note", "Task"],
+    "extractable": true,
+    "tags": ["utility"]
+}

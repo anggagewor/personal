@@ -1,0 +1,8 @@
+{
+    "name": "Tag",
+    "display_name": "Tags",
+    "description": "Polymorphic tagging system for notes and tasks",
+    "depends": ["Shared", "Note", "Task"],
+    "extractable": true,
+    "tags": ["utility"]
+}

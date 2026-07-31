@@ -1,0 +1,8 @@
+{
+    "name": "Pomodoro",
+    "display_name": "Pomodoro Timer",
+    "description": "Pomodoro session tracking with task linking and statistics",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

@@ -1,0 +1,8 @@
+{
+    "name": "Converter",
+    "display_name": "Unit Converter",
+    "description": "Unit conversion with built-in and custom categories",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["utility"]
+}

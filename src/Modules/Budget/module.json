@@ -1,0 +1,8 @@
+{
+    "name": "Budget",
+    "display_name": "Budget Planning",
+    "description": "Monthly budget planning per category with spending alerts",
+    "depends": ["Shared", "Finance"],
+    "extractable": true,
+    "tags": ["finance"]
+}

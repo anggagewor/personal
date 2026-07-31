@@ -1,0 +1,8 @@
+{
+    "name": "ReadingList",
+    "display_name": "Reading List",
+    "description": "Save articles for later reading with read/favorite status",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

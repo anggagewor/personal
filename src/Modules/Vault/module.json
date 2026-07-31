@@ -1,0 +1,8 @@
+{
+    "name": "Vault",
+    "display_name": "Password Vault",
+    "description": "Encrypted credential storage with client-side AES-GCM encryption",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["utility"]
+}

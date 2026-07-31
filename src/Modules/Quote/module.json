@@ -1,0 +1,8 @@
+{
+    "name": "Quote",
+    "display_name": "Daily Quotes",
+    "description": "Motivational quote rotation with quote of the day",
+    "depends": [],
+    "extractable": true,
+    "tags": ["utility"]
+}

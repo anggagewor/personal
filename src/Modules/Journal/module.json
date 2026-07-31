@@ -1,0 +1,8 @@
+{
+    "name": "Journal",
+    "display_name": "Journal & Mood Tracker",
+    "description": "Daily journal entries with mood tracking and statistics",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

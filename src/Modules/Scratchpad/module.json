@@ -1,0 +1,8 @@
+{
+    "name": "Scratchpad",
+    "display_name": "Scratchpads",
+    "description": "Quick notes with color coding and positioning",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

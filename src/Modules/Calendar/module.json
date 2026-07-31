@@ -1,0 +1,8 @@
+{
+    "name": "Calendar",
+    "display_name": "Calendar",
+    "description": "Event management with date range filters and national holidays",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

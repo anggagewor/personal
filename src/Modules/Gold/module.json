@@ -1,0 +1,8 @@
+{
+    "name": "Gold",
+    "display_name": "Emas Antam",
+    "description": "Daily Antam gold price tracking with 15+ years history",
+    "depends": [],
+    "extractable": true,
+    "tags": ["finance"]
+}

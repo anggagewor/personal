@@ -1,0 +1,8 @@
+{
+    "name": "GoogleDrive",
+    "display_name": "Google Drive",
+    "description": "Google Drive integration for file management and data backup",
+    "depends": ["Shared", "Note", "Task", "Bookmark", "Finance", "Habit", "Journal"],
+    "extractable": false,
+    "tags": ["integration"]
+}

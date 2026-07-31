@@ -1,0 +1,8 @@
+{
+    "name": "Wishlist",
+    "display_name": "Wishlist",
+    "description": "Wishlist items with category and completion tracking",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

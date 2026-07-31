@@ -1,0 +1,8 @@
+{
+    "name": "Supplier",
+    "display_name": "Supplier Management",
+    "description": "Supplier CRUD, purchase orders, goods receiving, and payment tracking",
+    "depends": ["Shared", "Pos"],
+    "extractable": true,
+    "tags": ["pos"]
+}

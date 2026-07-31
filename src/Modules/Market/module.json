@@ -1,0 +1,8 @@
+{
+    "name": "Market",
+    "display_name": "Market Watchlist",
+    "description": "Real-time market price tracking for forex, crypto, stocks, and commodities",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["finance"]
+}

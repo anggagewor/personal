@@ -1,0 +1,8 @@
+{
+    "name": "Habit",
+    "display_name": "Habit Tracker",
+    "description": "Daily/weekly habit tracking with streaks and toggle completion",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

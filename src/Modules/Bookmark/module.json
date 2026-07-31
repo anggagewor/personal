@@ -1,0 +1,8 @@
+{
+    "name": "Bookmark",
+    "display_name": "Bookmarks",
+    "description": "URL bookmark management with categories and icons",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

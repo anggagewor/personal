@@ -1,0 +1,8 @@
+{
+    "name": "DatabaseManager",
+    "display_name": "Database Manager",
+    "description": "Database table browser, inline editing, and raw query execution",
+    "depends": [],
+    "extractable": true,
+    "tags": ["dev-tools"]
+}

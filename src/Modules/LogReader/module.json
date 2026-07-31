@@ -1,0 +1,8 @@
+{
+    "name": "LogReader",
+    "display_name": "Log Viewer",
+    "description": "Laravel log file viewer with level filtering and search",
+    "depends": [],
+    "extractable": true,
+    "tags": ["dev-tools"]
+}
