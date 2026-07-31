@@ -211,6 +211,17 @@ export const navigation: NavGroup[] = [
           { label: 'Laporan', icon: 'BarChart3', to: '/pos/reports' },
         ],
       },
+      {
+        id: 'supplier',
+        label: 'Supplier',
+        icon: 'Truck',
+        children: [
+          { label: 'Dashboard', icon: 'LayoutDashboard', to: '/supplier/1' },
+          { label: 'Supplier', icon: 'Users', to: '/supplier/suppliers' },
+          { label: 'Purchase Order', icon: 'ClipboardList', to: '/supplier/purchase-orders' },
+          { label: 'Laporan', icon: 'BarChart3', to: '/supplier/reports' },
+        ],
+      },
     ],
   },
   {

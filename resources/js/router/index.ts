@@ -379,6 +379,42 @@ export const routes: RouteRecordRaw[] = [
         name: 'pos.reports.revenue',
         component: () => import('@/pages/pos/reports/RevenueTrend.vue'),
       },
+      // Supplier
+      {
+        path: 'supplier/:outletId',
+        name: 'supplier',
+        component: () => import('@/pages/supplier/Index.vue'),
+      },
+      {
+        path: 'supplier/suppliers',
+        name: 'supplier.suppliers',
+        component: () => import('@/pages/supplier/suppliers/Index.vue'),
+      },
+      {
+        path: 'supplier/suppliers/detail',
+        name: 'supplier.suppliers.detail',
+        component: () => import('@/pages/supplier/suppliers/Detail.vue'),
+      },
+      {
+        path: 'supplier/purchase-orders',
+        name: 'supplier.purchase-orders',
+        component: () => import('@/pages/supplier/purchase-orders/Index.vue'),
+      },
+      {
+        path: 'supplier/purchase-orders/detail',
+        name: 'supplier.purchase-orders.detail',
+        component: () => import('@/pages/supplier/purchase-orders/Detail.vue'),
+      },
+      {
+        path: 'supplier/purchase-orders/create',
+        name: 'supplier.purchase-orders.create',
+        component: () => import('@/pages/supplier/purchase-orders/Create.vue'),
+      },
+      {
+        path: 'supplier/reports',
+        name: 'supplier.reports',
+        component: () => import('@/pages/supplier/reports/Index.vue'),
+      },
     ],
   },
 

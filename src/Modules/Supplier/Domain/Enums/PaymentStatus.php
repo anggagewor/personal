@@ -1,0 +1,10 @@
+<?php
+
+namespace Modules\Supplier\Domain\Enums;
+
+enum PaymentStatus: string
+{
+    case Unpaid = 'unpaid';
+    case Partial = 'partial';
+    case Paid = 'paid';
+}

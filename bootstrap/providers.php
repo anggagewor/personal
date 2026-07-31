@@ -31,6 +31,7 @@ return [
     Modules\Converter\Infrastructure\Providers\ConverterServiceProvider::class,
     Modules\Accounting\Infrastructure\Providers\AccountingServiceProvider::class,
     Modules\Pos\Infrastructure\Providers\PosServiceProvider::class,
+    Modules\Supplier\Infrastructure\Providers\SupplierServiceProvider::class,
     Modules\LogReader\Infrastructure\Providers\LogReaderServiceProvider::class,
     Modules\Shared\Infrastructure\Providers\SharedServiceProvider::class,
 ];
