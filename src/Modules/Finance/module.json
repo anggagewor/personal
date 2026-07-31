@@ -1,0 +1,8 @@
+{
+    "name": "Finance",
+    "display_name": "Finance",
+    "description": "Personal finance tracking - income, expenses, transfers",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["finance"]
+}

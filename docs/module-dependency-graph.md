@@ -160,8 +160,63 @@ GoogleDrive — terlalu banyak coupling, only makes sense di full app
 
 ---
 
+## Tooling
+
+### Artisan Commands
+
+```bash
+# Scan dependencies from source code
+php artisan foundry:scan
+php artisan foundry:scan Note          # scan specific module
+php artisan foundry:scan --json        # output as JSON
+
+# Generate dependency graph
+php artisan foundry:graph                    # mermaid format
+php artisan foundry:graph --format=table     # table format
+php artisan foundry:graph --output=docs/graph.md  # write to file
+
+# Verify module integrity
+php artisan foundry:verify               # verify all modules
+php artisan foundry:verify Note          # verify specific module
+php artisan foundry:verify --strict      # fail on warnings too
+
+# Overall health check
+php artisan foundry:doctor
+```
+
+### Module Manifest (`module.json`)
+
+Setiap module sebaiknya punya `module.json` di root-nya:
+
+```json
+{
+    "name": "Note",
+    "display_name": "Notes",
+    "description": "Personal note management with rich text editor",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}
+```
+
+Dependencies di manifest diverifikasi terhadap hasil scan. Kalau ada mismatch, `foundry:verify` akan report error.
+
+---
+
+## Known Issues
+
+### Circular Dependency: `Note ↔ User`
+
+`UserModel` punya `hasMany` ke Note/Task/Bookmark, sementara `NoteModel` punya `belongsTo` ke UserModel. Ini membuat bidirectional reference.
+
+**Solusi yang direkomendasikan:**
+- Remove `hasMany` relationships dari `UserModel` (query via repository/service instead)
+- Atau: exclude Eloquent relationship references dari dependency scan (flag sebagai "soft dependency")
+
+---
+
 ## Catatan
 
-- Tidak ada circular dependency. Graph ini DAG (Directed Acyclic Graph).
-- Semua module menggunakan namespace `Src\Modules\*`, tidak ada `use App\...` cross-import.
+- Semua module menggunakan namespace `Modules\*`, tidak ada `use App\...` cross-import.
 - `Shared` menyediakan: `BelongsToUser` trait, `AuthorizesOwnership` trait, `BaseController`.
+- Dependency graph di-generate otomatis dari source code via `foundry:scan`.

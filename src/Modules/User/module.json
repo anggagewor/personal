@@ -1,0 +1,8 @@
+{
+    "name": "User",
+    "display_name": "User",
+    "description": "Authentication, user profile, and preferences",
+    "depends": [],
+    "extractable": true,
+    "tags": ["core", "auth"]
+}

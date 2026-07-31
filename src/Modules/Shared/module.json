@@ -1,0 +1,8 @@
+{
+    "name": "Shared",
+    "display_name": "Shared Foundation",
+    "description": "Foundation traits, base classes, dan shared utilities untuk semua module",
+    "depends": [],
+    "extractable": false,
+    "tags": ["foundation", "core"]
+}

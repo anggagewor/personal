@@ -1,0 +1,8 @@
+{
+    "name": "Task",
+    "display_name": "Tasks",
+    "description": "Task management with recurrence and priorities",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

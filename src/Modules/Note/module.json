@@ -1,0 +1,8 @@
+{
+    "name": "Note",
+    "display_name": "Notes",
+    "description": "Personal note management with rich text editor",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["productivity"]
+}

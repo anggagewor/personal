@@ -1,0 +1,8 @@
+{
+    "name": "Pos",
+    "display_name": "Point of Sale",
+    "description": "POS system - outlets, products, transactions, payments",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["business", "pos"]
+}
