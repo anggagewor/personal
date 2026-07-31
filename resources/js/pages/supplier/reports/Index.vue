@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { formatCurrency } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { Download, ShoppingCart, Wallet, CreditCard, ClipboardList } from '@lucide/vue'
 import type { PurchaseSummary, PurchaseBySupplier, PurchaseByProduct } from '@/types/supplier'
 import * as supplierApi from '@/api/supplier'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
-
-const outletId = computed(() => Number(route.query.outlet))
+const router = useRouter()
+const { outletId } = usePosOutlet()
 
 // Date range filters — default to current month
 const now = new Date()
@@ -56,12 +57,14 @@ function exportCsv() {
 }
 
 watch([dateFrom, dateTo], () => {
-  fetchReports()
+  if (outletId.value) fetchReports()
 })
 
 onMounted(() => {
-  fetchReports()
+  if (outletId.value) fetchReports()
 })
+
+watch(outletId, (val) => { if (val) fetchReports() })
 </script>
 
 <template>

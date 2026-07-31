@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@purdia/toast'
 import { formatCurrency, formatDate } from '@purdia/utils'
@@ -9,12 +9,12 @@ import { Plus, Ticket, Eye } from '@lucide/vue'
 import type { Voucher } from '@/types/pos'
 import * as posApi from '@/api/pos'
 import VoucherForm from './VoucherForm.vue'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const vouchers = ref<Voucher[]>([])
 const loading = ref(true)
@@ -77,7 +77,8 @@ function onSaved() {
 }
 
 // Initial load
-fetchVouchers()
+watch(outletId, (val) => { if (val) fetchVouchers() })
+if (outletId.value) fetchVouchers()
 </script>
 
 <template>

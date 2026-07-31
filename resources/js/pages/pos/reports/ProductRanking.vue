@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatCurrency } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { Download, Package } from '@lucide/vue'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 interface ProductRankItem {
   product_name: string
@@ -14,8 +15,7 @@ interface ProductRankItem {
 }
 
 const route = useRoute()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const startDate = ref(getDefaultStartDate())
 const endDate = ref(new Date().toISOString().slice(0, 10))
@@ -67,8 +67,10 @@ function downloadCsv(content: string, filename: string) {
 }
 
 onMounted(() => {
-  fetchReport()
+  if (outletId.value) fetchReport()
 })
+
+watch(outletId, (val) => { if (val) fetchReport() })
 </script>
 
 <template>

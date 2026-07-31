@@ -392,7 +392,7 @@ export const routes: RouteRecordRaw[] = [
       },
       // Supplier
       {
-        path: 'supplier/:outletId',
+        path: 'supplier',
         name: 'supplier',
         component: () => import('@/pages/supplier/Index.vue'),
       },

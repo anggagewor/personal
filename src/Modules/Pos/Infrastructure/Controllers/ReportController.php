@@ -41,12 +41,12 @@ class ReportController extends BaseController
     {
         $this->findOwnedOrFail($this->outletRepository, $outletId, $request);
 
-        $from = $request->query('from', now()->subDays(7)->toDateString());
-        $to = $request->query('to', now()->toDateString());
+        $from = $request->query('start_date', now()->subDays(7)->toDateString());
+        $to = $request->query('end_date', now()->toDateString());
         $data = $query->execute($outletId, $from, $to);
 
         return response()->json([
-            'data' => ReportResource::toArray($data),
+            'data' => $data,
             'message' => 'Laporan rentang tanggal berhasil diambil.',
         ]);
     }
@@ -55,8 +55,8 @@ class ReportController extends BaseController
     {
         $this->findOwnedOrFail($this->outletRepository, $outletId, $request);
 
-        $from = $request->query('from', now()->subDays(30)->toDateString());
-        $to = $request->query('to', now()->toDateString());
+        $from = $request->query('start_date', now()->subDays(30)->toDateString());
+        $to = $request->query('end_date', now()->toDateString());
         $limit = (int) $request->query('limit', 10);
         $data = $query->execute($outletId, $from, $to, $limit);
 
@@ -70,8 +70,8 @@ class ReportController extends BaseController
     {
         $this->findOwnedOrFail($this->outletRepository, $outletId, $request);
 
-        $from = $request->query('from', now()->subDays(30)->toDateString());
-        $to = $request->query('to', now()->toDateString());
+        $from = $request->query('start_date', now()->subDays(30)->toDateString());
+        $to = $request->query('end_date', now()->toDateString());
         $data = $query->execute($outletId, $from, $to);
 
         return response()->json([
@@ -96,8 +96,8 @@ class ReportController extends BaseController
     {
         $this->findOwnedOrFail($this->outletRepository, $outletId, $request);
 
-        $from = $request->query('from', now()->subDays(30)->toDateString());
-        $to = $request->query('to', now()->toDateString());
+        $from = $request->query('start_date', now()->subDays(30)->toDateString());
+        $to = $request->query('end_date', now()->toDateString());
         $data = $query->execute($outletId, $from, $to);
 
         $filename = "laporan-penjualan-{$from}-{$to}.csv";
@@ -105,21 +105,25 @@ class ReportController extends BaseController
         return response()->streamDownload(function () use ($data) {
             $handle = fopen('php://output', 'w');
 
-            fputcsv($handle, ['Tanggal', 'Total Transaksi', 'Pendapatan', 'Rata-rata Transaksi']);
+            fputcsv($handle, ['Tanggal', 'Jumlah Transaksi', 'Pendapatan', 'Rata-rata Transaksi']);
 
-            $dailyData = $data['daily_breakdown'] ?? [];
-            foreach ($dailyData as $row) {
+            $totalRevenue = 0;
+            $totalCount = 0;
+
+            foreach ($data as $row) {
                 fputcsv($handle, [
                     $row['date'] ?? '',
-                    $row['transaction_count'] ?? 0,
+                    $row['count'] ?? 0,
                     $row['revenue'] ?? 0,
-                    $row['average_transaction'] ?? 0,
+                    $row['average'] ?? 0,
                 ]);
+                $totalRevenue += $row['revenue'] ?? 0;
+                $totalCount += $row['count'] ?? 0;
             }
 
             // Summary row
             fputcsv($handle, []);
-            fputcsv($handle, ['Total', $data['transaction_count'] ?? 0, $data['total_revenue'] ?? 0, $data['average_transaction'] ?? 0]);
+            fputcsv($handle, ['Total', $totalCount, $totalRevenue, $totalCount > 0 ? round($totalRevenue / $totalCount) : 0]);
 
             fclose($handle);
         }, $filename, [

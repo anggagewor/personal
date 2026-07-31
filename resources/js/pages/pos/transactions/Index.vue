@@ -10,12 +10,12 @@ import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import { Receipt, ChevronLeft, ChevronRight } from '@lucide/vue'
 import type { Transaction } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId, ready } = usePosOutlet()
 
 const transactions = ref<Transaction[]>([])
 const loading = ref(true)
@@ -24,9 +24,10 @@ const totalPages = ref(1)
 const perPage = 20
 
 // Filters
+const today = new Date().toISOString().slice(0, 10)
 const filterStatus = ref('')
-const filterDateFrom = ref('')
-const filterDateTo = ref('')
+const filterDateFrom = ref(today)
+const filterDateTo = ref(today)
 const filterPaymentMethod = ref('')
 
 const statusOptions = [
@@ -104,8 +105,15 @@ function applyFilters() {
 
 watch(currentPage, () => fetchTransactions())
 
+// Watch for outlet changes from the store
+watch(outletId, (val) => {
+  if (val) fetchTransactions()
+})
+
 // Initial load
-fetchTransactions()
+if (outletId.value) {
+  fetchTransactions()
+}
 </script>
 
 <template>

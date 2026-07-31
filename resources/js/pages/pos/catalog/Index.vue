@@ -11,13 +11,12 @@ import ProductForm from './ProductForm.vue'
 import StockAdjustment from './StockAdjustment.vue'
 import type { Product, Category, Outlet } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-
-const resolvedOutletId = ref<number>(0)
-const outletId = computed(() => resolvedOutletId.value)
+const { outletId } = usePosOutlet()
 
 const categories = ref<Category[]>([])
 const products = ref<Product[]>([])
@@ -35,26 +34,6 @@ const stockProduct = ref<Product | null>(null)
 
 // Dropdown menu
 const openMenuId = ref<number | null>(null)
-
-async function resolveOutletId() {
-  const fromQuery = Number(route.query.outlet)
-  if (fromQuery) {
-    resolvedOutletId.value = fromQuery
-    return
-  }
-
-  // Auto-select first outlet if not specified in URL
-  try {
-    const res = await posApi.fetchOutlets()
-    if (res.data.length > 0) {
-      resolvedOutletId.value = res.data[0].id
-      // Update URL so subsequent navigations retain the outlet
-      router.replace({ query: { ...route.query, outlet: String(res.data[0].id) } })
-    }
-  } catch {
-    // Error handled globally
-  }
-}
 
 async function fetchCategories() {
   if (!outletId.value) return
@@ -152,8 +131,11 @@ watch(outletId, (val) => {
   }
 })
 
-// Initial load: resolve outlet then fetch data
-resolveOutletId()
+// Initial load
+if (outletId.value) {
+  fetchCategories()
+  fetchProducts()
+}
 </script>
 
 <template>

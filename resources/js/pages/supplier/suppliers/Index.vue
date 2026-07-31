@@ -8,12 +8,12 @@ import { Plus, Search, ChevronLeft, ChevronRight, Truck } from '@lucide/vue'
 import type { Supplier } from '@/types/supplier'
 import * as supplierApi from '@/api/supplier'
 import SupplierForm from './SupplierForm.vue'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const suppliers = ref<Supplier[]>([])
 const loading = ref(true)
@@ -86,8 +86,10 @@ function onSaved() {
 
 watch(currentPage, () => fetchSuppliers())
 
+watch(outletId, (val) => { if (val) fetchSuppliers() })
+
 // Initial load
-fetchSuppliers()
+if (outletId.value) fetchSuppliers()
 </script>
 
 <template>

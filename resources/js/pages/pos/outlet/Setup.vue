@@ -13,7 +13,7 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
-const outletId = computed(() => Number(route.params.outletId))
+const outletId = computed(() => Number(route.query.outlet))
 const isEdit = computed(() => !!outletId.value)
 const loading = ref(false)
 const submitting = ref(false)

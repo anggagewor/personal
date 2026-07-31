@@ -54,8 +54,8 @@ abstract class BaseController extends Controller
         }
 
         return match ($type->getName()) {
-            'int' => is_numeric($value) ? (int) $value : $value,
-            'float' => is_numeric($value) ? (float) $value : $value,
+            'int' => is_numeric($value) ? (int) $value : abort(400, "Parameter value '{$value}' is not a valid integer."),
+            'float' => is_numeric($value) ? (float) $value : abort(400, "Parameter value '{$value}' is not a valid number."),
             'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value,
             default => $value,
         };

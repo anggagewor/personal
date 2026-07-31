@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatCurrency } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import { Download, TrendingUp } from '@lucide/vue'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 interface TrendDay {
   date: string
@@ -12,8 +13,7 @@ interface TrendDay {
 }
 
 const route = useRoute()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const trend = ref<TrendDay[]>([])
 const loading = ref(false)
@@ -93,8 +93,10 @@ function formatShortDate(date: string): string {
 }
 
 onMounted(() => {
-  fetchTrend()
+  if (outletId.value) fetchTrend()
 })
+
+watch(outletId, (val) => { if (val) fetchTrend() })
 </script>
 
 <template>

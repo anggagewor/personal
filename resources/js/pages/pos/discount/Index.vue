@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from '@purdia/toast'
 import { formatCurrency } from '@purdia/utils'
@@ -9,11 +9,11 @@ import { Plus, Pencil, Trash2, Percent, Tag } from '@lucide/vue'
 import type { Discount } from '@/types/pos'
 import * as posApi from '@/api/pos'
 import DiscountForm from './DiscountForm.vue'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const discounts = ref<Discount[]>([])
 const loading = ref(true)
@@ -85,7 +85,8 @@ function onSaved() {
 }
 
 // Initial load
-fetchDiscounts()
+watch(outletId, (val) => { if (val) fetchDiscounts() })
+if (outletId.value) fetchDiscounts()
 </script>
 
 <template>

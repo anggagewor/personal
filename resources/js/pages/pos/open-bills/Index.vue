@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from '@purdia/toast'
 import { formatCurrency, formatDate } from '@purdia/utils'
@@ -9,11 +9,11 @@ import { ClipboardList, AlertTriangle } from '@lucide/vue'
 import type { OpenBill, PaymentMethod } from '@/types/pos'
 import * as posApi from '@/api/pos'
 import CloseBillModal from './CloseBillModal.vue'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const bills = ref<OpenBill[]>([])
 const paymentMethods = ref<PaymentMethod[]>([])
@@ -54,7 +54,8 @@ function itemsCount(bill: OpenBill) {
 }
 
 // Initial load
-fetchData()
+watch(outletId, (val) => { if (val) fetchData() })
+if (outletId.value) fetchData()
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
@@ -10,12 +10,12 @@ import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import { Plus, QrCode, Trash2, XCircle, LayoutGrid } from '@lucide/vue'
 import type { PosTable } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const tables = ref<PosTable[]>([])
 const loading = ref(true)
@@ -90,7 +90,8 @@ function getQrUrl(table: PosTable) {
   return `${window.location.origin}/pos/qr/${table.token}/menu`
 }
 
-fetchTables()
+watch(outletId, (val) => { if (val) fetchTables() })
+if (outletId.value) fetchTables()
 </script>
 
 <template>

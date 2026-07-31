@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@purdia/toast'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
@@ -10,12 +10,12 @@ import BaseCheckbox from '@purdia/ui/src/components/BaseCheckbox.vue'
 import { ArrowLeft, Plus, Pencil, Trash2, Receipt, CreditCard, Save } from '@lucide/vue'
 import type { Outlet, PaymentMethod } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.params.outletId))
+const { outletId } = usePosOutlet()
 const outlet = ref<Outlet | null>(null)
 const paymentMethods = ref<PaymentMethod[]>([])
 const loading = ref(true)
@@ -50,6 +50,7 @@ const receiptWidthOptions = [
 ]
 
 async function fetchData() {
+  if (!outletId.value) return
   loading.value = true
   try {
     const [outletsRes, methodsRes] = await Promise.all([
@@ -270,7 +271,7 @@ onMounted(() => {
           <BaseButton
             variant="secondary"
             size="sm"
-            @click="router.push({ name: 'pos.outlet.setup', params: { outletId: outletId } })"
+            @click="router.push({ name: 'pos.outlet.setup', query: { outlet: outletId } })"
           >
             Edit Data Outlet
           </BaseButton>

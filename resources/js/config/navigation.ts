@@ -216,7 +216,7 @@ export const navigation: NavGroup[] = [
         label: 'Supplier',
         icon: 'Truck',
         children: [
-          { label: 'Dashboard', icon: 'LayoutDashboard', to: '/supplier/1' },
+          { label: 'Dashboard', icon: 'LayoutDashboard', to: '/supplier' },
           { label: 'Supplier', icon: 'Users', to: '/supplier/suppliers' },
           { label: 'Purchase Order', icon: 'ClipboardList', to: '/supplier/purchase-orders' },
           { label: 'Laporan', icon: 'BarChart3', to: '/supplier/reports' },

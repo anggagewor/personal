@@ -9,9 +9,11 @@ import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Plus, Store, Settings, ShoppingCart, Trash2 } from '@lucide/vue'
 import type { Outlet } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutletStore } from '@/stores/pos-outlet'
 
 const router = useRouter()
 const toast = useToast()
+const outletStore = usePosOutletStore()
 
 const outlets = ref<Outlet[]>([])
 const loading = ref(true)
@@ -70,6 +72,7 @@ async function createOutlet() {
     toast.success('Outlet berhasil dibuat.')
     showCreateModal.value = false
     fetchOutlets()
+    outletStore.refresh()
   } catch {
     // Error handled by @purdia/http onError
   } finally {
@@ -83,17 +86,18 @@ async function deleteOutlet(outlet: Outlet) {
     await posApi.deleteOutlet(outlet.id)
     toast.success('Outlet berhasil dihapus.')
     fetchOutlets()
+    outletStore.refresh()
   } catch {
     // Error handled by @purdia/http onError
   }
 }
 
 function goToCashier(outlet: Outlet) {
-  router.push({ name: 'pos.cashier', params: { outletId: outlet.id } })
+  router.push({ name: 'pos.cashier', query: { outlet: outlet.id } })
 }
 
 function goToSettings(outlet: Outlet) {
-  router.push({ name: 'pos.outlet.settings', params: { outletId: outlet.id } })
+  router.push({ name: 'pos.outlet.settings', query: { outlet: outlet.id } })
 }
 
 onMounted(() => {

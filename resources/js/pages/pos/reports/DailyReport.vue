@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatCurrency, formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
@@ -7,10 +7,10 @@ import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
 import { Download, CalendarDays } from '@lucide/vue'
 import type { DailySummary } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const selectedDate = ref(new Date().toISOString().slice(0, 10))
 const summary = ref<DailySummary | null>(null)
@@ -63,8 +63,10 @@ function downloadCsv(content: string, filename: string) {
 }
 
 onMounted(() => {
-  fetchReport()
+  if (outletId.value) fetchReport()
 })
+
+watch(outletId, (val) => { if (val) fetchReport() })
 </script>
 
 <template>

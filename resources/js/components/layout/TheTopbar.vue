@@ -2,22 +2,29 @@
 import { computed, onBeforeUnmount, onMounted } from 'vue'
 import { useAuthStore } from '@purdia/auth'
 import { useThemeStore } from '@purdia/theme'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { usePreferences } from '@/composables/usePreferences'
 import { useSidebar } from '@/composables/useSidebar'
 import { useProfile } from '@/composables/useProfile'
 import { Sun, Moon, Monitor, LogOut, User, PanelLeftClose, PanelLeftOpen } from '@lucide/vue'
 import { ref } from 'vue'
+import OutletSwitcher from '@/components/pos/OutletSwitcher.vue'
 
 const auth = useAuthStore()
 const theme = useThemeStore()
 const router = useRouter()
+const route = useRoute()
 const preferences = usePreferences()
 const { collapsed, toggle } = useSidebar()
 const { avatarUrl } = useProfile()
 
 const showUserMenu = ref(false)
 const userMenuRef = ref<HTMLElement | null>(null)
+
+const showOutletSwitcher = computed(() => {
+  const path = route.path
+  return path.startsWith('/pos') || path.startsWith('/supplier')
+})
 
 const themeIcon = {
   light: Sun,
@@ -65,7 +72,7 @@ onBeforeUnmount(() => {
 <template>
   <header class="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-6 dark:border-gray-700 dark:bg-gray-800">
     <!-- Left: sidebar toggle -->
-    <div class="flex items-center">
+    <div class="flex items-center gap-3">
       <button
         class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
         @click="handleToggleSidebar"
@@ -74,6 +81,9 @@ onBeforeUnmount(() => {
         <PanelLeftOpen v-if="collapsed" :size="20" />
         <PanelLeftClose v-else :size="20" />
       </button>
+
+      <!-- Outlet Switcher (POS/Supplier pages only) -->
+      <OutletSwitcher v-if="showOutletSwitcher" />
     </div>
 
     <!-- Right: actions -->

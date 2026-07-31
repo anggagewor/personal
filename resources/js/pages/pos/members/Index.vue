@@ -9,11 +9,11 @@ import { Plus, Pencil, Trash2, Users, Search, ChevronLeft, ChevronRight } from '
 import type { Member } from '@/types/pos'
 import * as posApi from '@/api/pos'
 import MemberForm from './MemberForm.vue'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const toast = useToast()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const members = ref<Member[]>([])
 const loading = ref(true)
@@ -94,8 +94,10 @@ function onSaved() {
 
 watch(currentPage, () => fetchMembers())
 
+watch(outletId, (val) => { if (val) fetchMembers() })
+
 // Initial load
-fetchMembers()
+if (outletId.value) fetchMembers()
 </script>
 
 <template>

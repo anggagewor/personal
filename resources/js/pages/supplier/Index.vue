@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { formatCurrency, formatDate } from '@purdia/utils'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import { Package, ClipboardList, Wallet, Truck } from '@lucide/vue'
 import type { SupplierDashboard } from '@/types/supplier'
 import * as supplierApi from '@/api/supplier'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
-
-const outletId = computed(() => Number(route.params.outletId))
+const router = useRouter()
+const { outletId } = usePosOutlet()
 
 const dashboard = ref<SupplierDashboard | null>(null)
 const loading = ref(true)
@@ -67,7 +68,11 @@ async function fetchDashboard() {
   }
 }
 
-onMounted(fetchDashboard)
+onMounted(() => {
+  if (outletId.value) fetchDashboard()
+})
+
+watch(outletId, (val) => { if (val) fetchDashboard() })
 </script>
 
 <template>

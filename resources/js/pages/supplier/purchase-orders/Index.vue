@@ -9,11 +9,11 @@ import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
 import { Plus, ClipboardList, ChevronLeft, ChevronRight } from '@lucide/vue'
 import type { PurchaseOrder } from '@/types/supplier'
 import * as supplierApi from '@/api/supplier'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const orders = ref<PurchaseOrder[]>([])
 const loading = ref(true)
@@ -131,8 +131,10 @@ function goToPage(page: number) {
 
 watch(currentPage, () => fetchOrders())
 
+watch(outletId, (val) => { if (val) fetchOrders() })
+
 // Initial load
-fetchOrders()
+if (outletId.value) fetchOrders()
 </script>
 
 <template>

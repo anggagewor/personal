@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePosCartStore } from '@/stores/pos-cart'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 import * as posApi from '@/api/pos'
 import type { Product, Category, PaymentMethod, Outlet } from '@/types/pos'
 import ProductGrid from './ProductGrid.vue'
@@ -12,7 +13,7 @@ import ReceiptPreview from './ReceiptPreview.vue'
 const route = useRoute()
 const cartStore = usePosCartStore()
 
-const outletId = computed(() => Number(route.params.outletId || route.query.outlet))
+const { outletId } = usePosOutlet()
 const outlet = ref<Outlet | null>(null)
 const categories = ref<Category[]>([])
 const products = ref<Product[]>([])
@@ -86,8 +87,10 @@ function onReceiptClose() {
 }
 
 onMounted(() => {
-  fetchData()
+  if (outletId.value) fetchData()
 })
+
+watch(outletId, (val) => { if (val) fetchData() })
 </script>
 
 <template>

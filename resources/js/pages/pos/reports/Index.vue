@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatCurrency } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import { BarChart3, CalendarDays, Package, TrendingUp } from '@lucide/vue'
 import type { DashboardStats } from '@/types/pos'
 import * as posApi from '@/api/pos'
+import { usePosOutlet } from '@/composables/usePosOutlet'
 
 const route = useRoute()
 const router = useRouter()
-
-const outletId = computed(() => Number(route.query.outlet))
+const { outletId } = usePosOutlet()
 
 const stats = ref<DashboardStats | null>(null)
 const loading = ref(true)
@@ -33,8 +33,10 @@ function goTo(name: string) {
 }
 
 onMounted(() => {
-  fetchDashboard()
+  if (outletId.value) fetchDashboard()
 })
+
+watch(outletId, (val) => { if (val) fetchDashboard() })
 </script>
 
 <template>

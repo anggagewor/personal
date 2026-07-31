@@ -18,11 +18,33 @@ class EloquentReportRepository implements ReportRepositoryInterface
             ->selectRaw('COALESCE(SUM(total), 0) as revenue, COUNT(*) as count, COALESCE(AVG(total), 0) as average')
             ->first();
 
+        $topProducts = DB::table('pos_transaction_items as ti')
+            ->join('pos_transactions as t', 't.id', '=', 'ti.transaction_id')
+            ->where('t.outlet_id', $outletId)
+            ->whereDate('t.created_at', $date)
+            ->where('t.status', '!=', 'voided')
+            ->select([
+                'ti.product_name as name',
+                DB::raw('SUM(ti.quantity) as quantity'),
+                DB::raw('SUM(ti.subtotal) as revenue'),
+            ])
+            ->groupBy('ti.product_name')
+            ->orderByDesc('quantity')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => $row->name,
+                'quantity' => (int) $row->quantity,
+                'revenue' => (float) $row->revenue,
+            ])
+            ->all();
+
         return [
             'date' => $date,
-            'revenue' => (float) ($result->revenue ?? 0),
-            'count' => (int) ($result->count ?? 0),
-            'average' => (float) ($result->average ?? 0),
+            'total_revenue' => (float) ($result->revenue ?? 0),
+            'transaction_count' => (int) ($result->count ?? 0),
+            'average_transaction' => (float) ($result->average ?? 0),
+            'top_products' => $topProducts,
         ];
     }
 
@@ -75,8 +97,8 @@ class EloquentReportRepository implements ReportRepositoryInterface
             ->map(fn ($row) => [
                 'product_id' => (int) $row->product_id,
                 'product_name' => $row->product_name,
-                'total_quantity' => (int) $row->total_quantity,
-                'total_revenue' => (float) $row->total_revenue,
+                'quantity_sold' => (int) $row->total_quantity,
+                'revenue' => (float) $row->total_revenue,
             ])
             ->all();
     }
@@ -136,8 +158,8 @@ class EloquentReportRepository implements ReportRepositoryInterface
 
         return [
             'today_revenue' => (float) ($todayStats->revenue ?? 0),
-            'today_count' => (int) ($todayStats->count ?? 0),
-            'trend' => $trend,
+            'today_transactions' => (int) ($todayStats->count ?? 0),
+            'weekly_trend' => $trend,
         ];
     }
 }

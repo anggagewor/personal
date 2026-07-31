@@ -3,8 +3,9 @@ import { ref, computed } from 'vue'
 import { formatCurrency } from '@purdia/utils'
 import BaseTabs from '@purdia/ui/src/components/BaseTabs.vue'
 import BaseInput from '@purdia/ui/src/components/BaseInput.vue'
+import BaseModal from '@purdia/ui/src/components/BaseModal.vue'
 import { Search, Package } from '@lucide/vue'
-import type { Product, Category } from '@/types/pos'
+import type { Product, Category, ProductVariant } from '@/types/pos'
 
 const props = defineProps<{
   categories: Category[]
@@ -18,6 +19,10 @@ const emit = defineEmits<{
 
 const search = ref('')
 const activeCategory = ref('all')
+
+// Variant picker
+const showVariantPicker = ref(false)
+const selectedProduct = ref<Product | null>(null)
 
 const categoryTabs = computed(() => {
   const tabs = [{ key: 'all', label: 'Semua' }]
@@ -51,12 +56,18 @@ const filteredProducts = computed(() => {
 
 function selectProduct(product: Product) {
   if (product.has_variants && product.variants.length > 1) {
-    // For multi-variant products, user picks variant
-    // For now, add the first variant — could show a picker modal later
-    emit('add-to-cart', product, product.variants[0]?.id)
+    selectedProduct.value = product
+    showVariantPicker.value = true
   } else {
     emit('add-to-cart', product)
   }
+}
+
+function pickVariant(variant: ProductVariant) {
+  if (!selectedProduct.value) return
+  emit('add-to-cart', selectedProduct.value, variant.id)
+  showVariantPicker.value = false
+  selectedProduct.value = null
 }
 </script>
 
@@ -127,5 +138,30 @@ function selectProduct(product: Product) {
         </button>
       </div>
     </div>
+
+    <!-- Variant Picker Modal -->
+    <BaseModal v-model="showVariantPicker" size="sm">
+      <template #default>
+        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Pilih Varian</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ selectedProduct?.name }}</p>
+        <div class="mt-4 space-y-2">
+          <button
+            v-for="variant in selectedProduct?.variants"
+            :key="variant.id"
+            class="flex w-full items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-left transition-colors hover:border-primary-300 hover:bg-primary-50 dark:border-gray-700 dark:hover:border-primary-600 dark:hover:bg-primary-900/20"
+            @click="pickVariant(variant)"
+          >
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">{{ variant.name }}</p>
+              <p v-if="variant.sku" class="text-xs text-gray-400">{{ variant.sku }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(variant.price) }}</p>
+              <p class="text-xs text-gray-400">Stok: {{ variant.stock_quantity }}</p>
+            </div>
+          </button>
+        </div>
+      </template>
+    </BaseModal>
   </div>
 </template>

@@ -9,7 +9,7 @@ export type ButtonVariant =
   | 'danger'
   | 'ghost'
   | 'outline'
-export type ButtonSize = 'sm' | 'md' | 'lg'
+export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
 
 interface Props {
   variant?: ButtonVariant
@@ -46,6 +46,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
+  xs: 'px-2.5 py-1 text-xs',
   sm: 'px-3 py-1.5 text-xs',
   md: 'px-4 py-2 text-sm',
   lg: 'px-5 py-2.5 text-base',
