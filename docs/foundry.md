@@ -110,6 +110,70 @@ Cocok untuk CI:
 
 ---
 
+### `foundry:list`
+
+List semua module yang terinstall beserta dependencies, status, dan tags.
+
+```bash
+# List semua module
+php artisan foundry:list
+
+# Filter by tag
+php artisan foundry:list --tag=productivity
+```
+
+Output:
+
+```
++-----------------+--------------------+-------------+------------------+
+| Module          | Dependencies       | Status      | Tags             |
++-----------------+--------------------+-------------+------------------+
+| Note            | Shared             | extractable | productivity     |
+| Quote           | —                  | extractable | utility          |
+| ModuleManager   | —                  | extractable | dev-tools        |
++-----------------+--------------------+-------------+------------------+
+  Total: 32 modules
+```
+
+---
+
+### `foundry:extract`
+
+Bundle sebuah module (beserta dependency-nya) jadi zip archive. Siap dipindah ke project lain.
+
+```bash
+# Extract module dengan semua dependencies
+php artisan foundry:extract Note
+
+# Extract module tanpa dependencies
+php artisan foundry:extract Note --no-deps
+```
+
+Archive disimpan di `storage/app/module-exports/`. Isi zip:
+- `src/Modules/{Module}/` — untuk setiap module yang di-include
+- `export-manifest.json` — metadata export (timestamp, included modules)
+
+---
+
+### `foundry:import`
+
+Import module dari zip archive ke project ini.
+
+```bash
+# Import (skip kalau module sudah ada)
+php artisan foundry:import storage/app/module-exports/note_20260731.zip
+
+# Force overwrite existing modules
+php artisan foundry:import archive.zip --force
+```
+
+Next steps setelah import:
+1. Register ServiceProvider di `bootstrap/providers.php`
+2. Run `php artisan migrate`
+3. Run `composer dump-autoload`
+
+---
+
 ### `foundry:doctor`
 
 Health check keseluruhan foundry. Memberikan score 0–100.
@@ -212,6 +276,25 @@ src/Modules/
 │               ├── GraphCommand.php
 │               ├── VerifyCommand.php
 │               └── DoctorCommand.php
+├── ModuleManager/
+│   ├── Domain/
+│   │   ├── Entities/ModuleManifest.php
+│   │   └── Contracts/ModuleRegistryInterface.php
+│   ├── Application/
+│   │   └── Actions/
+│   │       ├── ListModulesAction.php
+│   │       ├── ExtractModuleAction.php
+│   │       └── ImportModuleAction.php
+│   ├── Infrastructure/
+│   │   ├── Commands/
+│   │   │   ├── ListModulesCommand.php
+│   │   │   ├── ExtractModuleCommand.php
+│   │   │   └── ImportModuleCommand.php
+│   │   ├── Controllers/ModuleManagerController.php
+│   │   ├── Repositories/FilesystemModuleRegistry.php
+│   │   ├── Providers/ModuleManagerServiceProvider.php
+│   │   └── Routes/api.php
+│   └── module.json
 ├── Note/
 │   └── module.json
 ├── Task/
@@ -219,4 +302,6 @@ src/Modules/
 ├── ...
 ```
 
-Commands diregistrasi di `SharedServiceProvider`.
+- Foundry scan/graph/verify/doctor commands → `SharedServiceProvider`
+- Foundry list/extract/import commands → `ModuleManagerServiceProvider`
+- API endpoints (`/api/modules/*`) → `ModuleManagerServiceProvider`

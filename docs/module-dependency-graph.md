@@ -35,6 +35,7 @@ Berguna untuk menentukan module mana yang bisa dicabut sendiri (standalone) dan 
 | Journal | Shared | BelongsToUser, AuthorizesOwnership |
 | LogReader | — | Fully standalone |
 | Market | Shared | AuthorizesOwnership |
+| ModuleManager | — | Fully standalone (extract/import modules) |
 | Note | Shared | BelongsToUser, AuthorizesOwnership |
 | Pomodoro | Shared | BelongsToUser, AuthorizesOwnership |
 | Pos | Shared | BaseController, BelongsToUser, AuthorizesOwnership |
@@ -91,6 +92,7 @@ Bisa dicabut langsung tanpa bawa apa-apa:
 - `DatabaseManager`
 - `Gold`
 - `LogReader`
+- `ModuleManager`
 - `Quote`
 - `User`
 - `Weather`
@@ -153,7 +155,7 @@ Gold, Converter, Activity, Weather, Dashboard
 ### Admin/Dev Tools (optional)
 
 ```
-DatabaseManager, LogReader
+DatabaseManager, LogReader, ModuleManager
 ```
 
 ### Skip kalau bukan full app
@@ -169,6 +171,18 @@ GoogleDrive — terlalu banyak coupling, only makes sense di full app
 ### Artisan Commands
 
 ```bash
+# List all modules with dependencies and status
+php artisan foundry:list
+php artisan foundry:list --tag=productivity
+
+# Extract module (with dependencies) into a zip archive
+php artisan foundry:extract Note
+php artisan foundry:extract Note --no-deps
+
+# Import module from zip archive
+php artisan foundry:import path/to/archive.zip
+php artisan foundry:import path/to/archive.zip --force
+
 # Scan dependencies from source code
 php artisan foundry:scan
 php artisan foundry:scan Note          # scan specific module

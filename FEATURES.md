@@ -2,7 +2,7 @@
 
 > **Disclaimer:** Proyek ini adalah personal dashboard sekaligus playground untuk meracik module-module yang bisa di-reuse di proyek lain. Banyak module sengaja dibangun dengan standar production-grade (DDD 3-layer, property-based testing, proper state machines) meskipun ini "cuma" personal dashboard — tujuannya agar pola-polanya bisa langsung dicopy ke proyek klien tanpa perlu refactor ulang.
 
-**Total: 34 fitur / 30 module**
+**Total: 35 fitur / 32 module**
 
 ## 1. Authentication & User Management
 
@@ -557,6 +557,23 @@
 
 ---
 
+## 35. Module Manager
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| List Modules | Lihat semua module dengan dependencies, tags, status extractable |
+| Filter by Tag | Filter module berdasarkan kategori (productivity, finance, dev-tools, dll) |
+| Module Detail | Lihat detail module termasuk full dependency tree |
+| Extract Module | Bundle module + dependencies jadi zip archive |
+| Import Module | Import module dari zip archive ke project |
+| CLI Commands | `foundry:list`, `foundry:extract`, `foundry:import` |
+
+**Endpoints:** `/api/modules`, `/api/modules/{name}`, `/api/modules/{name}/extract`, `/api/modules/import`
+**Commands:** `php artisan foundry:list`, `php artisan foundry:extract {Module}`, `php artisan foundry:import {path}`
+**Route:** `/modules`
+
+---
+
 ## Frontend Pages
 
 | Halaman | Route |
@@ -592,6 +609,7 @@
 | POS | `/pos`, `/pos/cashier/:outletId`, `/pos/catalog/:outletId` |
 | Supplier | `/supplier/:outletId`, `/supplier/suppliers`, `/supplier/purchase-orders`, `/supplier/reports` |
 | Database Manager | `/database`, `/database/:table` |
+| Module Manager | `/modules` |
 | Log Viewer | `/logs` |
 | Settings | `/settings/general`, `/settings/appearance`, `/settings/account`, `/settings/market`, `/settings/export` |
 
