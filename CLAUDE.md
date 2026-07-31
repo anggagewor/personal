@@ -4,6 +4,25 @@
 
 Purdia is a modular foundry — every feature is built as an independent module that can eventually be extracted into a standalone package. Read `MANIFESTO.md` for the full philosophy.
 
+## Decision Priority
+
+When rules conflict, follow this order:
+
+1. MANIFESTO.md (foundry philosophy)
+2. Architecture & Dependency Rules
+3. Laravel Convention
+4. Existing Code Style
+
+## Think Like a Foundry
+
+When implementing a feature:
+
+1. Build inside a module.
+2. Keep dependencies minimal.
+3. Assume the module may be extracted later.
+4. Prefer isolation over convenience.
+5. Do not optimize for today's application only.
+
 ## Architecture
 
 - **DDD Layered Modular** — all business logic lives in `src/Modules/`. Each module has 3 layers: Domain, Application, Infrastructure.
@@ -29,6 +48,15 @@ src/Modules/{ModuleName}/
 - No circular dependencies between modules
 - Run `php artisan foundry:verify` to check
 
+## Never Do
+
+- Never put business logic in Controllers
+- Never import feature modules into Shared or User
+- Never reference `App\` namespace from modules
+- Never bypass Actions and call repositories directly from controllers
+- Never create cross-module dependencies without explicit justification
+- Never write inline interfaces or raw axios/fetch in page components
+
 ## Backend Rules
 
 - Thin controllers — orchestrate only, delegate to Actions
@@ -46,14 +74,12 @@ src/Modules/{ModuleName}/
 - UI language: **Bahasa Indonesia** (default)
 - Types/interfaces → `resources/js/types/<module>.ts`
 - API calls → `resources/js/api/<module>.ts`
-- Do NOT write inline interfaces or raw axios/fetch calls in page components
 - `BaseModal` always uses `v-model` (not `:show`)
 - Form modals must use `persistent` prop to prevent accidental close
 
 ## Conventions
 
 - Commit messages: English, conventional commits (`feat:`, `fix:`, `refactor:`, `chore:`)
-- After coding, always run `npm run build` — ensure build passes
 - Model naming: `{Name}Model` (e.g., `NoteModel`, `TaskModel`)
 - Entity naming: `{Name}` (e.g., `Note`, `Task`) — pure PHP, no Laravel deps
 
@@ -62,7 +88,17 @@ src/Modules/{ModuleName}/
 - PHPUnit for backend
 - Tests in `tests/Feature/{ModuleName}/` and `tests/Unit/{ModuleName}/`
 - Each test class uses `RefreshDatabase` trait
-- Run: `composer test`
+
+## Definition of Done
+
+A task is complete only if:
+
+- `npm run build` passes
+- `composer test` passes (if tests affected)
+- `php artisan foundry:verify` passes (if module structure changed)
+- No architectural rule is violated
+- Module boundaries remain intact
+- Code follows existing conventions
 
 ## Key Docs
 
