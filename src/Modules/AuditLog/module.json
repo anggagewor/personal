@@ -1,0 +1,8 @@
+{
+    "name": "AuditLog",
+    "display_name": "Audit Log",
+    "description": "Explicit audit trail with multi-driver storage (database, JSON, S3)",
+    "depends": ["Shared"],
+    "extractable": true,
+    "tags": ["utility", "security"]
+}

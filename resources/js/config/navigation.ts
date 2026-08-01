@@ -243,6 +243,12 @@ export const navigation: NavGroup[] = [
         to: '/activity',
       },
       {
+        id: 'audit-log',
+        label: 'Audit Log',
+        icon: 'Shield',
+        to: '/audit-log',
+      },
+      {
         id: 'database',
         label: 'Database',
         icon: 'Database',

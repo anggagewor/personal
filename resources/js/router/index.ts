@@ -182,6 +182,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'activity',
         component: () => import('@/pages/activity/Index.vue'),
       },
+      // Audit Log
+      {
+        path: 'audit-log',
+        name: 'audit-log',
+        component: () => import('@/pages/audit-log/Index.vue'),
+      },
       // Market
       {
         path: 'market',
