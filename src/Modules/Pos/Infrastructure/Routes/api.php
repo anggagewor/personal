@@ -11,6 +11,7 @@ use Modules\Pos\Infrastructure\Controllers\PaymentMethodController;
 use Modules\Pos\Infrastructure\Controllers\ProductController;
 use Modules\Pos\Infrastructure\Controllers\ReceiptController;
 use Modules\Pos\Infrastructure\Controllers\ReportController;
+use Modules\Pos\Infrastructure\Controllers\ShiftController;
 use Modules\Pos\Infrastructure\Controllers\StockController;
 use Modules\Pos\Infrastructure\Controllers\TableController;
 use Modules\Pos\Infrastructure\Controllers\TransactionController;
@@ -46,6 +47,8 @@ Route::middleware('auth:sanctum')->prefix('pos')->group(function () {
     Route::post('/outlets/{outletId}/transactions', [TransactionController::class, 'store']);
     Route::get('/transactions/{id}', [TransactionController::class, 'show']);
     Route::post('/transactions/{id}/void', [TransactionController::class, 'void']);
+    Route::post('/transactions/{id}/refund', [TransactionController::class, 'refund']);
+    Route::get('/transactions/{id}/refunds', [TransactionController::class, 'refunds']);
 
     // Open Bills
     Route::get('/outlets/{outletId}/open-bills', [OpenBillController::class, 'index']);
@@ -88,6 +91,13 @@ Route::middleware('auth:sanctum')->prefix('pos')->group(function () {
     // Order Queue
     Route::get('/outlets/{outletId}/order-queue', [OrderQueueController::class, 'index']);
     Route::post('/order-queue/{id}/accept', [OrderQueueController::class, 'accept']);
+
+    // Shifts
+    Route::get('/outlets/{outletId}/shifts', [ShiftController::class, 'index']);
+    Route::get('/outlets/{outletId}/shifts/active', [ShiftController::class, 'active']);
+    Route::post('/outlets/{outletId}/shifts/open', [ShiftController::class, 'open']);
+    Route::get('/shifts/{id}', [ShiftController::class, 'show']);
+    Route::post('/shifts/{id}/close', [ShiftController::class, 'close']);
 
     // Reports
     Route::get('/outlets/{outletId}/reports/daily', [ReportController::class, 'daily']);

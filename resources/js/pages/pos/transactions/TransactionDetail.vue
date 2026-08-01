@@ -5,10 +5,11 @@ import { useToast } from '@purdia/toast'
 import { formatCurrency, formatDate } from '@purdia/utils'
 import BaseButton from '@purdia/ui/src/components/BaseButton.vue'
 import BaseBadge from '@purdia/ui/src/components/BaseBadge.vue'
-import { ArrowLeft, Ban } from '@lucide/vue'
+import { ArrowLeft, Ban, RotateCcw } from '@lucide/vue'
 import type { Transaction } from '@/types/pos'
 import * as posApi from '@/api/pos'
 import VoidModal from './VoidModal.vue'
+import RefundModal from './RefundModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,7 @@ const transactionId = computed(() => Number(route.query.id))
 const transaction = ref<Transaction | null>(null)
 const loading = ref(true)
 const showVoidModal = ref(false)
+const showRefundModal = ref(false)
 
 async function fetchTransaction() {
   if (!transactionId.value) return
@@ -39,6 +41,8 @@ function statusVariant(status: Transaction['status']): 'success' | 'warning' | '
     case 'completed': return 'success'
     case 'pending': return 'warning'
     case 'voided': return 'danger'
+    case 'refunded': return 'danger'
+    case 'partially_refunded': return 'warning'
   }
 }
 
@@ -47,6 +51,8 @@ function statusLabel(status: Transaction['status']) {
     case 'completed': return 'Selesai'
     case 'pending': return 'Tertunda'
     case 'voided': return 'Dibatalkan'
+    case 'refunded': return 'Refunded'
+    case 'partially_refunded': return 'Partial Refund'
   }
 }
 
@@ -58,7 +64,15 @@ function openVoid() {
   showVoidModal.value = true
 }
 
+function openRefund() {
+  showRefundModal.value = true
+}
+
 function onVoided() {
+  fetchTransaction()
+}
+
+function onRefunded() {
   fetchTransaction()
 }
 
@@ -82,6 +96,15 @@ fetchTransaction()
           {{ transaction?.transaction_number ?? '...' }}
         </p>
       </div>
+      <BaseButton
+        v-if="transaction && (transaction.status === 'completed' || transaction.status === 'partially_refunded')"
+        variant="secondary"
+        size="sm"
+        :icon="RotateCcw"
+        @click="openRefund"
+      >
+        Refund
+      </BaseButton>
       <BaseButton
         v-if="transaction && transaction.status === 'completed'"
         variant="danger"
@@ -205,9 +228,21 @@ fetchTransaction()
             <span class="text-gray-500 dark:text-gray-400">Diskon</span>
             <span class="text-green-600 dark:text-green-400">-{{ formatCurrency(transaction.discount_amount) }}</span>
           </div>
+          <div v-if="transaction.tax_amount > 0" class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">
+              Pajak ({{ transaction.tax_rate }}%{{ transaction.tax_inclusive ? ', inklusif' : '' }})
+            </span>
+            <span class="text-gray-900 dark:text-white">
+              {{ transaction.tax_inclusive ? '(termasuk) ' : '+' }}{{ formatCurrency(transaction.tax_amount) }}
+            </span>
+          </div>
           <div class="flex justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
             <span class="font-semibold text-gray-900 dark:text-white">Total</span>
             <span class="font-semibold text-gray-900 dark:text-white">{{ formatCurrency(transaction.total) }}</span>
+          </div>
+          <div v-if="transaction.refunded_amount > 0" class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Refunded</span>
+            <span class="text-red-500">-{{ formatCurrency(transaction.refunded_amount) }}</span>
           </div>
           <div v-if="transaction.amount_tendered" class="flex justify-between">
             <span class="text-gray-500 dark:text-gray-400">Dibayar</span>
@@ -226,6 +261,13 @@ fetchTransaction()
       v-model="showVoidModal"
       :transaction="transaction"
       @voided="onVoided"
+    />
+
+    <!-- Refund Modal -->
+    <RefundModal
+      v-model="showRefundModal"
+      :transaction="transaction"
+      @refunded="onRefunded"
     />
   </div>
 </template>

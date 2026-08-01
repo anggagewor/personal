@@ -105,7 +105,7 @@ export const usePosCartStore = defineStore('pos-cart', () => {
           ? base * (discount.value / 100)
           : Math.min(discount.value, base)
 
-        const roundedAmount = Math.round(amount)
+        const roundedAmount = Math.floor(amount)
         item.discount_amount = (item.discount_amount || 0) + roundedAmount
         if (!item.discounts) item.discounts = []
         item.discounts.push({ name: discount.name, amount: roundedAmount })
@@ -118,16 +118,25 @@ export const usePosCartStore = defineStore('pos-cart', () => {
           ? base * (discount.value / 100)
           : Math.min(discount.value, base)
 
-        // Distribute proportionally
-        for (const item of items.value) {
-          const proportion = item.subtotal / subtotal.value
-          const itemAmount = Math.round(totalAmount * proportion)
+        // Distribute proportionally with remainder correction
+        let distributed = 0
+        for (let idx = 0; idx < items.value.length; idx++) {
+          const item = items.value[idx]
+          let itemAmount: number
+          if (idx === items.value.length - 1) {
+            // Last item gets remainder to avoid rounding drift
+            itemAmount = Math.floor(totalAmount) - distributed
+          } else {
+            const proportion = item.subtotal / subtotal.value
+            itemAmount = Math.floor(totalAmount * proportion)
+            distributed += itemAmount
+          }
           item.discount_amount = (item.discount_amount || 0) + itemAmount
           if (!item.discounts) item.discounts = []
           item.discounts.push({ name: discount.name, amount: itemAmount })
         }
 
-        remainingSubtotal -= totalAmount
+        remainingSubtotal -= Math.floor(totalAmount)
       }
     }
 
@@ -167,10 +176,19 @@ export const usePosCartStore = defineStore('pos-cart', () => {
         ? afterDiscount * (v.discount_value / 100)
         : Math.min(v.discount_value, afterDiscount)
 
-      for (const item of items.value) {
+      let distributed = 0
+      for (let idx = 0; idx < items.value.length; idx++) {
+        const item = items.value[idx]
         const itemAfterDiscount = item.subtotal - (item.discount_amount || 0)
-        const proportion = itemAfterDiscount / afterDiscount
-        const itemAmount = Math.round(totalAmount * proportion)
+        let itemAmount: number
+        if (idx === items.value.length - 1) {
+          // Last item gets remainder to avoid rounding drift
+          itemAmount = Math.floor(totalAmount) - distributed
+        } else {
+          const proportion = itemAfterDiscount / afterDiscount
+          itemAmount = Math.floor(totalAmount * proportion)
+          distributed += itemAmount
+        }
         item.voucher_amount = Math.max(0, itemAmount)
         if (!item.voucher_label) {
           item.voucher_label = v.code

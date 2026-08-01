@@ -10,6 +10,7 @@ use Modules\Pos\Domain\Contracts\MemberRepositoryInterface;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Pos\Domain\Contracts\ProductRepositoryInterface;
 use Modules\Pos\Domain\Contracts\ReportRepositoryInterface;
+use Modules\Pos\Domain\Contracts\ShiftRepositoryInterface;
 use Modules\Pos\Domain\Contracts\TableRepositoryInterface;
 use Modules\Pos\Domain\Contracts\TransactionRepositoryInterface;
 use Modules\Pos\Domain\Contracts\VoucherRepositoryInterface;
@@ -19,6 +20,7 @@ use Modules\Pos\Infrastructure\Repositories\EloquentMemberRepository;
 use Modules\Pos\Infrastructure\Repositories\EloquentOutletRepository;
 use Modules\Pos\Infrastructure\Repositories\EloquentProductRepository;
 use Modules\Pos\Infrastructure\Repositories\EloquentReportRepository;
+use Modules\Pos\Infrastructure\Repositories\EloquentShiftRepository;
 use Modules\Pos\Infrastructure\Repositories\EloquentTableRepository;
 use Modules\Pos\Infrastructure\Repositories\EloquentTransactionRepository;
 use Modules\Pos\Infrastructure\Repositories\EloquentVoucherRepository;
@@ -36,6 +38,7 @@ class PosServiceProvider extends ServiceProvider
         $this->app->bind(TableRepositoryInterface::class, EloquentTableRepository::class);
         $this->app->bind(MemberRepositoryInterface::class, EloquentMemberRepository::class);
         $this->app->bind(ReportRepositoryInterface::class, EloquentReportRepository::class);
+        $this->app->bind(ShiftRepositoryInterface::class, EloquentShiftRepository::class);
     }
 
     public function boot(): void

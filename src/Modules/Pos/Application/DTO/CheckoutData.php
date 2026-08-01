@@ -18,5 +18,9 @@ readonly class CheckoutData
         public float $discountAmount = 0,
         /** @var array{discount_id: int|null, name: string, type: string, value: float, amount: float}[] */
         public array $appliedDiscounts = [],
+        public float $taxRate = 0,
+        public float $taxAmount = 0,
+        public bool $taxInclusive = false,
+        public ?int $shiftId = null,
     ) {}
 }

@@ -4,6 +4,7 @@ namespace Modules\Pos\Application\Actions\Transaction;
 
 use Modules\Pos\Domain\Contracts\TransactionRepositoryInterface;
 use Modules\Pos\Domain\Entities\Transaction;
+use Modules\Pos\Domain\Exceptions\OpenBillException;
 
 class CloseOpenBillAction
 {
@@ -20,11 +21,15 @@ class CloseOpenBillAction
         $transaction = $this->transactionRepo->findById($transactionId);
 
         if ($transaction === null) {
-            throw new \RuntimeException("Open bill tidak ditemukan.");
+            throw OpenBillException::notFound($transactionId);
+        }
+
+        if ($transaction->isVoided()) {
+            throw OpenBillException::alreadyClosed($transaction->transactionNumber);
         }
 
         if (!$transaction->isPending()) {
-            throw new \DomainException("Hanya transaksi dengan status pending yang dapat ditutup.");
+            throw OpenBillException::notPending($transaction->transactionNumber);
         }
 
         return $this->transactionRepo->closeOpenBill(

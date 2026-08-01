@@ -1,0 +1,2123 @@
+openapi: 3.1.0
+info:
+  title: POS Module API
+  description: Point of Sale API — Outlets, Produk, Transaksi, Diskon, Voucher, Member, Shift, QR Order, Reports
+  version: 1.0.0
+  contact:
+    name: Purdia Team
+
+servers:
+  - url: /api
+    description: Local development
+
+security:
+  - sanctum: []
+
+tags:
+  - name: Outlets
+    description: Manajemen outlet
+  - name: Categories
+    description: Kategori produk
+  - name: Products
+    description: Produk & varian
+  - name: Stock
+    description: Manajemen stok
+  - name: Transactions
+    description: Transaksi penjualan
+  - name: Refunds
+    description: Refund transaksi
+  - name: Open Bills
+    description: Tagihan tertunda (pay later)
+  - name: Shifts
+    description: Shift kasir
+  - name: Payment Methods
+    description: Metode pembayaran
+  - name: Discounts
+    description: Diskon & promo
+  - name: Vouchers
+    description: Voucher
+  - name: Members
+    description: Member/pelanggan
+  - name: Tables
+    description: Meja & QR Order
+  - name: Reports
+    description: Laporan & analitik
+  - name: Receipts
+    description: Struk transaksi
+  - name: QR Order (Public)
+    description: Public endpoints untuk QR ordering (tanpa auth)
+
+paths:
+  # ===== OUTLETS =====
+  /pos/outlets:
+    get:
+      tags: [Outlets]
+      summary: List outlets milik user
+      responses:
+        '200':
+          description: Daftar outlet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Outlet'
+    post:
+      tags: [Outlets]
+      summary: Buat outlet baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutletPayload'
+      responses:
+        '201':
+          description: Outlet berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Outlet'
+                  message:
+                    type: string
+
+  /pos/outlets/{id}:
+    put:
+      tags: [Outlets]
+      summary: Update outlet
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutletPayload'
+      responses:
+        '200':
+          description: Outlet berhasil diperbarui
+    delete:
+      tags: [Outlets]
+      summary: Hapus outlet (soft delete)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Outlet berhasil dihapus
+
+  # ===== CATEGORIES =====
+  /pos/outlets/{outletId}/categories:
+    get:
+      tags: [Categories]
+      summary: List kategori per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar kategori
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+    post:
+      tags: [Categories]
+      summary: Buat kategori
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryPayload'
+      responses:
+        '201':
+          description: Kategori berhasil dibuat
+
+  /pos/categories/{id}:
+    put:
+      tags: [Categories]
+      summary: Update kategori
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryPayload'
+      responses:
+        '200':
+          description: Kategori berhasil diperbarui
+    delete:
+      tags: [Categories]
+      summary: Hapus kategori
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Kategori berhasil dihapus
+
+  /pos/categories/reorder:
+    post:
+      tags: [Categories]
+      summary: Reorder kategori
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ordered_ids]
+              properties:
+                ordered_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        '200':
+          description: Urutan berhasil diperbarui
+
+  # ===== PRODUCTS =====
+  /pos/outlets/{outletId}/products:
+    get:
+      tags: [Products]
+      summary: List produk per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: category_id
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive]
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Daftar produk
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+    post:
+      tags: [Products]
+      summary: Buat produk baru (multipart jika upload gambar)
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPayload'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductPayload'
+      responses:
+        '201':
+          description: Produk berhasil dibuat
+
+  /pos/products/{id}:
+    get:
+      tags: [Products]
+      summary: Detail produk
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Detail produk
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Product'
+    put:
+      tags: [Products]
+      summary: Update produk
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductPayload'
+      responses:
+        '200':
+          description: Produk berhasil diperbarui
+
+  /pos/products/{id}/deactivate:
+    post:
+      tags: [Products]
+      summary: Nonaktifkan produk
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Produk berhasil dinonaktifkan
+
+  # ===== STOCK =====
+  /pos/products/{productId}/stock:
+    post:
+      tags: [Stock]
+      summary: Adjust stok produk
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockAdjustPayload'
+      responses:
+        '200':
+          description: Stok berhasil disesuaikan
+
+  /pos/outlets/{outletId}/stock:
+    get:
+      tags: [Stock]
+      summary: Overview stok per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Data stok
+
+  # ===== TRANSACTIONS =====
+  /pos/outlets/{outletId}/transactions:
+    get:
+      tags: [Transactions]
+      summary: List transaksi (paginated + filter)
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [completed, pending, voided, refunded, partially_refunded]
+        - name: payment_method_type
+          in: query
+          schema:
+            type: string
+            enum: [cash, bank_transfer, e_wallet, custom]
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: member_id
+          in: query
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Daftar transaksi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  message:
+                    type: string
+    post:
+      tags: [Transactions]
+      summary: Checkout — buat transaksi baru
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutPayload'
+      responses:
+        '201':
+          description: Transaksi berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Transaction'
+                  message:
+                    type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        message:
+                          type: string
+        '422':
+          description: Stok tidak mencukupi
+
+  /pos/transactions/{id}:
+    get:
+      tags: [Transactions]
+      summary: Detail transaksi
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Detail transaksi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Transaction'
+
+  /pos/transactions/{id}/void:
+    post:
+      tags: [Transactions]
+      summary: Void transaksi
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  maxLength: 255
+      responses:
+        '200':
+          description: Transaksi berhasil di-void
+        '422':
+          description: Void tidak diizinkan
+
+  /pos/transactions/{id}/refund:
+    post:
+      tags: [Refunds]
+      summary: Refund transaksi (partial/full)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundPayload'
+      responses:
+        '201':
+          description: Refund berhasil diproses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Refund'
+                  message:
+                    type: string
+        '422':
+          description: Refund tidak diizinkan
+
+  /pos/transactions/{id}/refunds:
+    get:
+      tags: [Refunds]
+      summary: Riwayat refund per transaksi
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Daftar refund
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Refund'
+
+  # ===== OPEN BILLS =====
+  /pos/outlets/{outletId}/open-bills:
+    get:
+      tags: [Open Bills]
+      summary: List open bills (status pending)
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar open bills
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OpenBill'
+
+  /pos/open-bills/{id}/close:
+    post:
+      tags: [Open Bills]
+      summary: Tutup open bill (bayar)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseOpenBillPayload'
+      responses:
+        '200':
+          description: Open bill berhasil ditutup
+        '422':
+          description: Bill tidak bisa ditutup
+
+  # ===== SHIFTS =====
+  /pos/outlets/{outletId}/shifts:
+    get:
+      tags: [Shifts]
+      summary: List shift kasir (paginated)
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, closed]
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 15
+      responses:
+        '200':
+          description: Daftar shift
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CashierShift'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /pos/outlets/{outletId}/shifts/active:
+    get:
+      tags: [Shifts]
+      summary: Shift aktif saat ini
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Shift aktif (null jika tidak ada)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    oneOf:
+                      - $ref: '#/components/schemas/CashierShift'
+                      - type: 'null'
+
+  /pos/outlets/{outletId}/shifts/open:
+    post:
+      tags: [Shifts]
+      summary: Buka shift baru
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [opening_amount]
+              properties:
+                opening_amount:
+                  type: number
+                  minimum: 0
+      responses:
+        '201':
+          description: Shift berhasil dibuka
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CashierShift'
+                  message:
+                    type: string
+        '422':
+          description: Sudah ada shift aktif
+
+  /pos/shifts/{id}:
+    get:
+      tags: [Shifts]
+      summary: Detail shift + summary kas
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Detail shift
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/CashierShift'
+                      - type: object
+                        properties:
+                          summary:
+                            type: object
+                            properties:
+                              cash_sales:
+                                type: number
+                              cash_refunds:
+                                type: number
+                              net_cash:
+                                type: number
+
+  /pos/shifts/{id}/close:
+    post:
+      tags: [Shifts]
+      summary: Tutup shift
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [closing_amount]
+              properties:
+                closing_amount:
+                  type: number
+                  minimum: 0
+                notes:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Shift berhasil ditutup
+        '422':
+          description: Shift sudah ditutup
+
+  # ===== PAYMENT METHODS =====
+  /pos/outlets/{outletId}/payment-methods:
+    get:
+      tags: [Payment Methods]
+      summary: List metode pembayaran
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar metode pembayaran
+    post:
+      tags: [Payment Methods]
+      summary: Tambah metode pembayaran
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethodPayload'
+      responses:
+        '201':
+          description: Metode pembayaran berhasil ditambahkan
+
+  /pos/payment-methods/{id}:
+    put:
+      tags: [Payment Methods]
+      summary: Update metode pembayaran
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentMethodPayload'
+      responses:
+        '200':
+          description: Metode pembayaran berhasil diperbarui
+    delete:
+      tags: [Payment Methods]
+      summary: Hapus metode pembayaran
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Metode pembayaran berhasil dihapus
+
+  # ===== DISCOUNTS =====
+  /pos/outlets/{outletId}/discounts:
+    get:
+      tags: [Discounts]
+      summary: List diskon per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar diskon
+    post:
+      tags: [Discounts]
+      summary: Buat diskon
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscountPayload'
+      responses:
+        '201':
+          description: Diskon berhasil dibuat
+
+  /pos/discounts/{id}:
+    put:
+      tags: [Discounts]
+      summary: Update diskon
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscountPayload'
+      responses:
+        '200':
+          description: Diskon berhasil diperbarui
+    delete:
+      tags: [Discounts]
+      summary: Hapus diskon
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Diskon berhasil dihapus
+
+  /pos/discounts/evaluate:
+    post:
+      tags: [Discounts]
+      summary: Evaluasi diskon untuk cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [outlet_id, subtotal]
+              properties:
+                outlet_id:
+                  type: integer
+                subtotal:
+                  type: number
+                member_id:
+                  type: integer
+                  nullable: true
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: integer
+                      quantity:
+                        type: integer
+                      subtotal:
+                        type: number
+      responses:
+        '200':
+          description: Hasil evaluasi diskon
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      applicable:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Discount'
+                      total_discount:
+                        type: number
+
+  # ===== VOUCHERS =====
+  /pos/outlets/{outletId}/vouchers:
+    get:
+      tags: [Vouchers]
+      summary: List voucher per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar voucher
+    post:
+      tags: [Vouchers]
+      summary: Buat voucher
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoucherPayload'
+      responses:
+        '201':
+          description: Voucher berhasil dibuat
+
+  /pos/outlets/{outletId}/vouchers/batch:
+    post:
+      tags: [Vouchers]
+      summary: Batch generate voucher
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prefix, count, discount_type, discount_value]
+              properties:
+                prefix:
+                  type: string
+                count:
+                  type: integer
+                  minimum: 1
+                  maximum: 1000
+                discount_type:
+                  type: string
+                  enum: [percentage, fixed]
+                discount_value:
+                  type: number
+                expires_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        '201':
+          description: Voucher batch berhasil dibuat
+
+  /pos/vouchers/{id}:
+    get:
+      tags: [Vouchers]
+      summary: Detail voucher
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Detail voucher
+
+  /pos/vouchers/validate:
+    post:
+      tags: [Vouchers]
+      summary: Validasi kode voucher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, subtotal]
+              properties:
+                code:
+                  type: string
+                subtotal:
+                  type: number
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: integer
+                      subtotal:
+                        type: number
+      responses:
+        '200':
+          description: Voucher valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                      voucher:
+                        $ref: '#/components/schemas/Voucher'
+                      discount_amount:
+                        type: number
+        '422':
+          description: Voucher tidak valid
+
+  # ===== MEMBERS =====
+  /pos/outlets/{outletId}/members:
+    get:
+      tags: [Members]
+      summary: List member per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Daftar member
+    post:
+      tags: [Members]
+      summary: Buat member baru
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberPayload'
+      responses:
+        '201':
+          description: Member berhasil dibuat
+
+  /pos/members/{id}:
+    get:
+      tags: [Members]
+      summary: Detail member
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Detail member
+    put:
+      tags: [Members]
+      summary: Update member
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberPayload'
+      responses:
+        '200':
+          description: Member berhasil diperbarui
+    delete:
+      tags: [Members]
+      summary: Hapus member
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Member berhasil dihapus
+
+  /pos/outlets/{outletId}/members/search:
+    get:
+      tags: [Members]
+      summary: Search member
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Hasil pencarian member
+
+  # ===== TABLES =====
+  /pos/outlets/{outletId}/tables:
+    get:
+      tags: [Tables]
+      summary: List meja per outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar meja
+    post:
+      tags: [Tables]
+      summary: Buat meja baru
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Meja berhasil dibuat
+
+  /pos/tables/{id}:
+    delete:
+      tags: [Tables]
+      summary: Hapus meja
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Meja berhasil dihapus
+
+  /pos/tables/{id}/close-session:
+    post:
+      tags: [Tables]
+      summary: Tutup sesi meja aktif
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Sesi meja berhasil ditutup
+
+  # ===== ORDER QUEUE =====
+  /pos/outlets/{outletId}/order-queue:
+    get:
+      tags: [Tables]
+      summary: Antrian order dari QR
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Daftar antrian order
+
+  /pos/order-queue/{id}/accept:
+    post:
+      tags: [Tables]
+      summary: Accept order dari antrian
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Order berhasil di-accept
+
+  # ===== QR ORDER (PUBLIC) =====
+  /pos/qr/{token}/menu:
+    get:
+      tags: [QR Order (Public)]
+      summary: Lihat menu via QR (tanpa auth)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Menu untuk meja ini
+
+  /pos/qr/{token}/order:
+    post:
+      tags: [QR Order (Public)]
+      summary: Submit order via QR (tanpa auth)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: integer
+                      variant_id:
+                        type: integer
+                        nullable: true
+                      quantity:
+                        type: integer
+                customer_name:
+                  type: string
+                  nullable: true
+                notes:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: Order berhasil dikirim
+
+  /pos/qr/{token}/order/{id}:
+    get:
+      tags: [QR Order (Public)]
+      summary: Cek status order (tanpa auth)
+      security: []
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Status order
+
+  # ===== REPORTS =====
+  /pos/outlets/{outletId}/reports/daily:
+    get:
+      tags: [Reports]
+      summary: Laporan harian
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Summary harian
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DailySummary'
+
+  /pos/outlets/{outletId}/reports/range:
+    get:
+      tags: [Reports]
+      summary: Laporan rentang tanggal
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Summary per hari dalam rentang
+
+  /pos/outlets/{outletId}/reports/products:
+    get:
+      tags: [Reports]
+      summary: Ranking produk
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Produk ranking berdasarkan penjualan
+
+  /pos/outlets/{outletId}/reports/payments:
+    get:
+      tags: [Reports]
+      summary: Revenue per metode pembayaran
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Breakdown per metode pembayaran
+
+  /pos/outlets/{outletId}/reports/dashboard:
+    get:
+      tags: [Reports]
+      summary: Dashboard stats
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      responses:
+        '200':
+          description: Stats hari ini + trend mingguan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/DashboardStats'
+
+  /pos/outlets/{outletId}/reports/export:
+    get:
+      tags: [Reports]
+      summary: Export CSV
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  # ===== RECEIPTS =====
+  /pos/transactions/{id}/receipt:
+    get:
+      tags: [Receipts]
+      summary: Generate receipt untuk transaksi
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Data receipt
+
+  /pos/outlets/{outletId}/receipt-template:
+    put:
+      tags: [Receipts]
+      summary: Update receipt template outlet
+      parameters:
+        - $ref: '#/components/parameters/OutletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receipt_header:
+                  type: string
+                receipt_footer:
+                  type: string
+                receipt_width:
+                  type: string
+                  enum: ['58mm', '80mm']
+      responses:
+        '200':
+          description: Template berhasil diperbarui
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: token
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    OutletId:
+      name: outletId
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+        last_page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+
+    Outlet:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        business_type:
+          type: string
+          enum: [retail, warung, kafe, warkop]
+        payment_flow:
+          type: string
+          enum: [pay_first, pay_later, both]
+        address:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        settings:
+          $ref: '#/components/schemas/OutletSettings'
+        created_at:
+          type: string
+          format: date-time
+
+    OutletSettings:
+      type: object
+      properties:
+        currency:
+          type: string
+        tax_rate:
+          type: number
+        tax_inclusive:
+          type: boolean
+        receipt_header:
+          type: string
+        receipt_footer:
+          type: string
+        receipt_width:
+          type: string
+          enum: ['58mm', '80mm']
+
+    OutletPayload:
+      type: object
+      required: [name, business_type, payment_flow]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        business_type:
+          type: string
+          enum: [retail, warung, kafe, warkop]
+        payment_flow:
+          type: string
+          enum: [pay_first, pay_later, both]
+        address:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        parent_id:
+          type: integer
+          nullable: true
+        name:
+          type: string
+        icon:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+
+    CategoryPayload:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 50
+        icon:
+          type: string
+          nullable: true
+        sort_order:
+          type: integer
+        parent_id:
+          type: integer
+          nullable: true
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        category_id:
+          type: integer
+        name:
+          type: string
+        base_price:
+          type: number
+        sku:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+        has_variants:
+          type: boolean
+        track_stock:
+          type: boolean
+        status:
+          type: string
+          enum: [active, inactive]
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductVariant'
+
+    ProductVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        name:
+          type: string
+        sku:
+          type: string
+          nullable: true
+        price:
+          type: number
+        stock_quantity:
+          type: integer
+
+    ProductPayload:
+      type: object
+      required: [name, base_price, category_id]
+      properties:
+        name:
+          type: string
+          maxLength: 150
+        base_price:
+          type: number
+          minimum: 0
+        category_id:
+          type: integer
+        sku:
+          type: string
+          nullable: true
+        image:
+          type: string
+          format: binary
+        has_variants:
+          type: boolean
+          default: false
+        track_stock:
+          type: boolean
+          default: true
+        variants:
+          type: array
+          items:
+            type: object
+            required: [name, price]
+            properties:
+              name:
+                type: string
+              price:
+                type: number
+              sku:
+                type: string
+                nullable: true
+              stock_quantity:
+                type: integer
+                default: 0
+
+    StockAdjustPayload:
+      type: object
+      required: [quantity, type]
+      properties:
+        variant_id:
+          type: integer
+        quantity:
+          type: integer
+        type:
+          type: string
+          enum: [set, adjust]
+        reason:
+          type: string
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        transaction_number:
+          type: string
+        subtotal:
+          type: number
+        discount_amount:
+          type: number
+        tax_rate:
+          type: number
+        tax_amount:
+          type: number
+        tax_inclusive:
+          type: boolean
+        total:
+          type: number
+        refunded_amount:
+          type: number
+        payment_method:
+          type: string
+          nullable: true
+        payment_method_type:
+          type: string
+          nullable: true
+          enum: [cash, bank_transfer, e_wallet, custom]
+        amount_tendered:
+          type: number
+          nullable: true
+        change_amount:
+          type: number
+          nullable: true
+        status:
+          type: string
+          enum: [completed, pending, voided, refunded, partially_refunded]
+        void_reason:
+          type: string
+          nullable: true
+        voided_at:
+          type: string
+          format: date-time
+          nullable: true
+        member_id:
+          type: integer
+          nullable: true
+        table_session_id:
+          type: integer
+          nullable: true
+        voucher_code:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionItem'
+        applied_discounts:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+              value:
+                type: number
+              amount:
+                type: number
+        created_at:
+          type: string
+          format: date-time
+
+    TransactionItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        product_id:
+          type: integer
+        product_variant_id:
+          type: integer
+          nullable: true
+        product_name:
+          type: string
+        variant_name:
+          type: string
+          nullable: true
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+        subtotal:
+          type: number
+
+    CheckoutPayload:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [product_id, quantity, unit_price, product_name]
+            properties:
+              product_id:
+                type: integer
+              product_variant_id:
+                type: integer
+                nullable: true
+              quantity:
+                type: integer
+                minimum: 1
+              unit_price:
+                type: number
+                minimum: 0
+              product_name:
+                type: string
+                maxLength: 150
+              variant_name:
+                type: string
+                nullable: true
+                maxLength: 100
+        payment_method:
+          type: string
+          nullable: true
+          maxLength: 50
+        payment_method_type:
+          type: string
+          nullable: true
+          enum: [cash, bank_transfer, e_wallet, custom]
+        amount_tendered:
+          type: number
+          nullable: true
+          minimum: 0
+        voucher_code:
+          type: string
+          nullable: true
+          maxLength: 50
+        discount_ids:
+          type: array
+          items:
+            type: integer
+        member_id:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+          maxLength: 500
+
+    Refund:
+      type: object
+      properties:
+        id:
+          type: integer
+        transaction_id:
+          type: integer
+        refund_number:
+          type: string
+        refund_amount:
+          type: number
+        reason:
+          type: string
+        refund_method:
+          type: string
+          nullable: true
+          enum: [cash, original_method, store_credit]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RefundItem'
+        created_at:
+          type: string
+          format: date-time
+
+    RefundItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        transaction_item_id:
+          type: integer
+        product_id:
+          type: integer
+        product_variant_id:
+          type: integer
+          nullable: true
+        product_name:
+          type: string
+        variant_name:
+          type: string
+          nullable: true
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+        refund_amount:
+          type: number
+
+    RefundPayload:
+      type: object
+      required: [items, reason]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [transaction_item_id, quantity]
+            properties:
+              transaction_item_id:
+                type: integer
+              quantity:
+                type: integer
+                minimum: 1
+        reason:
+          type: string
+          maxLength: 500
+        refund_method:
+          type: string
+          nullable: true
+          enum: [cash, original_method, store_credit]
+
+    OpenBill:
+      type: object
+      properties:
+        id:
+          type: integer
+        transaction_number:
+          type: string
+        subtotal:
+          type: number
+        discount_amount:
+          type: number
+        total:
+          type: number
+        member_id:
+          type: integer
+          nullable: true
+        member_name:
+          type: string
+          nullable: true
+        table_session_id:
+          type: integer
+          nullable: true
+        table_name:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionItem'
+        is_overdue:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    CloseOpenBillPayload:
+      type: object
+      required: [payment_method, payment_method_type]
+      properties:
+        payment_method:
+          type: string
+        payment_method_type:
+          type: string
+          enum: [cash, bank_transfer, e_wallet, custom]
+        amount_tendered:
+          type: number
+          nullable: true
+
+    CashierShift:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        user_id:
+          type: integer
+        cashier_name:
+          type: string
+        opening_amount:
+          type: number
+        closing_amount:
+          type: number
+          nullable: true
+        expected_amount:
+          type: number
+          nullable: true
+        difference:
+          type: number
+          nullable: true
+        status:
+          type: string
+          enum: [open, closed]
+        notes:
+          type: string
+          nullable: true
+        opened_at:
+          type: string
+          format: date-time
+        closed_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    PaymentMethod:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        type:
+          type: string
+          enum: [cash, bank_transfer, e_wallet, custom]
+        name:
+          type: string
+        is_active:
+          type: boolean
+        settings:
+          type: object
+          nullable: true
+        sort_order:
+          type: integer
+
+    PaymentMethodPayload:
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          type: string
+          enum: [cash, bank_transfer, e_wallet, custom]
+        name:
+          type: string
+          maxLength: 50
+        is_active:
+          type: boolean
+          default: true
+        settings:
+          type: object
+          nullable: true
+        sort_order:
+          type: integer
+          default: 0
+
+    Discount:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [percentage, fixed, buy_x_get_y]
+        value:
+          type: number
+        min_purchase:
+          type: number
+          nullable: true
+        buy_quantity:
+          type: integer
+          nullable: true
+        get_quantity:
+          type: integer
+          nullable: true
+        product_id:
+          type: integer
+          nullable: true
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        is_active:
+          type: boolean
+        member_only:
+          type: boolean
+        priority:
+          type: integer
+
+    DiscountPayload:
+      type: object
+      required: [name, type, value]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          enum: [percentage, fixed, buy_x_get_y]
+        value:
+          type: number
+          minimum: 0
+        min_purchase:
+          type: number
+          nullable: true
+        member_only:
+          type: boolean
+          default: false
+        is_active:
+          type: boolean
+          default: true
+        priority:
+          type: integer
+          default: 0
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        product_id:
+          type: integer
+          nullable: true
+
+    Voucher:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        code:
+          type: string
+        discount_type:
+          type: string
+          enum: [percentage, fixed]
+        discount_value:
+          type: number
+        min_purchase:
+          type: number
+          nullable: true
+        usage_limit:
+          type: integer
+          nullable: true
+        usage_count:
+          type: integer
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+        product_id:
+          type: integer
+          nullable: true
+
+    VoucherPayload:
+      type: object
+      required: [code, discount_type, discount_value]
+      properties:
+        code:
+          type: string
+          maxLength: 50
+        discount_type:
+          type: string
+          enum: [percentage, fixed]
+        discount_value:
+          type: number
+          minimum: 0
+        min_purchase:
+          type: number
+          nullable: true
+        usage_limit:
+          type: integer
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+          default: true
+        product_id:
+          type: integer
+          nullable: true
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+        outlet_id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    MemberPayload:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 20
+        email:
+          type: string
+          format: email
+          nullable: true
+
+    DailySummary:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        gross_revenue:
+          type: number
+        total_discount:
+          type: number
+        total_revenue:
+          type: number
+        transaction_count:
+          type: integer
+        average_transaction:
+          type: number
+        top_products:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              quantity:
+                type: integer
+              revenue:
+                type: number
+
+    DashboardStats:
+      type: object
+      properties:
+        today_revenue:
+          type: number
+        today_gross_revenue:
+          type: number
+        today_discount:
+          type: number
+        today_transactions:
+          type: integer
+        weekly_trend:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              revenue:
+                type: number
+              discount:
+                type: number

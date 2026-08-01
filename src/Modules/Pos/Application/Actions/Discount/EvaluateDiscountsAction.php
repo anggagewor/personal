@@ -61,7 +61,7 @@ class EvaluateDiscountsAction
 
                 // Calculate discount amount
                 $baseAmount = $this->getDiscountBase($discount, $items, $remaining);
-                $discountAmount = $this->calculateDiscountAmount($discount, $baseAmount);
+                $discountAmount = $this->calculateDiscountAmount($discount, $baseAmount, $items);
 
                 if ($discountAmount <= 0) {
                     continue;
@@ -100,20 +100,85 @@ class EvaluateDiscountsAction
         return $remaining;
     }
 
-    private function calculateDiscountAmount(Discount $discount, float $base): float
+    private function calculateDiscountAmount(Discount $discount, float $base, array $items = []): float
     {
         return match ($discount->type->value) {
             'percentage' => $base * ($discount->value / 100),
             'fixed' => min($discount->value, $base),
+            'buy_x_get_y' => $this->calculateBuyXGetY($discount, $items),
             default => 0.0,
         };
     }
 
     /**
-     * Check if discount conditions are met (e.g. min_qty, hours, days).
+     * Calculate buy X get Y discount.
+     * Example: buy 2 get 1 free → every 3rd item is free (up to get_quantity items).
+     */
+    private function calculateBuyXGetY(Discount $discount, array $items): float
+    {
+        if ($discount->buyQuantity === null || $discount->getQuantity === null) {
+            return 0.0;
+        }
+
+        $buyQty = $discount->buyQuantity;
+        $getQty = $discount->getQuantity;
+        $productId = $discount->productId;
+
+        if ($productId === null) {
+            return 0.0;
+        }
+
+        // Find matching product's total quantity and unit price
+        $totalQty = 0;
+        $unitPrice = 0.0;
+        foreach ($items as $item) {
+            if (($item['product_id'] ?? 0) === $productId) {
+                $totalQty += (int) ($item['quantity'] ?? 0);
+                // Use average price per unit from subtotal
+                $itemQty = (int) ($item['quantity'] ?? 1);
+                if ($itemQty > 0) {
+                    $unitPrice = (float) ($item['subtotal'] ?? 0) / $itemQty;
+                }
+            }
+        }
+
+        if ($totalQty < ($buyQty + $getQty)) {
+            return 0.0;
+        }
+
+        // Calculate how many "sets" qualify (buy X + get Y = 1 set)
+        $setSize = $buyQty + $getQty;
+        $completeSets = intdiv($totalQty, $setSize);
+
+        // Free items = completeSets * getQuantity
+        $freeItems = $completeSets * $getQty;
+
+        return $freeItems * $unitPrice;
+    }
+
+    /**
+     * Check if discount conditions are met (e.g. min_qty, hours, days, buy_x_get_y quantity).
      */
     private function meetsConditions(Discount $discount, array $items): bool
     {
+        // Buy X Get Y requires minimum quantity of buy + get
+        if ($discount->type === \Modules\Pos\Domain\Enums\DiscountType::BuyXGetY) {
+            if ($discount->buyQuantity === null || $discount->getQuantity === null || $discount->productId === null) {
+                return false;
+            }
+
+            $totalQty = 0;
+            foreach ($items as $item) {
+                if (($item['product_id'] ?? 0) === $discount->productId) {
+                    $totalQty += (int) ($item['quantity'] ?? 0);
+                }
+            }
+
+            if ($totalQty < ($discount->buyQuantity + $discount->getQuantity)) {
+                return false;
+            }
+        }
+
         if (empty($discount->conditions)) {
             return true;
         }

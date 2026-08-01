@@ -14,6 +14,8 @@ export interface OutletSettings {
   receipt_header?: string
   receipt_footer?: string
   receipt_width?: '58mm' | '80mm'
+  tax_rate?: number
+  tax_inclusive?: boolean
 }
 
 // === Category ===
@@ -82,7 +84,6 @@ export interface CheckoutPayload {
   discount_ids?: number[]
   member_id?: number
   table_session_id?: number
-  payment_flow: 'pay_first' | 'pay_later'
   notes?: string
 }
 
@@ -93,12 +94,16 @@ export interface Transaction {
   transaction_number: string
   subtotal: number
   discount_amount: number
+  tax_rate: number
+  tax_amount: number
+  tax_inclusive: boolean
   total: number
+  refunded_amount: number
   payment_method: string | null
   payment_method_type: string | null
   amount_tendered: number | null
   change_amount: number | null
-  status: 'completed' | 'pending' | 'voided'
+  status: 'completed' | 'pending' | 'voided' | 'refunded' | 'partially_refunded'
   member_id: number | null
   member_name: string | null
   void_reason: string | null
@@ -217,6 +222,36 @@ export interface DashboardStats {
   weekly_trend: { date: string; revenue: number; discount: number }[]
 }
 
+// === Cashier Shift ===
+export interface CashierShift {
+  id: number
+  outlet_id: number
+  user_id: number
+  cashier_name: string
+  opening_amount: number
+  closing_amount: number | null
+  expected_amount: number | null
+  difference: number | null
+  status: 'open' | 'closed'
+  notes: string | null
+  opened_at: string
+  closed_at: string | null
+  summary?: {
+    cash_sales: number
+    cash_refunds: number
+    net_cash: number
+  }
+}
+
+export interface OpenShiftPayload {
+  opening_amount: number
+}
+
+export interface CloseShiftPayload {
+  closing_amount: number
+  notes?: string
+}
+
 // === Member ===
 export interface Member {
   id: number
@@ -254,4 +289,34 @@ export interface CloseOpenBillPayload {
   payment_method: string
   payment_method_type: string
   amount_tendered?: number
+}
+
+// === Refund ===
+export interface Refund {
+  id: number
+  transaction_id: number
+  refund_number: string
+  refund_amount: number
+  reason: string
+  refund_method: 'cash' | 'original_method' | 'store_credit' | null
+  items: RefundItem[]
+  created_at: string
+}
+
+export interface RefundItem {
+  id: number
+  transaction_item_id: number
+  product_id: number
+  product_variant_id: number | null
+  product_name: string
+  variant_name: string | null
+  quantity: number
+  unit_price: number
+  refund_amount: number
+}
+
+export interface RefundPayload {
+  items: { transaction_item_id: number; quantity: number }[]
+  reason: string
+  refund_method?: 'cash' | 'original_method' | 'store_credit'
 }

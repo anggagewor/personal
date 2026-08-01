@@ -13,9 +13,14 @@ import type {
   MemberPayload,
   DailySummary,
   DashboardStats,
+  CashierShift,
+  OpenShiftPayload,
+  CloseShiftPayload,
   OpenBill,
   CloseOpenBillPayload,
   CheckoutPayload,
+  Refund,
+  RefundPayload,
 } from '@/types/pos'
 
 // --- Outlets ---
@@ -146,6 +151,14 @@ export function voidTransaction(id: number, payload: { reason: string }) {
   return post(`/pos/transactions/${id}/void`, payload)
 }
 
+export function refundTransaction(id: number, payload: RefundPayload) {
+  return post<Refund>(`/pos/transactions/${id}/refund`, payload)
+}
+
+export function fetchRefunds(transactionId: number) {
+  return get<Refund[]>(`/pos/transactions/${transactionId}/refunds`)
+}
+
 // --- Open Bills ---
 
 export function fetchOpenBills(outletId: number) {
@@ -271,6 +284,28 @@ export function fetchOrderQueue(outletId: number) {
 
 export function acceptOrder(id: number) {
   return post(`/pos/order-queue/${id}/accept`)
+}
+
+// --- Shifts ---
+
+export function fetchShifts(outletId: number, params?: { page?: number; per_page?: number; status?: string }) {
+  return get<CashierShift[]>(`/pos/outlets/${outletId}/shifts`, { params })
+}
+
+export function fetchActiveShift(outletId: number) {
+  return get<CashierShift | null>(`/pos/outlets/${outletId}/shifts/active`)
+}
+
+export function openShift(outletId: number, payload: OpenShiftPayload) {
+  return post<CashierShift>(`/pos/outlets/${outletId}/shifts/open`, payload)
+}
+
+export function fetchShift(id: number) {
+  return get<CashierShift>(`/pos/shifts/${id}`)
+}
+
+export function closeShift(id: number, payload: CloseShiftPayload) {
+  return post<CashierShift>(`/pos/shifts/${id}/close`, payload)
 }
 
 // --- Reports ---

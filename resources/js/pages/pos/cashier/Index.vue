@@ -9,6 +9,7 @@ import ProductGrid from './ProductGrid.vue'
 import CartPanel from './CartPanel.vue'
 import CheckoutModal from './CheckoutModal.vue'
 import ReceiptPreview from './ReceiptPreview.vue'
+import ShiftBar from './ShiftBar.vue'
 
 const route = useRoute()
 const cartStore = usePosCartStore()
@@ -104,7 +105,12 @@ watch(outletId, (val) => {
 </script>
 
 <template>
-  <div class="flex h-[calc(100vh-7rem)] gap-0 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+  <div class="flex flex-col gap-3">
+    <!-- Shift Bar -->
+    <ShiftBar v-if="outletId" :outlet-id="outletId" @shift-changed="() => {}" />
+
+    <!-- POS Layout -->
+    <div class="flex h-[calc(100vh-10rem)] gap-0 overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
     <!-- Product Grid (left ~65%) -->
     <div class="flex-[2] overflow-y-auto border-r border-gray-200 dark:border-gray-700">
       <ProductGrid
@@ -122,7 +128,7 @@ watch(outletId, (val) => {
         @checkout="openCheckout"
       />
     </div>
-  </div>
+    </div>
 
   <!-- Checkout Modal -->
   <CheckoutModal
@@ -140,4 +146,5 @@ watch(outletId, (val) => {
     :outlet="outlet"
     @close="onReceiptClose"
   />
+  </div>
 </template>

@@ -6,17 +6,23 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Shared\Infrastructure\Controllers\BaseController;
 use Modules\Pos\Application\Actions\Transaction\CreateTransactionAction;
+use Modules\Pos\Application\Actions\Transaction\RefundTransactionAction;
 use Modules\Pos\Application\Actions\Transaction\VoidTransactionAction;
 use Modules\Pos\Application\Actions\Voucher\RedeemVoucherAction;
 use Modules\Pos\Application\DTO\CheckoutData;
 use Modules\Pos\Application\DTO\LineItemData;
+use Modules\Pos\Application\DTO\RefundData;
+use Modules\Pos\Application\DTO\RefundItemData;
 use Modules\Pos\Domain\Contracts\OutletRepositoryInterface;
 use Modules\Pos\Domain\Contracts\TransactionRepositoryInterface;
 use Modules\Pos\Domain\Exceptions\InsufficientStockException;
 use Modules\Pos\Domain\Exceptions\InvalidVoucherException;
+use Modules\Pos\Domain\Exceptions\RefundNotAllowedException;
 use Modules\Pos\Domain\Exceptions\VoidNotAllowedException;
+use Modules\Pos\Infrastructure\Requests\RefundTransactionRequest;
 use Modules\Pos\Infrastructure\Requests\StoreTransactionRequest;
 use Modules\Pos\Infrastructure\Requests\VoidTransactionRequest;
+use Modules\Pos\Infrastructure\Resources\RefundResource;
 use Modules\Pos\Infrastructure\Resources\TransactionResource;
 use Modules\Shared\Infrastructure\Traits\AuthorizesOwnership;
 
@@ -98,6 +104,7 @@ class TransactionController extends BaseController
                 $amount = match ($disc->type->value) {
                     'percentage' => $base * ($disc->value / 100),
                     'fixed' => min($disc->value, $base),
+                    'buy_x_get_y' => $this->calculateBxgyAmount($disc, $evalItems),
                     default => 0.0,
                 };
 
@@ -116,6 +123,7 @@ class TransactionController extends BaseController
 
         // Evaluate voucher discount
         $voucherDiscount = 0.0;
+        $voucherWarning = null;
         if (!empty($validated['voucher_code'])) {
             $validateAction = app(\Modules\Pos\Application\Actions\Voucher\ValidateVoucherAction::class);
             try {
@@ -143,8 +151,10 @@ class TransactionController extends BaseController
                         'amount' => round($voucherDiscount, 2),
                     ];
                 }
+            } catch (InvalidVoucherException $e) {
+                $voucherWarning = $e->getMessage();
             } catch (\Throwable) {
-                // Voucher validation failure is non-blocking
+                $voucherWarning = 'Voucher tidak dapat divalidasi. Transaksi tetap diproses tanpa voucher.';
             }
         }
 
@@ -182,6 +192,9 @@ class TransactionController extends BaseController
             return response()->json([
                 'data' => TransactionResource::toArray($transaction),
                 'message' => 'Transaksi berhasil dibuat.',
+                'warnings' => array_filter([
+                    $voucherWarning ? ['type' => 'voucher_invalid', 'message' => $voucherWarning] : null,
+                ]),
             ], 201);
         } catch (InsufficientStockException $e) {
             return response()->json([
@@ -232,5 +245,101 @@ class TransactionController extends BaseController
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Calculate Buy X Get Y discount amount for a given discount and items.
+     */
+    private function calculateBxgyAmount(object $disc, array $items): float
+    {
+        if ($disc->buyQuantity === null || $disc->getQuantity === null || $disc->productId === null) {
+            return 0.0;
+        }
+
+        $totalQty = 0;
+        $unitPrice = 0.0;
+        foreach ($items as $item) {
+            if (($item['product_id'] ?? 0) === $disc->productId) {
+                $totalQty += (int) ($item['quantity'] ?? 0);
+                $itemQty = (int) ($item['quantity'] ?? 1);
+                if ($itemQty > 0) {
+                    $unitPrice = (float) ($item['subtotal'] ?? 0) / $itemQty;
+                }
+            }
+        }
+
+        $setSize = $disc->buyQuantity + $disc->getQuantity;
+        if ($totalQty < $setSize) {
+            return 0.0;
+        }
+
+        $completeSets = intdiv($totalQty, $setSize);
+        $freeItems = $completeSets * $disc->getQuantity;
+
+        return $freeItems * $unitPrice;
+    }
+
+    public function refund(
+        RefundTransactionRequest $request,
+        int $id,
+        RefundTransactionAction $action,
+    ): JsonResponse {
+        $transaction = $this->transactionRepo->findById($id);
+
+        if (! $transaction) {
+            abort(404, 'Transaksi tidak ditemukan.');
+        }
+
+        // Verify ownership via outlet
+        $this->findOwnedOrFail($this->outletRepo, $transaction->outletId, $request);
+
+        $validated = $request->validated();
+
+        $items = array_map(
+            fn (array $item) => new RefundItemData(
+                transactionItemId: $item['transaction_item_id'],
+                quantity: $item['quantity'],
+            ),
+            $validated['items'],
+        );
+
+        $refundData = new RefundData(
+            transactionId: $id,
+            items: $items,
+            reason: $validated['reason'],
+            refundMethod: $validated['refund_method'] ?? null,
+        );
+
+        try {
+            $refund = $action->execute($refundData);
+
+            return response()->json([
+                'data' => RefundResource::toArray($refund),
+                'message' => 'Refund berhasil diproses.',
+            ], 201);
+        } catch (RefundNotAllowedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function refunds(Request $request, int $id): JsonResponse
+    {
+        $transaction = $this->transactionRepo->findById($id);
+
+        if (! $transaction) {
+            abort(404, 'Transaksi tidak ditemukan.');
+        }
+
+        // Verify ownership via outlet
+        $this->findOwnedOrFail($this->outletRepo, $transaction->outletId, $request);
+
+        $refunds = $this->transactionRepo->findRefundsByTransaction($id);
+
+        return response()->json([
+            'data' => RefundResource::collection($refunds),
+            'message' => 'Daftar refund berhasil diambil.',
+        ]);
     }
 }

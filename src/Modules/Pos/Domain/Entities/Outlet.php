@@ -30,4 +30,22 @@ class Outlet
     {
         return in_array($this->paymentFlow, [PaymentFlowMode::PayLater, PaymentFlowMode::Both]);
     }
+
+    /**
+     * Get tax rate from outlet settings (e.g. PPN 11%).
+     * Returns 0 if no tax configured.
+     */
+    public function getTaxRate(): float
+    {
+        return (float) ($this->settings['tax_rate'] ?? 0);
+    }
+
+    /**
+     * Whether prices already include tax (tax inclusive).
+     * Default: false (tax exclusive — tax is added on top).
+     */
+    public function isTaxInclusive(): bool
+    {
+        return (bool) ($this->settings['tax_inclusive'] ?? false);
+    }
 }

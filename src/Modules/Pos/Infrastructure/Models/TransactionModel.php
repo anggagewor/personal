@@ -15,7 +15,11 @@ class TransactionModel extends Model
         'transaction_number',
         'subtotal',
         'discount_amount',
+        'tax_rate',
+        'tax_amount',
+        'tax_inclusive',
         'total',
+        'refunded_amount',
         'payment_method',
         'payment_method_type',
         'amount_tendered',
@@ -25,6 +29,7 @@ class TransactionModel extends Model
         'voided_at',
         'member_id',
         'table_session_id',
+        'shift_id',
         'voucher_code',
         'notes',
     ];
@@ -34,7 +39,11 @@ class TransactionModel extends Model
         return [
             'subtotal' => 'decimal:2',
             'discount_amount' => 'decimal:2',
+            'tax_rate' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
+            'tax_inclusive' => 'boolean',
             'total' => 'decimal:2',
+            'refunded_amount' => 'decimal:2',
             'amount_tendered' => 'decimal:2',
             'change_amount' => 'decimal:2',
             'voided_at' => 'datetime',
@@ -61,6 +70,11 @@ class TransactionModel extends Model
         return $this->belongsTo(TableSessionModel::class, 'table_session_id');
     }
 
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(CashierShiftModel::class, 'shift_id');
+    }
+
     public function voucherRedemptions(): HasMany
     {
         return $this->hasMany(VoucherRedemptionModel::class, 'transaction_id');
@@ -69,5 +83,10 @@ class TransactionModel extends Model
     public function discounts(): HasMany
     {
         return $this->hasMany(TransactionDiscountModel::class, 'transaction_id');
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(RefundModel::class, 'transaction_id');
     }
 }

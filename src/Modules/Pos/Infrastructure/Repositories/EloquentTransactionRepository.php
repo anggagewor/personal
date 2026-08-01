@@ -76,7 +76,17 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
 
             $status = $data->status ?? TransactionStatus::Completed->value;
             $discountAmount = $data->discountAmount;
-            $total = max(0, $subtotal - $discountAmount);
+            $taxAmount = $data->taxAmount;
+            $taxRate = $data->taxRate;
+            $taxInclusive = $data->taxInclusive;
+
+            // For tax exclusive: total = subtotal - discount + tax
+            // For tax inclusive: total = subtotal - discount (tax is already inside)
+            if ($taxInclusive) {
+                $total = max(0, $subtotal - $discountAmount);
+            } else {
+                $total = max(0, $subtotal - $discountAmount + $taxAmount);
+            }
 
             $changeAmount = null;
             if ($data->paymentMethodType === 'cash' && $data->amountTendered !== null) {
@@ -90,6 +100,9 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
                 'transaction_number' => $transactionNumber,
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
+                'tax_rate' => $taxRate,
+                'tax_amount' => $taxAmount,
+                'tax_inclusive' => $taxInclusive,
                 'total' => $total,
                 'payment_method' => $data->paymentMethod,
                 'payment_method_type' => $data->paymentMethodType,
@@ -97,6 +110,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
                 'change_amount' => $changeAmount,
                 'status' => $status,
                 'member_id' => $data->memberId,
+                'shift_id' => $data->shiftId,
                 'voucher_code' => $data->voucherCode,
                 'notes' => $data->notes,
             ]);
@@ -195,6 +209,113 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
         return $this->toEntity($model->fresh()->load('items'));
     }
 
+    public function createRefund(int $transactionId, string $refundNumber, float $refundAmount, string $reason, ?string $refundMethod, array $items): \Modules\Pos\Domain\Entities\Refund
+    {
+        return DB::transaction(function () use ($transactionId, $refundNumber, $refundAmount, $reason, $refundMethod, $items) {
+            $refundModel = \Modules\Pos\Infrastructure\Models\RefundModel::create([
+                'transaction_id' => $transactionId,
+                'refund_number' => $refundNumber,
+                'refund_amount' => $refundAmount,
+                'reason' => $reason,
+                'refund_method' => $refundMethod,
+            ]);
+
+            $refundItems = [];
+            foreach ($items as $item) {
+                $refundItemModel = \Modules\Pos\Infrastructure\Models\RefundItemModel::create([
+                    'refund_id' => $refundModel->id,
+                    'transaction_item_id' => $item['transaction_item_id'],
+                    'product_id' => $item['product_id'],
+                    'product_variant_id' => $item['product_variant_id'] ?? null,
+                    'product_name' => $item['product_name'],
+                    'variant_name' => $item['variant_name'] ?? null,
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'refund_amount' => $item['refund_amount'],
+                    'created_at' => now(),
+                ]);
+
+                $refundItems[] = new \Modules\Pos\Domain\Entities\RefundItem(
+                    id: $refundItemModel->id,
+                    refundId: $refundModel->id,
+                    transactionItemId: $item['transaction_item_id'],
+                    productId: $item['product_id'],
+                    productVariantId: $item['product_variant_id'] ?? null,
+                    productName: $item['product_name'],
+                    variantName: $item['variant_name'] ?? null,
+                    quantity: $item['quantity'],
+                    unitPrice: $item['unit_price'],
+                    refundAmount: $item['refund_amount'],
+                );
+            }
+
+            return new \Modules\Pos\Domain\Entities\Refund(
+                id: $refundModel->id,
+                transactionId: $transactionId,
+                refundNumber: $refundNumber,
+                refundAmount: $refundAmount,
+                reason: $reason,
+                refundMethod: $refundMethod,
+                items: $refundItems,
+                createdAt: new DateTimeImmutable($refundModel->created_at->toDateTimeString()),
+            );
+        });
+    }
+
+    public function updateRefundedAmount(int $transactionId, float $totalRefunded): void
+    {
+        TransactionModel::where('id', $transactionId)->update([
+            'refunded_amount' => $totalRefunded,
+        ]);
+    }
+
+    public function updateStatus(int $transactionId, string $status): void
+    {
+        TransactionModel::where('id', $transactionId)->update([
+            'status' => $status,
+        ]);
+    }
+
+    public function getRefundedQuantityByItem(int $transactionItemId): int
+    {
+        return (int) \Modules\Pos\Infrastructure\Models\RefundItemModel::where('transaction_item_id', $transactionItemId)
+            ->sum('quantity');
+    }
+
+    public function findRefundsByTransaction(int $transactionId): array
+    {
+        $models = \Modules\Pos\Infrastructure\Models\RefundModel::with('items')
+            ->where('transaction_id', $transactionId)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return $models->map(function ($model) {
+            $items = $model->items->map(fn ($item) => new \Modules\Pos\Domain\Entities\RefundItem(
+                id: $item->id,
+                refundId: $model->id,
+                transactionItemId: $item->transaction_item_id,
+                productId: $item->product_id,
+                productVariantId: $item->product_variant_id,
+                productName: $item->product_name,
+                variantName: $item->variant_name,
+                quantity: (int) $item->quantity,
+                unitPrice: (float) $item->unit_price,
+                refundAmount: (float) $item->refund_amount,
+            ))->all();
+
+            return new \Modules\Pos\Domain\Entities\Refund(
+                id: $model->id,
+                transactionId: $model->transaction_id,
+                refundNumber: $model->refund_number,
+                refundAmount: (float) $model->refund_amount,
+                reason: $model->reason,
+                refundMethod: $model->refund_method,
+                items: $items,
+                createdAt: $model->created_at ? new DateTimeImmutable($model->created_at->toDateTimeString()) : null,
+            );
+        })->all();
+    }
+
     private function toEntity(TransactionModel $model): Transaction
     {
         $items = $model->items->map(fn ($itemModel) => new TransactionItem(
@@ -224,8 +345,13 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             transactionNumber: $model->transaction_number,
             subtotal: (float) $model->subtotal,
             discountAmount: (float) $model->discount_amount,
+            taxRate: (float) ($model->tax_rate ?? 0),
+            taxAmount: (float) ($model->tax_amount ?? 0),
+            taxInclusive: (bool) ($model->tax_inclusive ?? false),
             total: (float) $model->total,
+            refundedAmount: (float) ($model->refunded_amount ?? 0),
             paymentMethod: $model->payment_method,
+            paymentMethodType: $model->payment_method_type,
             amountTendered: $model->amount_tendered ? (float) $model->amount_tendered : null,
             changeAmount: $model->change_amount ? (float) $model->change_amount : null,
             status: TransactionStatus::from($model->status),
@@ -235,6 +361,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             voucherCode: $model->voucher_code,
             items: $items,
             appliedDiscounts: $appliedDiscounts,
+            notes: $model->notes,
             createdAt: $model->created_at ? new DateTimeImmutable($model->created_at->toDateTimeString()) : null,
             voidedAt: $model->voided_at ? new DateTimeImmutable($model->voided_at->toDateTimeString()) : null,
         );

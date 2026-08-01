@@ -13,8 +13,13 @@ class Transaction
         public string $transactionNumber,
         public float $subtotal,
         public float $discountAmount,
+        public float $taxRate = 0,
+        public float $taxAmount = 0,
+        public bool $taxInclusive = false,
         public float $total,
+        public float $refundedAmount = 0,
         public ?string $paymentMethod = null,
+        public ?string $paymentMethodType = null,
         public ?float $amountTendered = null,
         public ?float $changeAmount = null,
         public TransactionStatus $status = TransactionStatus::Completed,
@@ -26,6 +31,7 @@ class Transaction
         public array $items = [],
         /** @var array{name: string, type: string, value: float, amount: float}[] */
         public array $appliedDiscounts = [],
+        public ?string $notes = null,
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $voidedAt = null,
     ) {}
@@ -65,5 +71,25 @@ class Transaction
     public function isLinkedToMember(): bool
     {
         return $this->memberId !== null;
+    }
+
+    public function isRefunded(): bool
+    {
+        return $this->status === TransactionStatus::Refunded;
+    }
+
+    public function isPartiallyRefunded(): bool
+    {
+        return $this->status === TransactionStatus::PartiallyRefunded;
+    }
+
+    public function canBeRefunded(): bool
+    {
+        return in_array($this->status, [TransactionStatus::Completed, TransactionStatus::PartiallyRefunded], true);
+    }
+
+    public function getRefundableAmount(): float
+    {
+        return max(0, $this->total - $this->refundedAmount);
     }
 }

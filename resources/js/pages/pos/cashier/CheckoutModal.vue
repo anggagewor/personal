@@ -61,7 +61,29 @@ const paymentMethodOptions = computed(() =>
 // Change calculation
 const changeAmount = computed(() => {
   if (selectedPaymentMethodType.value !== 'cash') return 0
-  return Math.max(0, amountTendered.value - cartStore.total)
+  return Math.max(0, amountTendered.value - totalWithTax.value)
+})
+
+// Tax calculation (mirrors server-side logic)
+const taxRate = computed(() => props.outlet?.settings?.tax_rate ?? 0)
+const taxInclusive = computed(() => props.outlet?.settings?.tax_inclusive ?? false)
+
+const taxAmount = computed(() => {
+  if (taxRate.value <= 0) return 0
+  const afterDiscount = Math.max(0, cartStore.subtotal - cartStore.totalDeductions)
+  if (taxInclusive.value) {
+    // Tax is embedded in prices
+    return Math.round(afterDiscount - afterDiscount / (1 + taxRate.value / 100))
+  }
+  // Tax added on top
+  return Math.round(afterDiscount * (taxRate.value / 100))
+})
+
+const totalWithTax = computed(() => {
+  if (taxInclusive.value) {
+    return cartStore.total // Tax already in price
+  }
+  return cartStore.total + taxAmount.value
 })
 
 const isCashPayment = computed(() => {
@@ -72,7 +94,7 @@ const isCashPayment = computed(() => {
 const canSubmit = computed(() => {
   if (isPayLater.value) return true
   if (!selectedPaymentMethod.value) return false
-  if (isCashPayment.value && amountTendered.value < cartStore.total) return false
+  if (isCashPayment.value && amountTendered.value < totalWithTax.value) return false
   return true
 })
 
@@ -96,7 +118,7 @@ watch(selectedPaymentMethod, (name) => {
   const pm = props.paymentMethods.find((p) => p.name === name)
   selectedPaymentMethodType.value = pm?.type || ''
   if (pm?.type === 'cash') {
-    amountTendered.value = cartStore.total
+    amountTendered.value = totalWithTax.value
   }
 })
 
@@ -165,7 +187,6 @@ async function submit() {
     const payload: CheckoutPayload = {
       outlet_id: props.outletId,
       items: cartStore.items,
-      payment_flow: paymentFlow.value,
       member_id: selectedMember.value?.id,
       voucher_code: voucherValid.value ? voucherCode.value : undefined,
       discount_ids: cartStore.applicableDiscounts.map((d) => d.id),
@@ -314,7 +335,7 @@ function setPaymentFlow(flow: 'pay_first' | 'pay_later') {
           <!-- Quick amount buttons -->
           <div class="mt-2 flex flex-wrap gap-2">
             <button
-              v-for="amount in [cartStore.total, 50000, 100000, 200000, 500000]"
+              v-for="amount in [totalWithTax, 50000, 100000, 200000, 500000]"
               :key="amount"
               class="rounded-md border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
               @click="amountTendered = amount"
@@ -324,14 +345,14 @@ function setPaymentFlow(flow: 'pay_first' | 'pay_later') {
           </div>
 
           <!-- Change display -->
-          <div v-if="amountTendered >= cartStore.total" class="mt-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
+          <div v-if="amountTendered >= totalWithTax" class="mt-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20">
             <p class="text-sm text-green-700 dark:text-green-300">
               Kembalian: <span class="font-bold">{{ formatCurrency(changeAmount) }}</span>
             </p>
           </div>
           <div v-else-if="amountTendered > 0" class="mt-3 rounded-lg bg-red-50 p-3 dark:bg-red-900/20">
             <p class="text-sm text-red-600 dark:text-red-400">
-              Kurang: {{ formatCurrency(cartStore.total - amountTendered) }}
+              Kurang: {{ formatCurrency(totalWithTax - amountTendered) }}
             </p>
           </div>
         </div>
@@ -350,9 +371,17 @@ function setPaymentFlow(flow: 'pay_first' | 'pay_later') {
             <span class="text-gray-500 dark:text-gray-400">Voucher</span>
             <span class="text-red-500">-{{ formatCurrency(cartStore.voucherTotal) }}</span>
           </div>
+          <div v-if="taxAmount > 0" class="mt-1 flex justify-between text-sm">
+            <span class="text-gray-500 dark:text-gray-400">
+              Pajak ({{ outlet?.settings?.tax_rate ?? 0 }}%{{ outlet?.settings?.tax_inclusive ? ', inklusif' : '' }})
+            </span>
+            <span class="text-gray-700 dark:text-gray-300">
+              {{ outlet?.settings?.tax_inclusive ? '(termasuk)' : '+' + formatCurrency(taxAmount) }}
+            </span>
+          </div>
           <div class="mt-2 flex justify-between border-t border-gray-200 pt-2 dark:border-gray-700">
             <span class="font-semibold text-gray-900 dark:text-white">Total</span>
-            <span class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(cartStore.total) }}</span>
+            <span class="text-lg font-bold text-primary-600 dark:text-primary-400">{{ formatCurrency(totalWithTax) }}</span>
           </div>
         </div>
       </div>
